@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Slash Palette",
+  "version": "0.0.1",
+  "description": "Slash commands for GitHub markdown fields. Includes /giphy GIF search and insert.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.giphy.com/v1/*"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_title": "GitHub Slash Palette",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options.html"
+}
