@@ -1,10 +1,16 @@
 import { watch } from "fs";
-import { cp, rm, mkdir } from "fs/promises";
+import { cp, rm, mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 
 const isWatch = process.argv.includes("--watch");
 const srcDir = "src";
 const distDir = "dist";
+
+// Read version from package.json (single source of truth)
+async function getVersion(): Promise<string> {
+  const pkg = JSON.parse(await readFile("package.json", "utf-8"));
+  return pkg.version;
+}
 
 async function cleanDist() {
   await rm(distDir, { recursive: true, force: true });
@@ -12,8 +18,11 @@ async function cleanDist() {
 }
 
 async function copyStaticAssets() {
-  // Copy manifest
-  await cp(join(srcDir, "manifest.json"), join(distDir, "manifest.json"));
+  // Read manifest and inject version from package.json
+  const version = await getVersion();
+  const manifest = JSON.parse(await readFile(join(srcDir, "manifest.json"), "utf-8"));
+  manifest.version = version;
+  await writeFile(join(distDir, "manifest.json"), JSON.stringify(manifest, null, 2));
   
   // Copy icons from assets folder
   const icons = ["icon16.png", "icon32.png", "icon48.png", "icon128.png"];
@@ -69,6 +78,7 @@ async function bundleOptionsScript() {
 
 async function build() {
   const start = performance.now();
+  const version = await getVersion();
   
   await cleanDist();
   await copyStaticAssets();
@@ -76,7 +86,7 @@ async function build() {
   await bundleOptionsScript();
   
   const duration = (performance.now() - start).toFixed(0);
-  console.log(`✓ Built in ${duration}ms → ${distDir}/`);
+  console.log(`✓ Built gsp-${version} in ${duration}ms → ${distDir}/`);
 }
 
 // Initial build
