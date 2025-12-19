@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { registerCommand, getCommand } from "./registry.ts";
+import { registerCommand, getCommand, listCommands } from "./registry.ts";
 import type { CommandSpec } from "./registry.ts";
 
 describe("command registry", () => {
@@ -42,6 +42,13 @@ describe("command registry", () => {
     it("returns null for empty string", () => {
       const cmd = getCommand("");
       expect(cmd).toBeNull();
+    });
+  });
+
+  describe("listCommands", () => {
+    it("returns registered command names", () => {
+      registerCommand("list-test", mockCommand);
+      expect(listCommands()).toContain("list-test");
     });
   });
 });

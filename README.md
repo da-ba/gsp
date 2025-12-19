@@ -92,6 +92,7 @@ dist/                 # Build output (load this in Chrome)
 
 See [docs/commands/README.md](docs/commands/README.md) for per-command documentation.
 
+- [/gsp](docs/commands/gsp/README.md) – list available commands
 - [/giphy](docs/commands/giphy/README.md) – search and insert GIFs
 
 ## How to set your Giphy API key

@@ -46,3 +46,7 @@ export function getCommand(name: string): CommandSpec | null {
   if (!name) return null;
   return commandRegistry[name] || null;
 }
+
+export function listCommands(): string[] {
+  return Object.keys(commandRegistry).sort();
+}
