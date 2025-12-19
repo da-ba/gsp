@@ -114,13 +114,45 @@ function createFooter(): HTMLElement {
   return footer;
 }
 
-export function ensurePicker(): HTMLElement {
-  if (state.pickerEl) return state.pickerEl;
-
+function createPickerElement(): HTMLElement {
   const el = document.createElement("div");
   el.id = "slashPalettePicker";
   el.style.display = "none";
   applyPickerStyles(el);
+
+  // Keep textarea focus when selecting GIFs with the mouse.
+  // Important: do NOT stopPropagation in capture phase, otherwise events won't
+  // reach inner buttons/inputs and the picker becomes unusable.
+  const shouldPreventFocusSteal = (target: EventTarget | null): boolean => {
+    const t = target as HTMLElement | null;
+    if (!t) return false;
+    const btn = t.closest("button") as HTMLButtonElement | null;
+    return !!(btn && btn.hasAttribute("data_item_index"));
+  };
+
+  el.addEventListener(
+    "pointerdown",
+    (ev) => {
+      if (shouldPreventFocusSteal(ev.target)) ev.preventDefault();
+    },
+    true
+  );
+  el.addEventListener(
+    "mousedown",
+    (ev) => {
+      if (shouldPreventFocusSteal(ev.target)) ev.preventDefault();
+    },
+    true
+  );
+
+  // Stop bubbling events so GitHub's bubble handlers don't treat picker clicks
+  // as interacting with the page.
+  const stopBubble = (ev: Event) => {
+    ev.stopPropagation();
+  };
+  el.addEventListener("click", stopBubble);
+  el.addEventListener("mousedown", stopBubble);
+  el.addEventListener("mouseup", stopBubble);
 
   el.addEventListener("mousedown", () => {
     state.mouseDownInPicker = true;
@@ -134,7 +166,37 @@ export function ensurePicker(): HTMLElement {
   el.appendChild(createBody());
   el.appendChild(createFooter());
 
-  document.documentElement.appendChild(el);
+  return el;
+}
+
+function getPickerMountForField(field?: HTMLElement | null): HTMLElement {
+  if (!field) return document.body;
+  const mount = field.closest(
+    [
+      "details-dialog",
+      "dialog",
+      "[role='dialog']",
+      ".Overlay",
+      ".Popover",
+      ".SelectMenu",
+      ".SelectMenu-modal",
+      ".details-overlay",
+      "details",
+    ].join(", ")
+  ) as HTMLElement | null;
+  return mount || document.body;
+}
+
+export function ensurePicker(field?: HTMLElement | null): HTMLElement {
+  const mount = getPickerMountForField(field);
+
+  if (state.pickerEl) {
+    if (state.pickerEl.parentElement !== mount) mount.appendChild(state.pickerEl);
+    return state.pickerEl;
+  }
+
+  const el = createPickerElement();
+  mount.appendChild(el);
   state.pickerEl = el;
 
   return el;
@@ -144,8 +206,8 @@ export function isPickerVisible(): boolean {
   return !!(state.pickerEl && state.pickerEl.style.display === "block");
 }
 
-export function showPicker(): void {
-  const picker = ensurePicker();
+export function showPicker(field?: HTMLElement | null): void {
+  const picker = ensurePicker(field);
   applyPickerStyles(picker);
   picker.style.display = "block";
   try {
@@ -218,28 +280,29 @@ export function renderLoadingSkeleton(): void {
 }
 
 export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
-  const picker = ensurePicker();
+  const picker = ensurePicker(field);
   const rect = field.getBoundingClientRect();
   const caret = getCaretCoordinates(field, field.selectionStart || 0);
 
-  let left = add(add(window.scrollX, rect.left), caret.left);
-  let top = add(add(window.scrollY, rect.top), add(caret.top, add(caret.height, 10)));
+  // Fixed positioning => viewport coordinates
+  let left = add(rect.left, caret.left);
+  let top = add(rect.top, add(caret.top, add(caret.height, 10)));
 
   const vw = document.documentElement.clientWidth;
   const vh = document.documentElement.clientHeight;
   const pickerWidth = 400;
   const pickerHeight = 380;
 
-  const maxLeft = sub(sub(add(window.scrollX, vw), pickerWidth), 10);
+  const maxLeft = sub(sub(vw, pickerWidth), 10);
   if (left > maxLeft) left = maxLeft;
-  const minLeft = add(window.scrollX, 10);
+  const minLeft = 10;
   if (left < minLeft) left = minLeft;
 
-  const maxTop = sub(sub(add(window.scrollY, vh), pickerHeight), 10);
+  const maxTop = sub(sub(vh, pickerHeight), 10);
   if (top > maxTop) {
-    top = sub(add(add(window.scrollY, rect.top), caret.top), add(pickerHeight, 10));
+    top = sub(add(rect.top, caret.top), add(pickerHeight, 10));
   }
-  const minTop = add(window.scrollY, 10);
+  const minTop = 10;
   if (top < minTop) top = minTop;
 
   picker.style.left = String(left) + "px";
@@ -305,7 +368,12 @@ export function renderSuggestChips(
     btn.addEventListener("mouseleave", () => {
       btn.style.transform = "scale(1)";
     });
-    btn.addEventListener("click", () => onPick(term));
+    btn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+      onPick(term);
+    });
 
     wrap.appendChild(btn);
   });
@@ -372,9 +440,18 @@ export function renderGrid(
       refreshSelectionStyles();
     });
 
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+      // Save field reference before hiding picker
+      const field = state.activeField;
       onPickItem(it);
       hidePicker();
+      // Re-focus textarea to keep GitHub's popover open
+      if (field) {
+        setTimeout(() => field.focus(), 0);
+      }
     });
 
     grid.appendChild(btn);
@@ -457,6 +534,7 @@ export function renderKeySetupPanel(message: string, afterSave: () => void): voi
   const btnSave = document.createElement("button");
   btnSave.type = "button";
   btnSave.textContent = "Save";
+  btnSave.setAttribute("data_slash_palette_action", "save");
   applyStyles(btnSave, getButtonStyles());
   btnSave.style.flex = "1";
   btnSave.style.minWidth = "110px";
@@ -464,6 +542,7 @@ export function renderKeySetupPanel(message: string, afterSave: () => void): voi
   const btnTest = document.createElement("button");
   btnTest.type = "button";
   btnTest.textContent = "Test";
+  btnTest.setAttribute("data_slash_palette_action", "test");
   applyStyles(btnTest, getButtonStyles());
   btnTest.style.flex = "1";
   btnTest.style.minWidth = "110px";
@@ -497,8 +576,22 @@ export function renderKeySetupPanel(message: string, afterSave: () => void): voi
     else status.textContent = "Key ok";
   }
 
-  btnSave.addEventListener("click", doSave);
-  btnTest.addEventListener("click", doTest);
+  btnSave.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    ev.stopImmediatePropagation();
+    doSave();
+    const field = state.activeField;
+    if (field) setTimeout(() => field.focus(), 0);
+  });
+  btnTest.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    ev.stopImmediatePropagation();
+    doTest();
+    const field = state.activeField;
+    if (field) setTimeout(() => field.focus(), 0);
+  });
 
   card.appendChild(title);
   card.appendChild(msg);
@@ -510,8 +603,6 @@ export function renderKeySetupPanel(message: string, afterSave: () => void): voi
   card.appendChild(status);
 
   body.appendChild(card);
-
-  setTimeout(() => input.focus(), 0);
 }
 
 export function moveSelectionGrid(dx: number, dy: number): void {

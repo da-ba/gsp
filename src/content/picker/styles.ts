@@ -16,7 +16,9 @@ export function applyPickerStyles(el: HTMLElement): void {
   const { dark } = getConfig();
   const lg = tokenLinearGradient();
 
-  el.style.position = "absolute";
+  // Use fixed positioning so the picker is stable across scroll containers
+  // (GitHub popovers/dialogs) and doesn't depend on page scroll offsets.
+  el.style.position = "fixed";
   el.style.zIndex = "999999";
   el.style.width = "400px";
   el.style.maxHeight = "380px";
