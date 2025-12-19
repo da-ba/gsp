@@ -2,7 +2,7 @@
  * Picker state management
  */
 
-import type { GifItem } from "../../api/giphy.ts";
+import type { PickerItem } from "../types.ts";
 
 export interface PickerState {
   pickerEl: HTMLElement | null;
@@ -18,17 +18,15 @@ export interface PickerState {
   lastQuery: string;
   debounceId: ReturnType<typeof setTimeout> | null;
   inFlight: boolean;
-  currentItems: GifItem[];
+  currentItems: PickerItem[];
   selectedIndex: number;
   cols: number;
   mouseDownInPicker: boolean;
   suggestItems: string[];
   lastSuggestQuery: string;
   suggestDebounceId: ReturnType<typeof setTimeout> | null;
-  cache: {
-    giphyTrendingTerms: string[] | null;
-    giphyTrendingGifs: GifItem[] | null;
-  };
+  /** Generic per-command cache; commands manage their own keys */
+  commandCache: Record<string, unknown>;
 }
 
 export function createPickerState(): PickerState {
@@ -53,10 +51,7 @@ export function createPickerState(): PickerState {
     suggestItems: [],
     lastSuggestQuery: "",
     suggestDebounceId: null,
-    cache: {
-      giphyTrendingTerms: null,
-      giphyTrendingGifs: null,
-    },
+    commandCache: {},
   };
 }
 
@@ -70,4 +65,25 @@ export function resetPickerState(): void {
   state.suggestItems = [];
   state.lastSuggestQuery = "";
   state.activeCommand = "";
+}
+
+/**
+ * Get command-specific cache value
+ */
+export function getCommandCache<T>(key: string): T | null {
+  return (state.commandCache[key] as T) ?? null;
+}
+
+/**
+ * Set command-specific cache value
+ */
+export function setCommandCache<T>(key: string, value: T): void {
+  state.commandCache[key] = value;
+}
+
+/**
+ * Clear command-specific cache key
+ */
+export function clearCommandCache(key: string): void {
+  delete state.commandCache[key];
 }

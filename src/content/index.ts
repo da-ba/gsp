@@ -15,7 +15,7 @@ import {
   setHeader,
   renderMessage,
   renderLoadingSkeleton,
-  renderKeySetupPanel,
+  renderSetupPanel,
   refreshSelectionStyles,
   moveSelectionGrid,
   applyPickerStyles,
@@ -70,10 +70,9 @@ async function handleCommandInput(
 
   // Check if setup is needed
   const pre = await cmd.preflight();
-  if (pre?.showSetup) {
-    renderKeySetupPanel(pre.message || "", () => {
-      state.cache.giphyTrendingTerms = null;
-      state.cache.giphyTrendingGifs = null;
+  if (pre?.showSetup && pre.renderSetup) {
+    renderSetupPanel(pre.renderSetup, () => {
+      // Retry after setup completes (command is responsible for clearing its own cache)
       state.lastQuery = "";
       handleCommandInput(field, cmdName, query || "");
     });
@@ -106,7 +105,10 @@ async function handleCommandInput(
   state.debounceId = setTimeout(async () => {
     showPicker();
     positionPickerAtCaret(field);
-    renderLoadingSkeleton();
+    // Only show skeleton if no items are displayed yet (reduces flicker)
+    if (!state.currentItems?.length) {
+      renderLoadingSkeleton();
+    }
 
     if (state.inFlight) return;
     state.inFlight = true;
@@ -117,9 +119,7 @@ async function handleCommandInput(
       } else {
         const items = res?.items ?? [];
         if (!items.length) {
-          renderMessage(
-            "No results. Check your Giphy key and DevTools Network tab for Giphy responses"
-          );
+          renderMessage(cmd.noResultsMessage || "No results found");
         } else {
           state.selectedIndex = 0;
           cmd.renderItems(items, res?.suggestTitle ?? "");
@@ -149,18 +149,6 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
     ev.stopPropagation();
     ev.stopImmediatePropagation();
     hidePicker();
-    return;
-  }
-
-  if (ev.key === "Tab") {
-    if (state.currentItems?.length) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      ev.stopImmediatePropagation();
-      const it = state.currentItems[state.selectedIndex] || state.currentItems[0];
-      if (it) cmd.onSelect(it);
-      hidePicker();
-    }
     return;
   }
 
@@ -239,8 +227,11 @@ function attachToField(field: HTMLTextAreaElement): void {
 
   field.addEventListener("input", () => handleFieldInput(field));
   field.addEventListener("keyup", (ev) => {
-    // Avoid immediately re-opening the picker after closing via Escape.
+    // Avoid re-processing navigation/action keys
     if (ev.key === "Escape") return;
+    if (ev.key === "ArrowUp" || ev.key === "ArrowDown") return;
+    if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") return;
+    if (ev.key === "Enter" || ev.key === "Tab") return;
     handleFieldInput(field);
   });
   field.addEventListener("click", () => {

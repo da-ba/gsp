@@ -5,16 +5,12 @@
 import { isDarkMode } from "../../utils/theme.ts";
 import { add, sub, clamp } from "../../utils/math.ts";
 import { getCaretCoordinates } from "../../utils/dom.ts";
-import { setGiphyKey } from "../../utils/storage.ts";
-import { searchGifs } from "../../api/giphy.ts";
-import type { GifItem } from "../../api/giphy.ts";
+import type { PickerItem } from "../types.ts";
 import { state, resetPickerState } from "./state.ts";
 import {
   applyPickerStyles,
   getBadgeStyles,
   getCardStyles,
-  getButtonStyles,
-  getInputStyles,
   getSkeletonStyles,
   getGridItemSelectedStyles,
 } from "./styles.ts";
@@ -78,7 +74,7 @@ function createHints(): HTMLElement {
   hint.style.gap = "6px";
   hint.style.padding = "0 10px 10px 10px";
 
-  const hintItems = ["Arrows move", "Enter insert", "Tab insert", "Esc close"];
+  const hintItems = ["Arrows move", "Enter insert", "Esc close"];
 
   hintItems.forEach((t) => {
     const h = document.createElement("div");
@@ -109,7 +105,7 @@ function createFooter(): HTMLElement {
     : "1px solid rgba(0,0,0,0.10)";
   footer.style.opacity = "0.62";
   footer.style.fontSize = "12px";
-  footer.textContent = "Tip: /giphy cats";
+  footer.textContent = "Tip: type /gsp to list commands";
   state.footerEl = footer;
   return footer;
 }
@@ -127,7 +123,11 @@ function createPickerElement(): HTMLElement {
     const t = target as HTMLElement | null;
     if (!t) return false;
     const btn = t.closest("button") as HTMLButtonElement | null;
-    return !!(btn && btn.hasAttribute("data_item_index"));
+    // Prevent focus steal for grid items and suggestion chips
+    return !!(
+      btn &&
+      (btn.hasAttribute("data_item_index") || btn.hasAttribute("data_suggest_chip"))
+    );
   };
 
   el.addEventListener(
@@ -208,18 +208,22 @@ export function isPickerVisible(): boolean {
 
 export function showPicker(field?: HTMLElement | null): void {
   const picker = ensurePicker(field);
+  const wasHidden = picker.style.display === "none";
   applyPickerStyles(picker);
   picker.style.display = "block";
-  try {
-    picker.animate(
-      [
-        { opacity: 0, transform: "scale(0.98)" },
-        { opacity: 1, transform: "scale(1)" },
-      ],
-      { duration: 120, fill: "both" }
-    );
-  } catch {
-    // Animation not supported
+  // Only animate on initial show, not on every update
+  if (wasHidden) {
+    try {
+      picker.animate(
+        [
+          { opacity: 0, transform: "scale(0.98)" },
+          { opacity: 1, transform: "scale(1)" },
+        ],
+        { duration: 120, fill: "both" }
+      );
+    } catch {
+      // Animation not supported
+    }
   }
 }
 
@@ -357,6 +361,7 @@ export function renderSuggestChips(
   items.slice(0, 8).forEach((term) => {
     const btn = document.createElement("button");
     btn.type = "button";
+    btn.setAttribute("data_suggest_chip", "true");
     btn.textContent = term;
     applyStyles(btn, getBadgeStyles());
     btn.style.cursor = "pointer";
@@ -382,9 +387,9 @@ export function renderSuggestChips(
 }
 
 export function renderGrid(
-  items: GifItem[],
-  imgUrlFn: (item: GifItem) => string,
-  onPickItem: (item: GifItem) => void,
+  items: PickerItem[],
+  imgUrlFn: (item: PickerItem) => string,
+  onPickItem: (item: PickerItem) => void,
   suggestTitle: string
 ): void {
   clearBody();
@@ -481,128 +486,18 @@ export function setSlashQueryInField(cmd: string, term: string): void {
   field.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-export function renderKeySetupPanel(message: string, afterSave: () => void): void {
+/**
+ * Render a command-provided setup panel.
+ * The command's renderSetup callback receives the body element and builds its own UI.
+ */
+export function renderSetupPanel(
+  renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void,
+  onComplete: () => void
+): void {
   clearBody();
   const body = state.bodyEl;
   if (!body) return;
-
-  const card = document.createElement("div");
-  applyStyles(card, getCardStyles());
-  card.style.padding = "12px";
-
-  const title = document.createElement("div");
-  title.textContent = "Giphy API key required";
-  title.style.fontWeight = "700";
-  title.style.marginBottom = "6px";
-
-  const msg = document.createElement("div");
-  msg.textContent = message || "Paste your Giphy API key to enable /giphy";
-  msg.style.opacity = "0.82";
-  msg.style.fontSize = "12px";
-  msg.style.marginBottom = "10px";
-
-  const input = document.createElement("input");
-  input.type = "password";
-  input.placeholder = "Giphy API key";
-  applyStyles(input, getInputStyles());
-
-  const showRow = document.createElement("label");
-  showRow.style.display = "flex";
-  showRow.style.alignItems = "center";
-  showRow.style.gap = "8px";
-  showRow.style.marginTop = "10px";
-  showRow.style.fontSize = "12px";
-  showRow.style.opacity = "0.82";
-
-  const showCb = document.createElement("input");
-  showCb.type = "checkbox";
-  const showText = document.createElement("span");
-  showText.textContent = "Show key";
-  showRow.appendChild(showCb);
-  showRow.appendChild(showText);
-
-  showCb.addEventListener("change", () => {
-    input.type = showCb.checked ? "text" : "password";
-  });
-
-  const row = document.createElement("div");
-  row.style.display = "flex";
-  row.style.gap = "8px";
-  row.style.marginTop = "10px";
-  row.style.flexWrap = "wrap";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "button";
-  btnSave.textContent = "Save";
-  btnSave.setAttribute("data_slash_palette_action", "save");
-  applyStyles(btnSave, getButtonStyles());
-  btnSave.style.flex = "1";
-  btnSave.style.minWidth = "110px";
-
-  const btnTest = document.createElement("button");
-  btnTest.type = "button";
-  btnTest.textContent = "Test";
-  btnTest.setAttribute("data_slash_palette_action", "test");
-  applyStyles(btnTest, getButtonStyles());
-  btnTest.style.flex = "1";
-  btnTest.style.minWidth = "110px";
-  btnTest.style.backgroundColor = "transparent";
-
-  const status = document.createElement("div");
-  status.style.marginTop = "10px";
-  status.style.fontSize = "12px";
-  status.style.opacity = "0.82";
-
-  async function doSave(): Promise<void> {
-    const v = String(input.value || "").trim();
-    if (!v) {
-      status.textContent = "Missing key";
-      return;
-    }
-    await setGiphyKey(v);
-    status.textContent = "Saved";
-    afterSave();
-  }
-
-  async function doTest(): Promise<void> {
-    const v = String(input.value || "").trim();
-    if (!v) {
-      status.textContent = "Missing key";
-      return;
-    }
-    status.textContent = "Testing";
-    const r = await searchGifs(v, "ok");
-    if (r?.error) status.textContent = r.error;
-    else status.textContent = "Key ok";
-  }
-
-  btnSave.addEventListener("click", (ev) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    ev.stopImmediatePropagation();
-    doSave();
-    const field = state.activeField;
-    if (field) setTimeout(() => field.focus(), 0);
-  });
-  btnTest.addEventListener("click", (ev) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    ev.stopImmediatePropagation();
-    doTest();
-    const field = state.activeField;
-    if (field) setTimeout(() => field.focus(), 0);
-  });
-
-  card.appendChild(title);
-  card.appendChild(msg);
-  card.appendChild(input);
-  card.appendChild(showRow);
-  row.appendChild(btnSave);
-  row.appendChild(btnTest);
-  card.appendChild(row);
-  card.appendChild(status);
-
-  body.appendChild(card);
+  renderFn(body, onComplete);
 }
 
 export function moveSelectionGrid(dx: number, dy: number): void {

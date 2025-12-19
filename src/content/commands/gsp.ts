@@ -5,13 +5,13 @@
  * pick one to insert at the current cursor position.
  */
 
-import type { GifItem } from "../../api/giphy.ts";
+import type { PickerItem } from "../types.ts";
 import { registerCommand, type CommandSpec, listCommands } from "./registry.ts";
 import { renderGrid, setSlashQueryInField, state } from "../picker/index.ts";
 
 let lastForwardedQuery = "";
 
-function makeCommandTile(name: string): GifItem {
+function makeCommandTile(name: string): PickerItem {
   const label = "/" + name;
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
@@ -32,10 +32,9 @@ function makeCommandTile(name: string): GifItem {
   const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 
   return {
-    kind: "gif",
     id: name,
     previewUrl: dataUrl,
-    insertUrl: name,
+    data: name, // Store command name for onSelect
   };
 }
 
@@ -76,13 +75,13 @@ const gspCommand: CommandSpec = {
     };
   },
 
-  renderItems: (items: GifItem[], suggestTitle: string) => {
+  renderItems: (items: PickerItem[], suggestTitle: string) => {
     renderGrid(
       items,
       (it) => it.previewUrl,
       (it) => {
         const term = (lastForwardedQuery || "").trim();
-        setSlashQueryInField(it.insertUrl, term);
+        setSlashQueryInField(it.data as string, term);
       },
       suggestTitle
     );
@@ -94,16 +93,16 @@ const gspCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => {
         const term = (lastForwardedQuery || "").trim();
-        setSlashQueryInField(it.insertUrl, term);
+        setSlashQueryInField(it.data as string, term);
       },
       "Commands"
     );
   },
 
-  onSelect: (it: GifItem) => {
+  onSelect: (it: PickerItem) => {
     if (!it) return;
     const term = (lastForwardedQuery || "").trim();
-    setSlashQueryInField(it.insertUrl, term);
+    setSlashQueryInField(it.data as string, term);
   },
 };
 
