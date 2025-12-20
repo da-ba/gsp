@@ -1,50 +1,3 @@
-# GitHub Slash Palette
-
-## What it does
-
-1. Adds slash commands to GitHub markdown textarea fields
-2. Includes /giphy to search and insert GIF markdown
-
-**Available commands:** see [docs/commands/README.md](docs/commands/README.md)
-
-![](src/assets/example.png)
-
-## Development
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) (v1.0+)
-
-### Setup
-
-```bash
-# Install dependencies
-bun install
-
-# Build the extension
-bun run build
-
-# Build in watch mode (for development)
-bun run dev
-```
-
-### Scripts
-
-| Script | Description |
-|--------|-------------|
-| `bun run build` | Production build to `dist/` |
-| `bun run dev` | Watch mode for development |
-| `bun run typecheck` | TypeScript type checking |
-| `bun run lint` | ESLint check |
-| `bun run lint:fix` | ESLint auto-fix |
-| `bun run format` | Format with Prettier |
-| `bun run format:check` | Check Prettier formatting |
-| `bun run check` | Run all checks (typecheck + lint + format) |
-| `bun run clean` | Remove `dist/` folder |
-
-### Project Structure
-
-```
 src/
 ├── api/              # External API clients
 │   └── giphy.ts      # Giphy API
@@ -66,60 +19,137 @@ src/
 │   ├── math.ts
 │   ├── storage.ts
 │   └── theme.ts
-└── manifest.json
-
 dist/                 # Build output (load this in Chrome)
+
+# GitHub Slash Palette
+
+Slash commands for GitHub markdown fields. Includes `/giphy` GIF search and insert.
+
+---
+
+## Features
+
+- Adds slash command palette to GitHub markdown textareas
+- `/giphy` to search and insert GIFs
+- Easily extensible with new commands
+
+---
+
+## Available Commands
+
+See [docs/commands/README.md](docs/commands/README.md) for a full list and usage details.
+
+- [/gsp](docs/commands/gsp/README.md): List and insert available commands
+- [/giphy](docs/commands/giphy/README.md): Search and insert GIFs via Giphy
+
+---
+
+## Screenshots
+
+![Example](src/assets/example.png)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh/) (v1.0+)
+
+### Setup
+
+```bash
+bun install
+bun run build
 ```
 
-## How to install locally
+### Local Installation
 
-1. Run `bun install && bun run build`
+1. Build: `bun install && bun run build`
 2. Open `chrome://extensions`
 3. Enable Developer mode
-4. Click Load unpacked
+4. Click **Load unpacked**
 5. Select the `dist` folder
 
-## How to use
+---
+
+## Usage
 
 1. Go to GitHub
-2. Open an issue comment field or pull request comment field
-3. Type `/giphy cats`
-4. Use arrow keys to move selection
-5. Press Enter or Tab to insert
+2. Open an issue or PR comment field
+3. Type `/giphy cats` (or `/gsp` for command list)
+4. Use arrow keys to navigate
+5. Press Enter to insert
 6. Press Esc to close
 
-## Commands
+---
 
-See [docs/commands/README.md](docs/commands/README.md) for per-command documentation.
+## Project Structure
 
-- [/gsp](docs/commands/gsp/README.md) – list available commands
-- [/giphy](docs/commands/giphy/README.md) – search and insert GIFs
+```
+src/
+├── api/                # API clients (e.g., giphy.ts)
+├── assets/             # Static assets (icons, images)
+├── content/            # Content scripts
+│   ├── commands/       # Slash command implementations
+│   │   ├── giphy.ts
+│   │   ├── gsp.ts
+│   │   ├── index.ts
+│   │   ├── registry.ts
+│   │   └── registry.test.ts
+│   ├── picker/         # Picker UI
+│   │   ├── picker.ts
+│   │   ├── state.ts
+│   │   └── styles.ts
+│   ├── index.ts        # Content entry
+│   └── types.ts
+├── utils/              # Shared utilities
+│   ├── dom.ts
+│   ├── dom.test.ts
+│   ├── math.ts
+│   ├── math.test.ts
+│   ├── storage.ts
+│   ├── storage.test.ts
+│   └── theme.ts
+dist/                   # Build output (load in Chrome)
+docs/                   # Documentation
+│   └── commands/       # Per-command docs
+│       ├── README.md
+│       ├── giphy/README.md
+│       └── gsp/README.md
+scripts/                # Build scripts
+│   └── build.ts
+PRIVACY.md              # Privacy policy
+package.json            # Project metadata & scripts
+tsconfig.json           # TypeScript config
+vitest.config.ts        # Test config
+```
 
-## How to set your Giphy API key
+---
 
-### Option 1: In picker
+## Scripts
 
-1. Type `/giphy`
-2. A setup panel appears
-3. Paste your key
-4. Press Test to verify
-5. Press Save
+| Script                | Description                        |
+|-----------------------|------------------------------------|
+| `bun run build`       | Production build to `dist/`        |
+| `bun run dev`         | Watch mode for development         |
+| `bun run typecheck`   | TypeScript type checking           |
+| `bun run lint`        | ESLint check                       |
+| `bun run lint:fix`    | ESLint auto-fix                    |
+| `bun run format`      | Format with Prettier                |
+| `bun run format:check`| Check Prettier formatting           |
+| `bun run check`       | Run all checks (type, lint, format, test) |
+| `bun run clean`       | Remove `dist/` folder               |
 
-### Option 2: In options page
-
-1. Open `chrome://extensions`
-2. Find GitHub Slash Palette
-3. Click Details
-4. Click Extension options
-5. Paste the key and Save
-
-## Where the key is stored
-
-The key is stored using `chrome.storage.local` on your device
+---
 
 ## Adding New Commands
 
-Create a new file in `src/content/commands/` and register your command:
+1. Create a new file in `src/content/commands/` and implement your command.
+2. Register it in `src/content/commands/registry.ts` and import in `src/content/index.ts`.
+3. Add end-user docs under `docs/commands/<command>/README.md`.
+
+Example skeleton:
 
 ```typescript
 import { registerCommand, type CommandSpec } from "./registry.ts";
@@ -136,8 +166,28 @@ const myCommand: CommandSpec = {
 registerCommand("mycommand", myCommand);
 ```
 
-Then import it in `src/content/index.ts`.
+---
 
-Documentation
+## Giphy API Key Setup
 
-- Add end-user docs under `docs/commands/<command>/README.md`.
+### Option 1: In picker
+1. Type `/giphy`
+2. Paste your key in the setup panel
+3. Press **Test** to verify
+4. Press **Save**
+
+### Option 2: In options page
+1. Open `chrome://extensions`
+2. Find GitHub Slash Palette
+3. Click **Details**
+4. Click **Extension options**
+5. Paste the key and Save
+
+**Where is the key stored?**
+> The key is stored using `chrome.storage.local` on your device only.
+
+---
+
+## Privacy
+
+See [PRIVACY.md](PRIVACY.md) for the privacy policy.
