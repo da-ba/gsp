@@ -2,7 +2,21 @@
  * Giphy API Client
  */
 
-import { getGiphyKey } from "../utils/storage.ts";
+import { getStorageValue, setStorageValue } from "../utils/storage.ts";
+
+// Storage key for Giphy API key
+const STORAGE_KEY_GIPHY_API = "giphyApiKey";
+
+/** Get Giphy API key from storage */
+export async function getGiphyKey(): Promise<string> {
+  const val = await getStorageValue<string>(STORAGE_KEY_GIPHY_API, "");
+  return val.trim();
+}
+
+/** Set Giphy API key in storage */
+export async function setGiphyKey(value: string): Promise<void> {
+  await setStorageValue(STORAGE_KEY_GIPHY_API, value.trim());
+}
 
 // Types
 export interface GifItem {
@@ -194,10 +208,15 @@ export async function getAutocompleteTags(
   return { data: terms };
 }
 
-/**
- * Helper to check if we have a valid API key
- */
-export async function hasApiKey(): Promise<boolean> {
-  const key = await getGiphyKey();
-  return Boolean(key);
+/** Test if a Giphy API key is valid */
+export async function testGiphyKey(apiKey: string): Promise<GiphyResult<boolean>> {
+  const url = new URL("https://api.giphy.com/v1/gifs/search");
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("q", "ok");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("rating", "pg");
+
+  const out = await giphyGetJson(url.toString());
+  if (out.error) return { error: out.error };
+  return { data: true };
 }

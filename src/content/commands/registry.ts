@@ -2,22 +2,27 @@
  * Command registry and types
  */
 
-import type { GifItem } from "../../api/giphy.ts";
+import type { PickerItem } from "../types.ts";
 
 export interface PreflightResult {
   showSetup: boolean;
   message?: string;
+  /**
+   * If showSetup is true, command can provide a custom setup renderer.
+   * Receives the picker body element and a callback to invoke after setup completes.
+   */
+  renderSetup?: (bodyEl: HTMLElement, onComplete: () => void) => void;
 }
 
 export interface EmptyStateResult {
-  items?: GifItem[];
+  items?: PickerItem[];
   suggest?: string[];
   suggestTitle?: string;
   error?: string;
 }
 
 export interface ResultsResult {
-  items?: GifItem[];
+  items?: PickerItem[];
   suggestTitle?: string;
   error?: string;
 }
@@ -31,9 +36,16 @@ export interface CommandSpec {
   getEmptyState: () => Promise<EmptyStateResult>;
   getResults: (query: string) => Promise<ResultsResult>;
   getSuggestions?: (query: string) => Promise<SuggestionsResult>;
-  renderItems: (items: GifItem[], suggestTitle: string) => void;
+  renderItems: (items: PickerItem[], suggestTitle: string) => void;
   renderCurrent: () => void;
-  onSelect: (item: GifItem) => void;
+  onSelect: (item: PickerItem) => void;
+  /** Command-specific "no results" message (optional) */
+  noResultsMessage?: string;
+  /**
+   * Render command-specific settings section.
+   * Receives a container element to append settings UI to.
+   */
+  renderSettings?: (container: HTMLElement) => void;
 }
 
 const commandRegistry: Record<string, CommandSpec> = {};
@@ -45,4 +57,8 @@ export function registerCommand(name: string, spec: CommandSpec): void {
 export function getCommand(name: string): CommandSpec | null {
   if (!name) return null;
   return commandRegistry[name] || null;
+}
+
+export function listCommands(): string[] {
+  return Object.keys(commandRegistry).sort();
 }

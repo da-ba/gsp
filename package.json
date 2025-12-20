@@ -1,6 +1,6 @@
 {
   "name": "github-slash-palette",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Slash commands for GitHub markdown fields",
   "type": "module",
   "scripts": {

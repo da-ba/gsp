@@ -5,6 +5,8 @@
 1. Adds slash commands to GitHub markdown textarea fields
 2. Includes /giphy to search and insert GIF markdown
 
+**Available commands:** see [docs/commands/README.md](docs/commands/README.md)
+
 ![](src/assets/example.png)
 
 ## Development
@@ -86,6 +88,13 @@ dist/                 # Build output (load this in Chrome)
 5. Press Enter or Tab to insert
 6. Press Esc to close
 
+## Commands
+
+See [docs/commands/README.md](docs/commands/README.md) for per-command documentation.
+
+- [/gsp](docs/commands/gsp/README.md) – list available commands
+- [/giphy](docs/commands/giphy/README.md) – search and insert GIFs
+
 ## How to set your Giphy API key
 
 ### Option 1: In picker
@@ -128,3 +137,7 @@ registerCommand("mycommand", myCommand);
 ```
 
 Then import it in `src/content/index.ts`.
+
+Documentation
+
+- Add end-user docs under `docs/commands/<command>/README.md`.

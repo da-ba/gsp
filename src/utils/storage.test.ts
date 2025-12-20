@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { getGiphyKey, setGiphyKey } from "./storage.ts";
+import { getStorageValue, setStorageValue } from "./storage.ts";
 import { resetMockStorage } from "../test/setup.ts";
 
 describe("storage utilities", () => {
@@ -11,44 +11,44 @@ describe("storage utilities", () => {
     resetMockStorage();
   });
 
-  describe("getGiphyKey", () => {
-    it("returns empty string when no key is stored", async () => {
-      const key = await getGiphyKey();
-      expect(key).toBe("");
+  describe("getStorageValue", () => {
+    it("returns default value when no key is stored", async () => {
+      const val = await getStorageValue<string>("testKey", "default");
+      expect(val).toBe("default");
     });
 
-    it("returns stored key", async () => {
-      await setGiphyKey("test-api-key");
-      const key = await getGiphyKey();
-      expect(key).toBe("test-api-key");
+    it("returns stored value", async () => {
+      await setStorageValue("testKey", "test-value");
+      const val = await getStorageValue<string>("testKey", "");
+      expect(val).toBe("test-value");
     });
 
-    it("trims whitespace from key", async () => {
-      await setGiphyKey("  spaced-key  ");
-      const key = await getGiphyKey();
-      expect(key).toBe("spaced-key");
+    it("returns stored object", async () => {
+      await setStorageValue("objKey", { foo: "bar" });
+      const val = await getStorageValue<{ foo: string }>("objKey", { foo: "" });
+      expect(val).toEqual({ foo: "bar" });
     });
   });
 
-  describe("setGiphyKey", () => {
-    it("stores a key", async () => {
-      await setGiphyKey("my-api-key");
-      const key = await getGiphyKey();
-      expect(key).toBe("my-api-key");
+  describe("setStorageValue", () => {
+    it("stores a value", async () => {
+      await setStorageValue("myKey", "my-value");
+      const val = await getStorageValue<string>("myKey", "");
+      expect(val).toBe("my-value");
     });
 
-    it("overwrites existing key", async () => {
-      await setGiphyKey("first-key");
-      await setGiphyKey("second-key");
-      const key = await getGiphyKey();
-      expect(key).toBe("second-key");
+    it("overwrites existing value", async () => {
+      await setStorageValue("key", "first");
+      await setStorageValue("key", "second");
+      const val = await getStorageValue<string>("key", "");
+      expect(val).toBe("second");
     });
 
     it("handles empty string", async () => {
-      await setGiphyKey("some-key");
-      await setGiphyKey("");
-      const key = await getGiphyKey();
-      expect(key).toBe("");
+      await setStorageValue("key", "some-value");
+      await setStorageValue("key", "");
+      const val = await getStorageValue<string>("key", "default");
+      expect(val).toBe("");
     });
   });
 });

@@ -9,31 +9,51 @@
         padding: 18px;
         max-width: 760px;
       }
-      .card {
+      h2 {
+        margin-bottom: 16px;
+      }
+      .section {
         border: 1px solid rgba(0, 0, 0, 0.14);
         border-radius: 12px;
         padding: 14px;
+        margin-bottom: 14px;
+      }
+      .section-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+      .section-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
       label {
         display: block;
-        margin-top: 10px;
         margin-bottom: 6px;
-        font-weight: 600;
+        font-weight: 500;
       }
-      input {
+      input[type="text"],
+      input[type="password"] {
         width: 100%;
         max-width: 520px;
         padding: 10px 12px;
         border-radius: 10px;
         border: 1px solid rgba(0, 0, 0, 0.18);
+        font-size: 14px;
       }
       button {
-        margin-top: 10px;
-        padding: 10px 12px;
+        padding: 8px 14px;
         border-radius: 10px;
         border: 1px solid rgba(0, 0, 0, 0.18);
         background: white;
         cursor: pointer;
+        font-size: 14px;
+      }
+      button:hover {
+        background: rgba(0, 0, 0, 0.04);
       }
       .row {
         display: flex;
@@ -42,42 +62,21 @@
         flex-wrap: wrap;
       }
       .muted {
-        opacity: 0.75;
+        opacity: 0.72;
+        font-size: 13px;
       }
       .status {
-        margin-top: 10px;
-        font-weight: 600;
+        font-weight: 500;
+        min-height: 20px;
       }
-      code {
-        padding: 2px 6px;
-        border-radius: 8px;
-        background: rgba(0, 0, 0, 0.06);
+      a {
+        color: inherit;
       }
     </style>
   </head>
   <body>
     <h2>GitHub Slash Palette</h2>
-    <div class="card">
-      <div class="muted">
-        Giphy requires an API key. You can also set it directly in the picker when you use
-        <code>/giphy</code>.
-      </div>
-      <label for="key">Giphy API Key</label>
-      <input id="key" type="password" placeholder="Paste your Giphy API key" autocomplete="off" />
-      <div class="row">
-        <label
-          style="display: flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 500"
-        >
-          <input id="showKey" type="checkbox" />
-          Show key
-        </label>
-      </div>
-      <div class="row">
-        <button id="save">Save</button>
-        <button id="test">Test</button>
-      </div>
-      <div id="status" class="status"></div>
-    </div>
+    <div id="sections"></div>
     <script src="options.js"></script>
   </body>
 </html>

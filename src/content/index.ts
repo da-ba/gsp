@@ -3,7 +3,8 @@
  */
 
 import { isGitHubMarkdownField, getCursorInfo, parseSlashCommand } from "../utils/dom.ts";
-import { onThemeChange } from "../utils/theme.ts";
+import { onThemeChange, setThemeOverride } from "../utils/theme.ts";
+import { getThemePreference } from "../utils/storage.ts";
 import { neg } from "../utils/math.ts";
 import { getCommand } from "./commands/registry.ts";
 import {
@@ -15,7 +16,7 @@ import {
   setHeader,
   renderMessage,
   renderLoadingSkeleton,
-  renderKeySetupPanel,
+  renderSetupPanel,
   refreshSelectionStyles,
   moveSelectionGrid,
   applyPickerStyles,
@@ -23,6 +24,7 @@ import {
 
 // Import giphy command to register it
 import "./commands/giphy.ts";
+import "./commands/gsp.ts";
 
 /**
  * Update suggestions for the active command
@@ -64,15 +66,14 @@ async function handleCommandInput(
   state.activeCommand = cmdName;
   setHeader("GitHub Slash Palette", "/" + cmdName + (query ? " " + query : ""));
 
-  showPicker();
+  showPicker(field);
   positionPickerAtCaret(field);
 
   // Check if setup is needed
   const pre = await cmd.preflight();
-  if (pre?.showSetup) {
-    renderKeySetupPanel(pre.message || "", () => {
-      state.cache.giphyTrendingTerms = null;
-      state.cache.giphyTrendingGifs = null;
+  if (pre?.showSetup && pre.renderSetup) {
+    renderSetupPanel(pre.renderSetup, () => {
+      // Retry after setup completes (command is responsible for clearing its own cache)
       state.lastQuery = "";
       handleCommandInput(field, cmdName, query || "");
     });
@@ -105,7 +106,10 @@ async function handleCommandInput(
   state.debounceId = setTimeout(async () => {
     showPicker();
     positionPickerAtCaret(field);
-    renderLoadingSkeleton();
+    // Only show skeleton if no items are displayed yet (reduces flicker)
+    if (!state.currentItems?.length) {
+      renderLoadingSkeleton();
+    }
 
     if (state.inFlight) return;
     state.inFlight = true;
@@ -116,9 +120,7 @@ async function handleCommandInput(
       } else {
         const items = res?.items ?? [];
         if (!items.length) {
-          renderMessage(
-            "No results. Check your Giphy key and DevTools Network tab for Giphy responses"
-          );
+          renderMessage(cmd.noResultsMessage || "No results found");
         } else {
           state.selectedIndex = 0;
           cmd.renderItems(items, res?.suggestTitle ?? "");
@@ -145,23 +147,17 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
 
   if (ev.key === "Escape") {
     ev.preventDefault();
+    ev.stopPropagation();
+    ev.stopImmediatePropagation();
     hidePicker();
-    return;
-  }
-
-  if (ev.key === "Tab") {
-    if (state.currentItems?.length) {
-      ev.preventDefault();
-      const it = state.currentItems[state.selectedIndex] || state.currentItems[0];
-      if (it) cmd.onSelect(it);
-      hidePicker();
-    }
     return;
   }
 
   if (ev.key === "Enter") {
     if (state.currentItems?.length) {
       ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
       const it = state.currentItems[state.selectedIndex] || state.currentItems[0];
       if (it) cmd.onSelect(it);
       hidePicker();
@@ -173,21 +169,25 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
 
   if (ev.key === "ArrowRight") {
     ev.preventDefault();
+    ev.stopPropagation();
     moveSelectionGrid(1, 0);
     return;
   }
   if (ev.key === "ArrowLeft") {
     ev.preventDefault();
+    ev.stopPropagation();
     moveSelectionGrid(neg(1), 0);
     return;
   }
   if (ev.key === "ArrowDown") {
     ev.preventDefault();
+    ev.stopPropagation();
     moveSelectionGrid(0, 1);
     return;
   }
   if (ev.key === "ArrowUp") {
     ev.preventDefault();
+    ev.stopPropagation();
     moveSelectionGrid(0, neg(1));
     return;
   }
@@ -227,7 +227,14 @@ function attachToField(field: HTMLTextAreaElement): void {
   (field as unknown as { __slashPaletteBound: boolean }).__slashPaletteBound = true;
 
   field.addEventListener("input", () => handleFieldInput(field));
-  field.addEventListener("keyup", () => handleFieldInput(field));
+  field.addEventListener("keyup", (ev) => {
+    // Avoid re-processing navigation/action keys
+    if (ev.key === "Escape") return;
+    if (ev.key === "ArrowUp" || ev.key === "ArrowDown") return;
+    if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") return;
+    if (ev.key === "Enter" || ev.key === "Tab") return;
+    handleFieldInput(field);
+  });
   field.addEventListener("click", () => {
     if (isPickerVisible()) positionPickerAtCaret(field);
   });
@@ -239,7 +246,12 @@ function attachToField(field: HTMLTextAreaElement): void {
   field.addEventListener("blur", () => {
     setTimeout(() => {
       if (state.mouseDownInPicker) return;
-      if (isPickerVisible()) return;
+      if (
+        state.pickerEl &&
+        document.activeElement &&
+        state.pickerEl.contains(document.activeElement)
+      )
+        return;
       if (document.activeElement !== field) hidePicker();
     }, 120);
   });
@@ -286,6 +298,23 @@ function boot(): void {
     true
   );
 
+  // Always allow Escape to close the picker (even if focus moved into the picker).
+  // Use window capture so we run before GitHub popover handlers.
+  window.addEventListener(
+    "keydown",
+    (ev) => {
+      if (!isPickerVisible()) return;
+      if (ev.key !== "Escape") return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+      hidePicker();
+      const field = state.activeField;
+      if (field) setTimeout(() => field.focus(), 0);
+    },
+    true
+  );
+
   // Reposition picker on scroll/resize
   window.addEventListener(
     "scroll",
@@ -311,5 +340,8 @@ function boot(): void {
   });
 }
 
-// Start the extension
-boot();
+// Load theme preference and start the extension
+getThemePreference().then((pref) => {
+  setThemeOverride(pref);
+  boot();
+});
