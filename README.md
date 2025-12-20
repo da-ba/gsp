@@ -1,26 +1,3 @@
-src/
-├── api/              # External API clients
-│   └── giphy.ts      # Giphy API
-├── assets/           # Static assets (icons, images)
-├── content/          # Content script
-│   ├── commands/     # Slash command implementations
-│   │   ├── giphy.ts
-│   │   └── registry.ts
-│   ├── picker/       # Picker UI component
-│   │   ├── Picker.ts
-│   │   ├── state.ts
-│   │   └── styles.ts
-│   └── index.ts      # Entry point
-├── options/          # Extension options page
-│   ├── index.ts
-│   └── options.html
-├── utils/            # Shared utilities
-│   ├── dom.ts
-│   ├── math.ts
-│   ├── storage.ts
-│   └── theme.ts
-dist/                 # Build output (load this in Chrome)
-
 # GitHub Slash Palette
 
 Slash commands for GitHub markdown fields. Includes `/giphy` GIF search and insert.
