@@ -16,9 +16,6 @@ Slash commands for GitHub markdown fields. Includes `/giphy` GIF search and inse
 
 See [docs/commands/README.md](docs/commands/README.md) for a full list and usage details.
 
-- [/gsp](docs/commands/gsp/README.md): List and insert available commands
-- [/giphy](docs/commands/giphy/README.md): Search and insert GIFs via Giphy
-
 ---
 
 ## Screenshots
