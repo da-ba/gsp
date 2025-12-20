@@ -62,6 +62,7 @@ export function getBadgeStyles(): Partial<CSSStyleDeclaration> {
     padding: "4px 10px",
     border: dark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(0,0,0,0.14)",
     backgroundColor: dark ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.55)",
+    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
   };
 }
 

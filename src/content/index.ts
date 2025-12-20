@@ -3,7 +3,8 @@
  */
 
 import { isGitHubMarkdownField, getCursorInfo, parseSlashCommand } from "../utils/dom.ts";
-import { onThemeChange } from "../utils/theme.ts";
+import { onThemeChange, setThemeOverride } from "../utils/theme.ts";
+import { getThemePreference } from "../utils/storage.ts";
 import { neg } from "../utils/math.ts";
 import { getCommand } from "./commands/registry.ts";
 import {
@@ -339,5 +340,8 @@ function boot(): void {
   });
 }
 
-// Start the extension
-boot();
+// Load theme preference and start the extension
+getThemePreference().then((pref) => {
+  setThemeOverride(pref);
+  boot();
+});

@@ -23,7 +23,7 @@ async function copyStaticAssets() {
   const manifest = JSON.parse(await readFile(join(srcDir, "manifest.json"), "utf-8"));
   manifest.version = version;
   await writeFile(join(distDir, "manifest.json"), JSON.stringify(manifest, null, 2));
-  
+
   // Copy icons from assets folder
   const icons = ["icon16.png", "icon32.png", "icon48.png", "icon128.png"];
   for (const icon of icons) {
@@ -33,8 +33,8 @@ async function copyStaticAssets() {
       console.warn(`Warning: ${icon} not found`);
     }
   }
-  
-  // Copy options.html
+
+  // Copy options page HTML
   await cp(join(srcDir, "options", "options.html"), join(distDir, "options.html"));
 }
 
@@ -59,7 +59,7 @@ async function bundleContentScript() {
 
 async function bundleOptionsScript() {
   const result = await Bun.build({
-    entrypoints: [join(srcDir, "options", "index.ts")],
+    entrypoints: [join(srcDir, "options", "options.ts")],
     outdir: distDir,
     naming: "options.js",
     minify: !isWatch,
@@ -79,12 +79,12 @@ async function bundleOptionsScript() {
 async function build() {
   const start = performance.now();
   const version = await getVersion();
-  
+
   await cleanDist();
   await copyStaticAssets();
   await bundleContentScript();
   await bundleOptionsScript();
-  
+
   const duration = (performance.now() - start).toFixed(0);
   console.log(`✓ Built gsp-${version} in ${duration}ms → ${distDir}/`);
 }

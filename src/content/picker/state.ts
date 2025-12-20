@@ -27,6 +27,8 @@ export interface PickerState {
   suggestDebounceId: ReturnType<typeof setTimeout> | null;
   /** Generic per-command cache; commands manage their own keys */
   commandCache: Record<string, unknown>;
+  /** Whether the settings panel is currently shown */
+  showingSettings: boolean;
 }
 
 export function createPickerState(): PickerState {
@@ -52,6 +54,7 @@ export function createPickerState(): PickerState {
     lastSuggestQuery: "",
     suggestDebounceId: null,
     commandCache: {},
+    showingSettings: false,
   };
 }
 
@@ -65,6 +68,7 @@ export function resetPickerState(): void {
   state.suggestItems = [];
   state.lastSuggestQuery = "";
   state.activeCommand = "";
+  state.showingSettings = false;
 }
 
 /**

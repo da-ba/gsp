@@ -3,6 +3,7 @@
  */
 
 import { isDarkMode } from "../../utils/theme.ts";
+import type { ThemePreference } from "../../utils/storage.ts";
 import { add, sub, clamp } from "../../utils/math.ts";
 import { getCaretCoordinates } from "../../utils/dom.ts";
 import type { PickerItem } from "../types.ts";
@@ -33,6 +34,8 @@ function createHeader(): HTMLElement {
   header.style.alignItems = "center";
   header.style.justifyContent = "space-between";
   header.style.padding = "10px 10px 8px 10px";
+  header.style.height = "44px"; // Fixed height for header
+  header.style.boxSizing = "border-box";
 
   const left = document.createElement("div");
   left.style.display = "flex";
@@ -54,12 +57,127 @@ function createHeader(): HTMLElement {
   left.appendChild(title);
   left.appendChild(sub);
 
+  // Settings button
+  const settingsBtn = document.createElement("button");
+  settingsBtn.type = "button";
+  settingsBtn.setAttribute("data_settings_btn", "true");
+  settingsBtn.title = "Settings";
+  settingsBtn.style.background = "none";
+  settingsBtn.style.border = "none";
+  settingsBtn.style.cursor = "pointer";
+  settingsBtn.style.padding = "4px";
+  settingsBtn.style.opacity = "0.62";
+  settingsBtn.style.display = "flex";
+  settingsBtn.style.alignItems = "center";
+  settingsBtn.style.justifyContent = "center";
+  settingsBtn.style.color = isDarkMode() ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)";
+  settingsBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+  </svg>`;
+  settingsBtn.addEventListener("mouseenter", () => {
+    settingsBtn.style.opacity = "1";
+  });
+  settingsBtn.addEventListener("mouseleave", () => {
+    settingsBtn.style.opacity = "0.62";
+  });
+  settingsBtn.addEventListener("click", async (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    ev.stopImmediatePropagation();
+    // Show settings panel in the picker body
+    state.showingSettings = true;
+    updateFooter();
+    clearBody();
+    const body = state.bodyEl;
+    if (!body) return;
+
+    const wrap = document.createElement("div");
+    applyStyles(wrap, getCardStyles());
+    wrap.style.display = "flex";
+    wrap.style.flexDirection = "column";
+    wrap.style.gap = "14px";
+
+    // Theme section
+    const themeSection = document.createElement("div");
+    themeSection.style.display = "flex";
+    themeSection.style.flexDirection = "column";
+    themeSection.style.gap = "8px";
+
+    const themeLabel = document.createElement("div");
+    themeLabel.textContent = "Theme";
+    themeLabel.style.fontWeight = "600";
+    themeSection.appendChild(themeLabel);
+
+    const themeButtons = document.createElement("div");
+    themeButtons.style.display = "flex";
+    themeButtons.style.gap = "6px";
+
+    // Dynamically import theme preference utils
+    const { getThemePreference, setThemePreference } = await import("../../utils/storage.ts");
+    const { setThemeOverride } = await import("../../utils/theme.ts");
+    const currentTheme = await getThemePreference();
+    const themes: { value: ThemePreference; label: string }[] = [
+      { value: "system", label: "System" },
+      { value: "light", label: "Light" },
+      { value: "dark", label: "Dark" },
+    ];
+
+    themes.forEach(({ value, label }) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("data_settings_action", "true");
+      btn.textContent = label;
+      applyStyles(btn, getBadgeStyles());
+      btn.style.cursor = "pointer";
+      btn.style.padding = "6px 12px";
+      if (value === currentTheme) {
+        btn.style.opacity = "1";
+        btn.style.fontWeight = "600";
+      }
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await setThemePreference(value);
+        setThemeOverride(value);
+        // Refresh picker styles
+        if (state.pickerEl) applyPickerStyles(state.pickerEl);
+        // Re-render settings panel to update selected state
+        settingsBtn.click();
+      });
+      themeButtons.appendChild(btn);
+    });
+
+    themeSection.appendChild(themeButtons);
+    wrap.appendChild(themeSection);
+
+    // Render settings from each command that provides them
+    const { listCommands, getCommand } = await import("../commands/registry.ts");
+    const commands = listCommands();
+    for (const cmdName of commands) {
+      const cmd = getCommand(cmdName);
+      if (cmd?.renderSettings) {
+        cmd.renderSettings(wrap);
+      }
+    }
+
+    body.appendChild(wrap);
+  });
+
+  // Right side: Esc badge and settings
+  const right = document.createElement("div");
+  right.style.display = "flex";
+  right.style.alignItems = "center";
+  right.style.gap = "8px";
+
   const badge = document.createElement("div");
   badge.textContent = "Esc close";
   applyStyles(badge, getBadgeStyles());
+  right.appendChild(badge);
+  right.appendChild(settingsBtn);
 
   header.appendChild(left);
-  header.appendChild(badge);
+  header.appendChild(right);
 
   state.headerTitleEl = title;
   state.headerSubEl = sub;
@@ -73,14 +191,18 @@ function createHints(): HTMLElement {
   hint.style.flexWrap = "wrap";
   hint.style.gap = "6px";
   hint.style.padding = "0 10px 10px 10px";
+  hint.style.height = "32px"; // Fixed height for hints
+  hint.style.boxSizing = "border-box";
 
   const hintItems = ["Arrows move", "Enter insert", "Esc close"];
 
   hintItems.forEach((t) => {
     const h = document.createElement("div");
     h.textContent = t;
+    // Use badge styles for correct color and background in both modes
     applyStyles(h, getBadgeStyles());
     h.style.padding = "3px 10px";
+    h.style.fontWeight = "600";
     hint.appendChild(h);
   });
 
@@ -92,7 +214,8 @@ function createBody(): HTMLElement {
   const body = document.createElement("div");
   body.style.overflow = "auto";
   body.style.padding = "0 10px 10px 10px";
-  body.style.maxHeight = "280px";
+  body.style.flex = "1 1 auto";
+  body.style.minHeight = "0"; // Required for flex children to be scrollable
   state.bodyEl = body;
   return body;
 }
@@ -100,14 +223,33 @@ function createBody(): HTMLElement {
 function createFooter(): HTMLElement {
   const footer = document.createElement("div");
   footer.style.padding = "10px";
-  footer.style.borderTop = isDarkMode()
-    ? "1px solid rgba(255,255,255,0.10)"
-    : "1px solid rgba(0,0,0,0.10)";
-  footer.style.opacity = "0.62";
   footer.style.fontSize = "12px";
-  footer.textContent = "Tip: type /gsp to list commands";
+  footer.style.display = "flex";
+  footer.style.alignItems = "center";
+  footer.style.justifyContent = "space-between";
+  footer.style.height = "44px"; // Fixed height for footer
+  footer.style.boxSizing = "border-box";
+
   state.footerEl = footer;
+  updateFooter();
   return footer;
+}
+
+/** Update footer content based on current state */
+function updateFooter(): void {
+  const footer = state.footerEl;
+  if (!footer) return;
+
+  footer.textContent = "";
+  const dark = isDarkMode();
+  footer.style.borderTop = dark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.10)";
+
+  // Only show tip in footer now
+  const tip = document.createElement("span");
+  tip.textContent = "Tip: type /gsp to list commands";
+  tip.style.opacity = "0.62";
+  tip.style.color = dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)";
+  footer.appendChild(tip);
 }
 
 function createPickerElement(): HTMLElement {
@@ -123,10 +265,13 @@ function createPickerElement(): HTMLElement {
     const t = target as HTMLElement | null;
     if (!t) return false;
     const btn = t.closest("button") as HTMLButtonElement | null;
-    // Prevent focus steal for grid items and suggestion chips
+    // Prevent focus steal for grid items, suggestion chips, and settings
     return !!(
       btn &&
-      (btn.hasAttribute("data_item_index") || btn.hasAttribute("data_suggest_chip"))
+      (btn.hasAttribute("data_item_index") ||
+        btn.hasAttribute("data_suggest_chip") ||
+        btn.hasAttribute("data_settings_btn") ||
+        btn.hasAttribute("data_settings_action"))
     );
   };
 
@@ -161,10 +306,21 @@ function createPickerElement(): HTMLElement {
     state.mouseDownInPicker = false;
   });
 
+  el.style.display = "flex";
+  el.style.flexDirection = "column";
+  el.style.height = "380px";
+  el.style.maxHeight = "380px";
+  el.style.width = "400px";
+  el.style.maxWidth = "400px";
+  el.style.boxSizing = "border-box";
+
+  // Compose layout: header (44px), hints (32px), body (flex), footer (44px)
   el.appendChild(createHeader());
   el.appendChild(createHints());
-  el.appendChild(createBody());
-  el.appendChild(createFooter());
+  const body = createBody();
+  el.appendChild(body);
+  const footer = createFooter();
+  el.appendChild(footer);
 
   return el;
 }
@@ -238,6 +394,8 @@ export function clearBody(): void {
   ensurePicker();
   if (state.bodyEl) state.bodyEl.textContent = "";
 }
+
+// Settings panel logic is now only referenced by the footer button and always visible from there.
 
 export function setHeader(title: string, subtitle: string): void {
   ensurePicker();
@@ -414,6 +572,9 @@ export function renderGrid(
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "repeat(3, 1fr)";
   grid.style.gap = "8px";
+  // Ensure grid does not overflow the body, so footer is always visible
+  grid.style.maxHeight = "100%";
+  grid.style.overflowY = "auto";
 
   const dark = isDarkMode();
 

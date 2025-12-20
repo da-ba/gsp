@@ -2,7 +2,6 @@
  * Giphy slash command implementation
  */
 
-import { getGiphyKey, setGiphyKey } from "../../utils/storage.ts";
 import { replaceRange } from "../../utils/dom.ts";
 import { add } from "../../utils/math.ts";
 import {
@@ -10,6 +9,8 @@ import {
   getTrendingGifs,
   getTrendingTerms,
   getAutocompleteTags,
+  getGiphyKey,
+  setGiphyKey,
   type GifItem,
 } from "../../api/giphy.ts";
 import { registerCommand, type CommandSpec } from "./registry.ts";
@@ -21,13 +22,19 @@ import {
   clearCommandCache,
   getCardStyles,
   getInputStyles,
-  getButtonStyles,
+  getBadgeStyles,
 } from "../picker/index.ts";
 import type { PickerItem } from "../types.ts";
 
 // Cache keys for Giphy-specific data
 const CACHE_TRENDING_TERMS = "giphy:trendingTerms";
 const CACHE_TRENDING_GIFS = "giphy:trendingGifs";
+
+/** Clear Giphy caches */
+function clearGiphyCaches(): void {
+  clearCommandCache(CACHE_TRENDING_TERMS);
+  clearCommandCache(CACHE_TRENDING_GIFS);
+}
 
 /** Convert GifItem to PickerItem */
 function toPickerItem(gif: GifItem): PickerItem {
@@ -74,9 +81,119 @@ function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): voi
   }
 }
 
+interface GiphyKeyFormOptions {
+  /** Show Clear button (for settings panel) */
+  showClear?: boolean;
+  /** Load and show masked current key */
+  showCurrentKey?: boolean;
+  /** Callback after save completes */
+  onSave?: () => void;
+}
+
 /**
- * Render the Giphy API key setup panel.
- * This is provided to the picker via preflight's renderSetup callback.
+ * Render Giphy API key form (shared between setup panel and settings)
+ */
+function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions = {}): void {
+  const { showClear = false, showCurrentKey = false, onSave } = options;
+
+  const section = document.createElement("div");
+  section.style.display = "flex";
+  section.style.flexDirection = "column";
+  section.style.gap = "8px";
+
+  const label = document.createElement("div");
+  label.textContent = "Giphy API Key";
+  label.style.fontWeight = "600";
+  section.appendChild(label);
+
+  const desc = document.createElement("div");
+  desc.style.fontSize = "12px";
+  desc.style.opacity = "0.72";
+  desc.innerHTML =
+    'Get a free key at <a href="https://developers.giphy.com/dashboard/" target="_blank" style="color:inherit;text-decoration:underline;">developers.giphy.com</a>';
+  section.appendChild(desc);
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "Paste API key…";
+  applyStyles(input, getInputStyles());
+  section.appendChild(input);
+
+  // Load current key if requested
+  if (showCurrentKey) {
+    getGiphyKey().then((key) => {
+      if (key) {
+        input.value = key.slice(0, 4) + "…" + key.slice(-4);
+      }
+    });
+  }
+
+  const btnRow = document.createElement("div");
+  btnRow.style.display = "flex";
+  btnRow.style.gap = "8px";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.setAttribute("data_settings_action", "true");
+  saveBtn.textContent = "Save Key";
+  applyStyles(saveBtn, getBadgeStyles());
+  saveBtn.style.cursor = "pointer";
+  saveBtn.style.padding = "6px 12px";
+  btnRow.appendChild(saveBtn);
+
+  if (showClear) {
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.setAttribute("data_settings_action", "true");
+    clearBtn.textContent = "Clear";
+    applyStyles(clearBtn, getBadgeStyles());
+    clearBtn.style.cursor = "pointer";
+    clearBtn.style.padding = "6px 12px";
+    clearBtn.style.opacity = "0.72";
+    btnRow.appendChild(clearBtn);
+
+    clearBtn.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      await setGiphyKey("");
+      clearGiphyCaches();
+      input.value = "";
+      msg.textContent = "Cleared";
+    });
+  }
+
+  section.appendChild(btnRow);
+
+  const msg = document.createElement("div");
+  msg.style.fontSize = "12px";
+  msg.style.opacity = "0.72";
+  section.appendChild(msg);
+
+  saveBtn.addEventListener("click", async (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const val = input.value.trim();
+    if (val.includes("…")) {
+      msg.textContent = "Enter a new key to save";
+      return;
+    }
+    if (!val) {
+      msg.textContent = "Please enter a key";
+      return;
+    }
+    msg.textContent = "Saving…";
+    await setGiphyKey(val);
+    clearGiphyCaches();
+    msg.textContent = "Saved!";
+    input.value = val.slice(0, 4) + "…" + val.slice(-4);
+    onSave?.();
+  });
+
+  container.appendChild(section);
+}
+
+/**
+ * Render the Giphy API key setup panel (preflight).
  */
 function renderGiphySetupPanel(bodyEl: HTMLElement, onComplete: () => void): void {
   const wrap = document.createElement("div");
@@ -85,49 +202,10 @@ function renderGiphySetupPanel(bodyEl: HTMLElement, onComplete: () => void): voi
   wrap.style.flexDirection = "column";
   wrap.style.gap = "10px";
 
-  const label = document.createElement("div");
-  label.textContent = "Enter your Giphy API key";
-  label.style.fontWeight = "600";
-  wrap.appendChild(label);
-
-  const desc = document.createElement("div");
-  desc.style.fontSize = "12px";
-  desc.style.opacity = "0.72";
-  desc.innerHTML =
-    'Get a free key at <a href="https://developers.giphy.com/dashboard/" target="_blank" style="color:inherit;text-decoration:underline;">developers.giphy.com</a>';
-  wrap.appendChild(desc);
-
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "Paste API key…";
-  applyStyles(input, getInputStyles());
-  wrap.appendChild(input);
-
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.textContent = "Save Key";
-  applyStyles(btn, getButtonStyles());
-  btn.style.marginTop = "4px";
-  wrap.appendChild(btn);
-
-  const msg = document.createElement("div");
-  msg.style.fontSize = "12px";
-  msg.style.opacity = "0.72";
-  wrap.appendChild(msg);
-
-  btn.addEventListener("click", async () => {
-    const val = input.value.trim();
-    if (!val) {
-      msg.textContent = "Please enter a key";
-      return;
-    }
-    msg.textContent = "Saving…";
-    await setGiphyKey(val);
-    // Clear Giphy-specific cache before retrying
-    clearCommandCache(CACHE_TRENDING_TERMS);
-    clearCommandCache(CACHE_TRENDING_GIFS);
-    msg.textContent = "Saved! Loading GIFs…";
-    onComplete();
+  renderGiphyKeyForm(wrap, {
+    showClear: false,
+    showCurrentKey: false,
+    onSave: onComplete,
   });
 
   bodyEl.appendChild(wrap);
@@ -217,6 +295,13 @@ const giphyCommand: CommandSpec = {
   },
 
   noResultsMessage: "No results. Check your Giphy key in extension settings.",
+
+  renderSettings: (container: HTMLElement) => {
+    renderGiphyKeyForm(container, {
+      showClear: true,
+      showCurrentKey: true,
+    });
+  },
 };
 
 // Register the command

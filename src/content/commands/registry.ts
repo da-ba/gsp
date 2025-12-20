@@ -41,6 +41,11 @@ export interface CommandSpec {
   onSelect: (item: PickerItem) => void;
   /** Command-specific "no results" message (optional) */
   noResultsMessage?: string;
+  /**
+   * Render command-specific settings section.
+   * Receives a container element to append settings UI to.
+   */
+  renderSettings?: (container: HTMLElement) => void;
 }
 
 const commandRegistry: Record<string, CommandSpec> = {};
