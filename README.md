@@ -2,6 +2,10 @@
 
 Slash commands for GitHub markdown fields. Includes `/giphy` GIF search and insert.
 
+## Latest Release In Chrome Web Store
+
+[GitHub Slash Palette](https://chromewebstore.google.com/detail/kkcajoojbaidfdnjecjnbeaheepknkpf?utm_source=item-share-cb)
+
 ---
 
 ## Features
