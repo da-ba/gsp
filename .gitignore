@@ -7,9 +7,8 @@ dist/
 # Bundle analysis
 stats.html
 
-# Lock files (use npm)
+# Legacy lock files (use npm)
 bun.lock
-package-lock.json
 
 # IDE
 .idea/
