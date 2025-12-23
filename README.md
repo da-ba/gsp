@@ -32,18 +32,19 @@ See [docs/commands/README.md](docs/commands/README.md) for a full list and usage
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) (v1.0+)
+- [Node.js](https://nodejs.org/) (v18+)
+- npm (comes with Node.js)
 
 ### Setup
 
 ```bash
-bun install
-bun run build
+npm install
+npm run build
 ```
 
 ### Local Installation
 
-1. Build: `bun install && bun run build`
+1. Build: `npm install && npm run build`
 2. Open `chrome://extensions`
 3. Enable Developer mode
 4. Click **Load unpacked**
@@ -59,6 +60,38 @@ bun run build
 4. Use arrow keys to navigate
 5. Press Enter to insert
 6. Press Esc to close
+
+---
+
+## Development
+
+### Watch Mode (HMR)
+
+For development with hot module replacement:
+
+```bash
+npm run dev
+```
+
+This starts Vite in watch mode. Reload the extension in Chrome to see changes.
+
+### Bundle Analysis
+
+To analyze bundle sizes:
+
+```bash
+npm run analyze
+```
+
+This generates a `stats.html` file with interactive bundle visualization.
+
+### End-to-End Tests
+
+Run Playwright E2E tests:
+
+```bash
+npm run test:e2e
+```
 
 ---
 
@@ -95,12 +128,15 @@ docs/                   # Documentation
 │       ├── README.md
 │       ├── giphy/README.md
 │       └── gsp/README.md
+e2e/                    # End-to-end tests (Playwright)
 scripts/                # Build scripts
 │   └── build.ts
 PRIVACY.md              # Privacy policy
 package.json            # Project metadata & scripts
 tsconfig.json           # TypeScript config
+vite.config.ts          # Vite build config
 vitest.config.ts        # Test config
+playwright.config.ts    # E2E test config
 ```
 
 ---
@@ -109,15 +145,18 @@ vitest.config.ts        # Test config
 
 | Script                | Description                        |
 |-----------------------|------------------------------------|
-| `bun run build`       | Production build to `dist/`        |
-| `bun run dev`         | Watch mode for development         |
-| `bun run typecheck`   | TypeScript type checking           |
-| `bun run lint`        | ESLint check                       |
-| `bun run lint:fix`    | ESLint auto-fix                    |
-| `bun run format`      | Format with Prettier                |
-| `bun run format:check`| Check Prettier formatting           |
-| `bun run check`       | Run all checks (type, lint, format, test) |
-| `bun run clean`       | Remove `dist/` folder               |
+| `npm run build`       | Production build to `dist/`        |
+| `npm run dev`         | Watch mode for development (HMR)   |
+| `npm run typecheck`   | TypeScript type checking           |
+| `npm run lint`        | ESLint check                       |
+| `npm run lint:fix`    | ESLint auto-fix                    |
+| `npm run format`      | Format with Prettier               |
+| `npm run format:check`| Check Prettier formatting          |
+| `npm run test`        | Run unit tests (Vitest)            |
+| `npm run test:e2e`    | Run E2E tests (Playwright)         |
+| `npm run analyze`     | Build and generate bundle analysis |
+| `npm run check`       | Run all checks (type, lint, format, test) |
+| `npm run clean`       | Remove `dist/` folder              |
 
 ---
 
@@ -163,6 +202,16 @@ registerCommand("mycommand", myCommand);
 
 **Where is the key stored?**
 > The key is stored using `chrome.storage.local` on your device only.
+
+---
+
+## Tech Stack
+
+- **Build Tool**: [Vite](https://vitejs.dev/) - Fast build tool with HMR support
+- **Testing**: [Vitest](https://vitest.dev/) (unit tests) + [Playwright](https://playwright.dev/) (E2E tests)
+- **Language**: TypeScript
+- **Linting**: ESLint + Prettier
+- **Bundle Analysis**: rollup-plugin-visualizer
 
 ---
 

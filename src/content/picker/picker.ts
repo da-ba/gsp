@@ -3,7 +3,11 @@
  */
 
 import { isDarkMode, setThemeOverride } from "../../utils/theme.ts";
-import { getThemePreference, setThemePreference, type ThemePreference } from "../../utils/storage.ts";
+import {
+  getThemePreference,
+  setThemePreference,
+  type ThemePreference,
+} from "../../utils/storage.ts";
 import { add, sub, clamp } from "../../utils/math.ts";
 import { getCaretCoordinates } from "../../utils/dom.ts";
 import type { PickerItem } from "../types.ts";
