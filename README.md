@@ -32,19 +32,18 @@ See [docs/commands/README.md](docs/commands/README.md) for a full list and usage
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18+)
-- npm (comes with Node.js)
+- [Bun](https://bun.sh/) (v1.0+)
 
 ### Setup
 
 ```bash
-npm install
-npm run build
+bun install
+bun run build
 ```
 
 ### Local Installation
 
-1. Build: `npm install && npm run build`
+1. Build: `bun install && bun run build`
 2. Open `chrome://extensions`
 3. Enable Developer mode
 4. Click **Load unpacked**
@@ -65,32 +64,32 @@ npm run build
 
 ## Development
 
-### Watch Mode (HMR)
+### Watch Mode
 
-For development with hot module replacement:
+For development with automatic rebuilding:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
-This starts Vite in watch mode. Reload the extension in Chrome to see changes.
+This starts Bun in watch mode. Reload the extension in Chrome to see changes.
 
 ### Bundle Analysis
 
-To analyze bundle sizes:
+To check bundle sizes:
 
 ```bash
-npm run analyze
+bun run analyze
 ```
 
-This generates a `stats.html` file with interactive bundle visualization.
+This reports the size of each bundle after building.
 
 ### End-to-End Tests
 
 Run Playwright E2E tests:
 
 ```bash
-npm run test:e2e
+bun run test:e2e
 ```
 
 ---
@@ -108,7 +107,7 @@ src/
 │   │   ├── index.ts
 │   │   ├── registry.ts
 │   │   └── registry.test.ts
-│   ├── picker/         # Picker UI
+│   ├── picker/         # Picker UI (supports .tsx files)
 │   │   ├── picker.ts
 │   │   ├── state.ts
 │   │   └── styles.ts
@@ -134,7 +133,6 @@ scripts/                # Build scripts
 PRIVACY.md              # Privacy policy
 package.json            # Project metadata & scripts
 tsconfig.json           # TypeScript config
-vite.config.ts          # Vite build config
 vitest.config.ts        # Test config
 playwright.config.ts    # E2E test config
 ```
@@ -145,18 +143,18 @@ playwright.config.ts    # E2E test config
 
 | Script                | Description                        |
 |-----------------------|------------------------------------|
-| `npm run build`       | Production build to `dist/`        |
-| `npm run dev`         | Watch mode for development (HMR)   |
-| `npm run typecheck`   | TypeScript type checking           |
-| `npm run lint`        | ESLint check                       |
-| `npm run lint:fix`    | ESLint auto-fix                    |
-| `npm run format`      | Format with Prettier               |
-| `npm run format:check`| Check Prettier formatting          |
-| `npm run test`        | Run unit tests (Vitest)            |
-| `npm run test:e2e`    | Run E2E tests (Playwright)         |
-| `npm run analyze`     | Build and generate bundle analysis |
-| `npm run check`       | Run all checks (type, lint, format, test) |
-| `npm run clean`       | Remove `dist/` folder              |
+| `bun run build`       | Production build to `dist/`        |
+| `bun run dev`         | Watch mode for development         |
+| `bun run typecheck`   | TypeScript type checking           |
+| `bun run lint`        | ESLint check                       |
+| `bun run lint:fix`    | ESLint auto-fix                    |
+| `bun run format`      | Format with Prettier               |
+| `bun run format:check`| Check Prettier formatting          |
+| `bun run test`        | Run unit tests (Vitest)            |
+| `bun run test:e2e`    | Run E2E tests (Playwright)         |
+| `bun run analyze`     | Build and report bundle sizes      |
+| `bun run check`       | Run all checks (type, lint, format, test) |
+| `bun run clean`       | Remove `dist/` folder              |
 
 ---
 
@@ -207,11 +205,11 @@ registerCommand("mycommand", myCommand);
 
 ## Tech Stack
 
-- **Build Tool**: [Vite](https://vitejs.dev/) - Fast build tool with HMR support
+- **Build Tool**: [Bun](https://bun.sh/) - Fast all-in-one JavaScript runtime
+- **UI Support**: React/JSX available for components
 - **Testing**: [Vitest](https://vitest.dev/) (unit tests) + [Playwright](https://playwright.dev/) (E2E tests)
-- **Language**: TypeScript
+- **Language**: TypeScript with JSX support
 - **Linting**: ESLint + Prettier
-- **Bundle Analysis**: rollup-plugin-visualizer
 
 ---
 

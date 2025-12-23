@@ -4,10 +4,7 @@ node_modules/
 # Build output
 dist/
 
-# Bundle analysis
-stats.html
-
-# Legacy lock files (use npm)
+# Bun
 bun.lock
 
 # IDE
