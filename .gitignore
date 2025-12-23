@@ -4,8 +4,12 @@ node_modules/
 # Build output
 dist/
 
-# Bun
+# Bundle analysis
+stats.html
+
+# Lock files (use npm)
 bun.lock
+package-lock.json
 
 # IDE
 .idea/
@@ -19,3 +23,8 @@ Thumbs.db
 
 # Debug
 *.log
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

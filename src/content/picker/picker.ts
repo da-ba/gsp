@@ -2,12 +2,13 @@
  * Picker UI component
  */
 
-import { isDarkMode } from "../../utils/theme.ts";
-import type { ThemePreference } from "../../utils/storage.ts";
+import { isDarkMode, setThemeOverride } from "../../utils/theme.ts";
+import { getThemePreference, setThemePreference, type ThemePreference } from "../../utils/storage.ts";
 import { add, sub, clamp } from "../../utils/math.ts";
 import { getCaretCoordinates } from "../../utils/dom.ts";
 import type { PickerItem } from "../types.ts";
 import { state, resetPickerState } from "./state.ts";
+import { listCommands, getCommand } from "../commands/registry.ts";
 import {
   applyPickerStyles,
   getBadgeStyles,
@@ -113,9 +114,7 @@ function createHeader(): HTMLElement {
     themeButtons.style.display = "flex";
     themeButtons.style.gap = "6px";
 
-    // Dynamically import theme preference utils
-    const { getThemePreference, setThemePreference } = await import("../../utils/storage.ts");
-    const { setThemeOverride } = await import("../../utils/theme.ts");
+    // Get current theme preference
     const currentTheme = await getThemePreference();
     const themes: { value: ThemePreference; label: string }[] = [
       { value: "system", label: "System" },
@@ -152,7 +151,6 @@ function createHeader(): HTMLElement {
     wrap.appendChild(themeSection);
 
     // Render settings from each command that provides them
-    const { listCommands, getCommand } = await import("../commands/registry.ts");
     const commands = listCommands();
     for (const cmdName of commands) {
       const cmd = getCommand(cmdName);
