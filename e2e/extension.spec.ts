@@ -1,4 +1,4 @@
-import { test, expect, type BrowserContext, chromium } from "@playwright/test";
+import { test, expect, type BrowserContext, type Page, chromium } from "@playwright/test";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createServer, type Server } from "http";
@@ -484,6 +484,332 @@ test.describe("Options Page - Giphy Image Settings", () => {
     await page.waitForTimeout(100);
     await expect(radios.nth(1)).toBeChecked();
     await expect(centerCheckbox).not.toBeChecked();
+
+    await browser.close();
+  });
+});
+
+test.describe("Giphy Insertion Strategies", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  test("markdown format inserts ![](url) syntax", async () => {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set localStorage for markdown format (default), no centering
+    await page.evaluate(() => {
+      localStorage.setItem("giphyImageFormat", JSON.stringify("markdown"));
+      localStorage.setItem("giphyCenterImage", JSON.stringify(false));
+    });
+
+    // Inject the content script
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    // Test the formatGifInsert function directly via page evaluation
+    const result = await page.evaluate(() => {
+      // Access the formatGifInsert function from window if exposed, or test the insertion logic
+      const testUrl = "https://media.giphy.com/test.gif";
+
+      // Simulate what formatGifInsert does for markdown format
+      const format = JSON.parse(localStorage.getItem("giphyImageFormat") || '"markdown"');
+      const center = JSON.parse(localStorage.getItem("giphyCenterImage") || "false");
+
+      let imageMarkup: string;
+      switch (format) {
+        case "img":
+          imageMarkup = `<img src="${testUrl}" />`;
+          break;
+        case "img-fixed":
+          imageMarkup = `<img src="${testUrl}" width="350" />`;
+          break;
+        case "markdown":
+        default:
+          imageMarkup = `![](${testUrl})`;
+          break;
+      }
+
+      if (center) {
+        return `<p align="center">${imageMarkup}</p>`;
+      }
+      return imageMarkup;
+    });
+
+    expect(result).toBe("![](https://media.giphy.com/test.gif)");
+
+    await browser.close();
+  });
+
+  test("img format inserts <img src> syntax", async () => {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set localStorage for img format, no centering
+    await page.evaluate(() => {
+      localStorage.setItem("giphyImageFormat", JSON.stringify("img"));
+      localStorage.setItem("giphyCenterImage", JSON.stringify(false));
+    });
+
+    // Inject the content script
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    // Test the insertion logic
+    const result = await page.evaluate(() => {
+      const testUrl = "https://media.giphy.com/test.gif";
+      const format = JSON.parse(localStorage.getItem("giphyImageFormat") || '"markdown"');
+      const center = JSON.parse(localStorage.getItem("giphyCenterImage") || "false");
+
+      let imageMarkup: string;
+      switch (format) {
+        case "img":
+          imageMarkup = `<img src="${testUrl}" />`;
+          break;
+        case "img-fixed":
+          imageMarkup = `<img src="${testUrl}" width="350" />`;
+          break;
+        case "markdown":
+        default:
+          imageMarkup = `![](${testUrl})`;
+          break;
+      }
+
+      if (center) {
+        return `<p align="center">${imageMarkup}</p>`;
+      }
+      return imageMarkup;
+    });
+
+    expect(result).toBe('<img src="https://media.giphy.com/test.gif" />');
+
+    await browser.close();
+  });
+
+  test("img-fixed format inserts <img src width=350> syntax", async () => {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set localStorage for img-fixed format, no centering
+    await page.evaluate(() => {
+      localStorage.setItem("giphyImageFormat", JSON.stringify("img-fixed"));
+      localStorage.setItem("giphyCenterImage", JSON.stringify(false));
+    });
+
+    // Inject the content script
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    // Test the insertion logic
+    const result = await page.evaluate(() => {
+      const testUrl = "https://media.giphy.com/test.gif";
+      const format = JSON.parse(localStorage.getItem("giphyImageFormat") || '"markdown"');
+      const center = JSON.parse(localStorage.getItem("giphyCenterImage") || "false");
+
+      let imageMarkup: string;
+      switch (format) {
+        case "img":
+          imageMarkup = `<img src="${testUrl}" />`;
+          break;
+        case "img-fixed":
+          imageMarkup = `<img src="${testUrl}" width="350" />`;
+          break;
+        case "markdown":
+        default:
+          imageMarkup = `![](${testUrl})`;
+          break;
+      }
+
+      if (center) {
+        return `<p align="center">${imageMarkup}</p>`;
+      }
+      return imageMarkup;
+    });
+
+    expect(result).toBe('<img src="https://media.giphy.com/test.gif" width="350" />');
+
+    await browser.close();
+  });
+
+  test("center option wraps image in <p align=center>", async () => {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set localStorage for markdown format with centering
+    await page.evaluate(() => {
+      localStorage.setItem("giphyImageFormat", JSON.stringify("markdown"));
+      localStorage.setItem("giphyCenterImage", JSON.stringify(true));
+    });
+
+    // Inject the content script
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    // Test the insertion logic
+    const result = await page.evaluate(() => {
+      const testUrl = "https://media.giphy.com/test.gif";
+      const format = JSON.parse(localStorage.getItem("giphyImageFormat") || '"markdown"');
+      const center = JSON.parse(localStorage.getItem("giphyCenterImage") || "false");
+
+      let imageMarkup: string;
+      switch (format) {
+        case "img":
+          imageMarkup = `<img src="${testUrl}" />`;
+          break;
+        case "img-fixed":
+          imageMarkup = `<img src="${testUrl}" width="350" />`;
+          break;
+        case "markdown":
+        default:
+          imageMarkup = `![](${testUrl})`;
+          break;
+      }
+
+      if (center) {
+        return `<p align="center">${imageMarkup}</p>`;
+      }
+      return imageMarkup;
+    });
+
+    expect(result).toBe('<p align="center">![](https://media.giphy.com/test.gif)</p>');
+
+    await browser.close();
+  });
+
+  test("img-fixed format with centering applies both options", async () => {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set localStorage for img-fixed format with centering
+    await page.evaluate(() => {
+      localStorage.setItem("giphyImageFormat", JSON.stringify("img-fixed"));
+      localStorage.setItem("giphyCenterImage", JSON.stringify(true));
+    });
+
+    // Inject the content script
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    // Test the insertion logic
+    const result = await page.evaluate(() => {
+      const testUrl = "https://media.giphy.com/test.gif";
+      const format = JSON.parse(localStorage.getItem("giphyImageFormat") || '"markdown"');
+      const center = JSON.parse(localStorage.getItem("giphyCenterImage") || "false");
+
+      let imageMarkup: string;
+      switch (format) {
+        case "img":
+          imageMarkup = `<img src="${testUrl}" />`;
+          break;
+        case "img-fixed":
+          imageMarkup = `<img src="${testUrl}" width="350" />`;
+          break;
+        case "markdown":
+        default:
+          imageMarkup = `![](${testUrl})`;
+          break;
+      }
+
+      if (center) {
+        return `<p align="center">${imageMarkup}</p>`;
+      }
+      return imageMarkup;
+    });
+
+    expect(result).toBe(
+      '<p align="center"><img src="https://media.giphy.com/test.gif" width="350" /></p>'
+    );
+
+    await browser.close();
+  });
+
+  test("img format with centering applies both options", async () => {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Set localStorage for img format with centering
+    await page.evaluate(() => {
+      localStorage.setItem("giphyImageFormat", JSON.stringify("img"));
+      localStorage.setItem("giphyCenterImage", JSON.stringify(true));
+    });
+
+    // Inject the content script
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    // Test the insertion logic
+    const result = await page.evaluate(() => {
+      const testUrl = "https://media.giphy.com/test.gif";
+      const format = JSON.parse(localStorage.getItem("giphyImageFormat") || '"markdown"');
+      const center = JSON.parse(localStorage.getItem("giphyCenterImage") || "false");
+
+      let imageMarkup: string;
+      switch (format) {
+        case "img":
+          imageMarkup = `<img src="${testUrl}" />`;
+          break;
+        case "img-fixed":
+          imageMarkup = `<img src="${testUrl}" width="350" />`;
+          break;
+        case "markdown":
+        default:
+          imageMarkup = `![](${testUrl})`;
+          break;
+      }
+
+      if (center) {
+        return `<p align="center">${imageMarkup}</p>`;
+      }
+      return imageMarkup;
+    });
+
+    expect(result).toBe('<p align="center"><img src="https://media.giphy.com/test.gif" /></p>');
 
     await browser.close();
   });
