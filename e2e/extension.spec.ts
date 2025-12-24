@@ -120,10 +120,6 @@ test.describe("GitHub Integration", () => {
   });
 
   test("/giphy command shows picker with GIFs", async () => {
-    // Skip if GIPHY_API_KEY is not set
-    const hasGiphyKey = process.env.GIPHY_API_KEY && process.env.GIPHY_API_KEY.length > 0;
-    test.skip(!hasGiphyKey, "GIPHY_API_KEY environment variable required for this test");
-
     const context = await launchBrowserWithExtension();
     const page = await context.newPage();
 
@@ -171,10 +167,6 @@ test.describe("GitHub Integration", () => {
   });
 
   test("/giphy command with search term shows results", async () => {
-    // Skip if GIPHY_API_KEY is not set
-    const hasGiphyKey = process.env.GIPHY_API_KEY && process.env.GIPHY_API_KEY.length > 0;
-    test.skip(!hasGiphyKey, "GIPHY_API_KEY environment variable required for this test");
-
     const context = await launchBrowserWithExtension();
     const page = await context.newPage();
 

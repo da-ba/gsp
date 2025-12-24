@@ -155,7 +155,7 @@ jobs:
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" bun run test:e2e
 
       - name: Upload Playwright report
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report

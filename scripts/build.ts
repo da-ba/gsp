@@ -1,51 +1,31 @@
 import { watch } from "fs";
 import { cp, rm, mkdir, readFile, writeFile, stat } from "fs/promises";
 import { join } from "path";
+import { config } from "dotenv";
+import { z } from "zod";
+import { createEnv } from "@t3-oss/env-core";
 
 const isWatch = process.argv.includes("--watch");
 const srcDir = "src";
 const distDir = "dist";
 
-// Load environment variables from .env file
-async function loadEnvFile(): Promise<Record<string, string>> {
-  const env: Record<string, string> = {};
+// Load and validate environment variables using t3-env
+function loadEnv() {
+  // Load .env files first
+  config({ path: ".env.local" });
+  config({ path: ".env" });
   
-  // Try to load .env.local first (local overrides), then .env
-  const envFiles = [".env.local", ".env"];
-  
-  for (const envFile of envFiles) {
-    try {
-      const content = await readFile(envFile, "utf-8");
-      for (const line of content.split("\n")) {
-        const trimmed = line.trim();
-        // Skip comments and empty lines
-        if (!trimmed || trimmed.startsWith("#")) continue;
-        
-        const [key, ...valueParts] = trimmed.split("=");
-        if (key) {
-          const value = valueParts.join("=").trim();
-          // Remove surrounding quotes if present (matching pairs only)
-          let unquoted = value;
-          if ((value.startsWith('"') && value.endsWith('"')) ||
-              (value.startsWith("'") && value.endsWith("'"))) {
-            unquoted = value.slice(1, -1);
-          }
-          env[key.trim()] = unquoted;
-        }
-      }
-      // Only load the first found env file
-      break;
-    } catch {
-      // File doesn't exist, continue to next
-    }
-  }
-  
-  return env;
-}
-
-// Get environment variable with fallback to process.env
-function getEnvVar(fileEnv: Record<string, string>, key: string, defaultValue: string = ""): string {
-  return process.env[key] ?? fileEnv[key] ?? defaultValue;
+  // Validate using t3-env with zod
+  return createEnv({
+    clientPrefix: "GIPHY_",
+    client: {
+      GIPHY_API_KEY: z.string().default(""),
+    },
+    runtimeEnv: {
+      GIPHY_API_KEY: process.env.GIPHY_API_KEY ?? "",
+    },
+    emptyStringAsUndefined: false,
+  });
 }
 
 // Read version from package.json (single source of truth)
@@ -154,13 +134,12 @@ async function build() {
   const start = performance.now();
   const version = await getVersion();
   
-  // Load environment variables
-  const fileEnv = await loadEnvFile();
-  const giphyApiKey = getEnvVar(fileEnv, "GIPHY_API_KEY", "");
+  // Load and validate environment variables using t3-env
+  const env = loadEnv();
   
   // Create define map for build-time replacement
   const envDefines: Record<string, string> = {
-    "process.env.GIPHY_API_KEY": JSON.stringify(giphyApiKey),
+    "process.env.GIPHY_API_KEY": JSON.stringify(env.GIPHY_API_KEY),
   };
 
   await cleanDist();
