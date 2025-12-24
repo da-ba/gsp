@@ -10,6 +10,8 @@ export default defineConfig({
   use: {
     baseURL: "https://github.com",
     trace: "on-first-retry",
+    // Use headed mode always (required for Chrome extension testing)
+    headless: false,
   },
   projects: [
     {
