@@ -116,6 +116,8 @@ test.describe("Slash Commands", () => {
   }
 
   test("/gsp command shows picker", async () => {
+    // Use chromium.launch() instead of launchBrowserWithExtension() because
+    // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
@@ -156,6 +158,8 @@ test.describe("Slash Commands", () => {
   });
 
   test("/giphy command shows picker with GIFs or setup", async () => {
+    // Use chromium.launch() instead of launchBrowserWithExtension() because
+    // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
@@ -202,6 +206,8 @@ test.describe("Slash Commands", () => {
   });
 
   test("/giphy command with search term shows results", async () => {
+    // Use chromium.launch() instead of launchBrowserWithExtension() because
+    // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
@@ -242,6 +248,8 @@ test.describe("Slash Commands", () => {
   });
 
   test("picker closes on Escape key", async () => {
+    // Use chromium.launch() instead of launchBrowserWithExtension() because
+    // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
