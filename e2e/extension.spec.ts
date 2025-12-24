@@ -1,6 +1,8 @@
 import { test, expect, type BrowserContext, chromium } from "@playwright/test";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { createServer, type Server } from "http";
+import { readFile } from "fs/promises";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,6 +26,25 @@ async function launchBrowserWithExtension(): Promise<BrowserContext> {
     ],
   });
   return context;
+}
+
+// Helper to start a local test server
+async function startTestServer(): Promise<{ server: Server; port: number }> {
+  const testPagePath = join(__dirname, "fixtures", "test-page.html");
+  const testPageContent = await readFile(testPagePath, "utf-8");
+
+  return new Promise((resolve) => {
+    const server = createServer((req, res) => {
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.end(testPageContent);
+    });
+
+    server.listen(0, () => {
+      const address = server.address();
+      const port = typeof address === "object" && address ? address.port : 0;
+      resolve({ server, port });
+    });
+  });
 }
 
 test.describe("Extension Build", () => {
@@ -76,34 +97,49 @@ test.describe("Extension Loading", () => {
   });
 });
 
-test.describe("GitHub Integration", () => {
-  test("/gsp command shows picker in PR comment field", async () => {
-    const context = await launchBrowserWithExtension();
+test.describe("Slash Commands", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    testServer = await startTestServer();
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Awaited<ReturnType<BrowserContext["newPage"]>>) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  test("/gsp command shows picker", async () => {
+    const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
-    // Navigate to the PR page
-    await page.goto("https://github.com/da-ba/gsp/pull/1");
+    // Navigate to the local test page
+    await page.goto(`http://localhost:${testServer.port}/`);
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
-    // Find the comment textarea - try to find the comment box
-    const commentTextarea = page.locator("textarea[name='comment[body]']").first();
+    // Inject the content script
+    await injectContentScript(page);
 
-    // Check if textarea exists (user might not be logged in)
-    const textareaCount = await commentTextarea.count();
-    if (textareaCount === 0) {
-      // Skip this test if not logged in to GitHub
-      test.skip(true, "GitHub login required for this test");
-      await context.close();
-      return;
-    }
+    // Give the script time to initialize
+    await page.waitForTimeout(500);
+
+    // Find the test textarea
+    const textarea = page.locator("#test-textarea");
+    await expect(textarea).toBeVisible();
 
     // Click on the textarea to focus it
-    await commentTextarea.click();
+    await textarea.click();
 
     // Type /gsp command
-    await commentTextarea.fill("/gsp");
+    await textarea.fill("/gsp");
 
     // Wait for the picker to appear
     await page.waitForTimeout(500);
@@ -119,32 +155,31 @@ test.describe("GitHub Integration", () => {
     await context.close();
   });
 
-  test("/giphy command shows picker with GIFs", async () => {
-    const context = await launchBrowserWithExtension();
+  test("/giphy command shows picker with GIFs or setup", async () => {
+    const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
-    // Navigate to the PR page
-    await page.goto("https://github.com/da-ba/gsp/pull/1");
+    // Navigate to the local test page
+    await page.goto(`http://localhost:${testServer.port}/`);
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
-    // Find the comment textarea
-    const commentTextarea = page.locator("textarea[name='comment[body]']").first();
+    // Inject the content script
+    await injectContentScript(page);
 
-    // Check if textarea exists (user might not be logged in)
-    const textareaCount = await commentTextarea.count();
-    if (textareaCount === 0) {
-      test.skip(true, "GitHub login required for this test");
-      await context.close();
-      return;
-    }
+    // Give the script time to initialize
+    await page.waitForTimeout(500);
+
+    // Find the test textarea
+    const textarea = page.locator("#test-textarea");
+    await expect(textarea).toBeVisible();
 
     // Click on the textarea to focus it
-    await commentTextarea.click();
+    await textarea.click();
 
     // Type /giphy command
-    await commentTextarea.fill("/giphy");
+    await textarea.fill("/giphy");
 
     // Wait for the picker to appear
     await page.waitForTimeout(1000);
@@ -167,31 +202,30 @@ test.describe("GitHub Integration", () => {
   });
 
   test("/giphy command with search term shows results", async () => {
-    const context = await launchBrowserWithExtension();
+    const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
-    // Navigate to the PR page
-    await page.goto("https://github.com/da-ba/gsp/pull/1");
+    // Navigate to the local test page
+    await page.goto(`http://localhost:${testServer.port}/`);
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
-    // Find the comment textarea
-    const commentTextarea = page.locator("textarea[name='comment[body]']").first();
+    // Inject the content script
+    await injectContentScript(page);
 
-    // Check if textarea exists
-    const textareaCount = await commentTextarea.count();
-    if (textareaCount === 0) {
-      test.skip(true, "GitHub login required for this test");
-      await context.close();
-      return;
-    }
+    // Give the script time to initialize
+    await page.waitForTimeout(500);
+
+    // Find the test textarea
+    const textarea = page.locator("#test-textarea");
+    await expect(textarea).toBeVisible();
 
     // Click on the textarea to focus it
-    await commentTextarea.click();
+    await textarea.click();
 
     // Type /giphy with a search term
-    await commentTextarea.fill("/giphy cats");
+    await textarea.fill("/giphy cats");
 
     // Wait for the picker to appear and load results
     await page.waitForTimeout(1500);
@@ -207,23 +241,40 @@ test.describe("GitHub Integration", () => {
     await context.close();
   });
 
-  test("extension content script injects on GitHub", async () => {
-    const context = await launchBrowserWithExtension();
+  test("picker closes on Escape key", async () => {
+    const context = await chromium.launch({ headless: false });
     const page = await context.newPage();
 
-    // Navigate to any GitHub page
-    await page.goto("https://github.com/da-ba/gsp");
+    // Navigate to the local test page
+    await page.goto(`http://localhost:${testServer.port}/`);
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
-    // Give the extension time to inject
-    await page.waitForTimeout(1000);
+    // Inject the content script
+    await injectContentScript(page);
 
-    // Check that the content script is running by looking for any textarea
-    // that has been bound (this verifies the extension loaded without errors)
-    const bodyExists = await page.locator("body").count();
-    expect(bodyExists).toBe(1);
+    // Give the script time to initialize
+    await page.waitForTimeout(500);
+
+    // Find the test textarea
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    // Type /gsp command to open picker
+    await textarea.fill("/gsp");
+    await page.waitForTimeout(500);
+
+    // Verify picker is open
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Verify picker is closed
+    await expect(picker).not.toBeVisible();
 
     await context.close();
   });
