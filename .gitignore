@@ -25,3 +25,7 @@ Thumbs.db
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Local environment overrides (not checked in)
+.env.local
+.env.*.local

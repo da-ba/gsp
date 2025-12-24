@@ -7,10 +7,18 @@ import { getStorageValue, setStorageValue } from "../utils/storage.ts";
 // Storage key for Giphy API key
 const STORAGE_KEY_GIPHY_API = "giphyApiKey";
 
-/** Get Giphy API key from storage */
+// Build-time injected API key (from environment variable)
+// This is replaced at build time by Bun's define feature
+declare const process: { env: { GIPHY_API_KEY?: string } };
+const BUILD_TIME_GIPHY_KEY =
+  typeof process !== "undefined" ? (process.env.GIPHY_API_KEY ?? "") : "";
+
+/** Get Giphy API key from storage, falling back to build-time key */
 export async function getGiphyKey(): Promise<string> {
-  const val = await getStorageValue<string>(STORAGE_KEY_GIPHY_API, "");
-  return val.trim();
+  const storedKey = await getStorageValue<string>(STORAGE_KEY_GIPHY_API, "");
+  const key = storedKey.trim();
+  // Return stored key if set, otherwise use build-time key
+  return key || BUILD_TIME_GIPHY_KEY;
 }
 
 /** Set Giphy API key in storage */

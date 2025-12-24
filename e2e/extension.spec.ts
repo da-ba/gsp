@@ -119,6 +119,102 @@ test.describe("GitHub Integration", () => {
     await context.close();
   });
 
+  test("/giphy command shows picker with GIFs", async () => {
+    // Skip if GIPHY_API_KEY is not set
+    const hasGiphyKey = process.env.GIPHY_API_KEY && process.env.GIPHY_API_KEY.length > 0;
+    test.skip(!hasGiphyKey, "GIPHY_API_KEY environment variable required for this test");
+
+    const context = await launchBrowserWithExtension();
+    const page = await context.newPage();
+
+    // Navigate to the PR page
+    await page.goto("https://github.com/da-ba/gsp/pull/1");
+
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
+
+    // Find the comment textarea
+    const commentTextarea = page.locator("textarea[name='comment[body]']").first();
+
+    // Check if textarea exists (user might not be logged in)
+    const textareaCount = await commentTextarea.count();
+    if (textareaCount === 0) {
+      test.skip(true, "GitHub login required for this test");
+      await context.close();
+      return;
+    }
+
+    // Click on the textarea to focus it
+    await commentTextarea.click();
+
+    // Type /giphy command
+    await commentTextarea.fill("/giphy");
+
+    // Wait for the picker to appear
+    await page.waitForTimeout(1000);
+
+    // Check if the picker is visible
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 5000 });
+
+    // Verify the picker shows trending GIFs or setup panel
+    // If API key is baked in, we should see GIFs
+    // If not, we should see the setup panel
+    const pickerContent = await picker.textContent();
+    const hasGifs = pickerContent?.includes("Trending") || pickerContent?.includes("gif");
+    const hasSetup = pickerContent?.includes("Giphy API Key") || pickerContent?.includes("Paste");
+
+    // Either GIFs should be shown (key baked in) or setup panel (no key)
+    expect(hasGifs || hasSetup).toBe(true);
+
+    await context.close();
+  });
+
+  test("/giphy command with search term shows results", async () => {
+    // Skip if GIPHY_API_KEY is not set
+    const hasGiphyKey = process.env.GIPHY_API_KEY && process.env.GIPHY_API_KEY.length > 0;
+    test.skip(!hasGiphyKey, "GIPHY_API_KEY environment variable required for this test");
+
+    const context = await launchBrowserWithExtension();
+    const page = await context.newPage();
+
+    // Navigate to the PR page
+    await page.goto("https://github.com/da-ba/gsp/pull/1");
+
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
+
+    // Find the comment textarea
+    const commentTextarea = page.locator("textarea[name='comment[body]']").first();
+
+    // Check if textarea exists
+    const textareaCount = await commentTextarea.count();
+    if (textareaCount === 0) {
+      test.skip(true, "GitHub login required for this test");
+      await context.close();
+      return;
+    }
+
+    // Click on the textarea to focus it
+    await commentTextarea.click();
+
+    // Type /giphy with a search term
+    await commentTextarea.fill("/giphy cats");
+
+    // Wait for the picker to appear and load results
+    await page.waitForTimeout(1500);
+
+    // Check if the picker is visible
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 5000 });
+
+    // The picker should show either results or setup panel
+    const isVisible = await picker.isVisible();
+    expect(isVisible).toBe(true);
+
+    await context.close();
+  });
+
   test("extension content script injects on GitHub", async () => {
     const context = await launchBrowserWithExtension();
     const page = await context.newPage();

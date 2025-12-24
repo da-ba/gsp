@@ -141,10 +141,17 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Rebuild with Giphy API key for E2E
+        env:
+          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
+        run: bun run build
+
       - name: Install Playwright browsers
         run: bunx playwright install chromium --with-deps
 
       - name: Run E2E tests (headed mode with xvfb)
+        env:
+          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" bun run test:e2e
 
       - name: Upload Playwright report
