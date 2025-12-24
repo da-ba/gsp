@@ -4,7 +4,11 @@
 
 import React from "react";
 import { setThemeOverride } from "../../../utils/theme.ts";
-import { getThemePreference, setThemePreference, type ThemePreference } from "../../../utils/storage.ts";
+import {
+  getThemePreference,
+  setThemePreference,
+  type ThemePreference,
+} from "../../../utils/storage.ts";
 import { listCommands, getCommand } from "../../commands/registry.ts";
 import { getCardStyles, getBadgeStyles, applyPickerStyles } from "../styles.ts";
 import { state } from "../state.ts";

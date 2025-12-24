@@ -51,7 +51,11 @@ export function GiphyOptionsSection() {
       <div className="section-content">
         <div className="muted">
           Giphy requires an API key. Get a free key at{" "}
-          <a href="https://developers.giphy.com/dashboard/" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://developers.giphy.com/dashboard/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             developers.giphy.com
           </a>
         </div>

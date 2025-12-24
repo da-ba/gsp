@@ -40,10 +40,10 @@ function SkeletonBox({ styles }: { styles: Partial<CSSStyleDeclaration> }) {
     if (!el) return;
 
     try {
-      const animation = el.animate(
-        [{ opacity: 0.55 }, { opacity: 0.9 }, { opacity: 0.55 }],
-        { duration: 900, iterations: Infinity }
-      );
+      const animation = el.animate([{ opacity: 0.55 }, { opacity: 0.9 }, { opacity: 0.55 }], {
+        duration: 900,
+        iterations: Infinity,
+      });
       return () => animation.cancel();
     } catch {
       // Animation not supported
