@@ -4,8 +4,9 @@ node_modules/
 # Build output
 dist/
 
-# Bun
+# Lock files (using Bun)
 bun.lock
+package-lock.json
 
 # IDE
 .idea/
