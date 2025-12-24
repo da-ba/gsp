@@ -11,7 +11,11 @@ import {
   getAutocompleteTags,
   getGiphyKey,
   setGiphyKey,
+  getGiphyImageFormat,
+  getGiphyCenterImage,
+  formatGifInsert,
   type GifItem,
+  type GiphyImageFormat,
 } from "../../api/giphy.ts";
 import { registerCommand, type CommandSpec } from "./registry.ts";
 import {
@@ -29,6 +33,8 @@ import type { PickerItem } from "../types.ts";
 // Cache keys for Giphy-specific data
 const CACHE_TRENDING_TERMS = "giphy:trendingTerms";
 const CACHE_TRENDING_GIFS = "giphy:trendingGifs";
+const CACHE_IMAGE_FORMAT = "giphy:imageFormat";
+const CACHE_CENTER_IMAGE = "giphy:centerImage";
 
 /** Clear Giphy caches */
 function clearGiphyCaches(): void {
@@ -50,7 +56,34 @@ function fromPickerItem(item: PickerItem): GifItem {
   return item.data as GifItem;
 }
 
-function insertGifMarkdown(url: string): void {
+/** Get cached image format settings, loading from storage if needed */
+async function getCachedImageSettings(): Promise<{
+  format: GiphyImageFormat;
+  center: boolean;
+}> {
+  let format = getCommandCache<GiphyImageFormat>(CACHE_IMAGE_FORMAT);
+  let center = getCommandCache<boolean>(CACHE_CENTER_IMAGE);
+
+  if (format === null) {
+    format = await getGiphyImageFormat();
+    setCommandCache(CACHE_IMAGE_FORMAT, format);
+  }
+
+  if (center === null) {
+    center = await getGiphyCenterImage();
+    setCommandCache(CACHE_CENTER_IMAGE, center);
+  }
+
+  return { format, center };
+}
+
+/** Clear image format settings cache (call when settings change) */
+export function clearImageSettingsCache(): void {
+  clearCommandCache(CACHE_IMAGE_FORMAT);
+  clearCommandCache(CACHE_CENTER_IMAGE);
+}
+
+async function insertGifMarkdown(url: string): Promise<void> {
   const field = state.activeField;
   if (!field) return;
   if (field.tagName !== "TEXTAREA") return;
@@ -59,7 +92,8 @@ function insertGifMarkdown(url: string): void {
   const pos = field.selectionStart || 0;
   const lineStart = state.activeLineStart;
 
-  const replacement = "![](" + url + ")";
+  const { format, center } = await getCachedImageSettings();
+  const replacement = formatGifInsert(url, format, center);
   const newValue = replaceRange(value, lineStart, pos, replacement);
   field.value = newValue;
 

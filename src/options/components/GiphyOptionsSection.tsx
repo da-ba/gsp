@@ -3,16 +3,29 @@
  */
 
 import React from "react";
-import { getGiphyKey, setGiphyKey, testGiphyKey } from "../../api/giphy.ts";
+import {
+  getGiphyKey,
+  setGiphyKey,
+  testGiphyKey,
+  getGiphyImageFormat,
+  setGiphyImageFormat,
+  getGiphyCenterImage,
+  setGiphyCenterImage,
+  type GiphyImageFormat,
+} from "../../api/giphy.ts";
 
 export function GiphyOptionsSection() {
   const [apiKey, setApiKey] = React.useState("");
   const [showKey, setShowKey] = React.useState(false);
   const [status, setStatus] = React.useState("");
+  const [imageFormat, setImageFormat] = React.useState<GiphyImageFormat>("markdown");
+  const [centerImage, setCenterImage] = React.useState(false);
 
-  // Load current key on mount
+  // Load current settings on mount
   React.useEffect(() => {
     getGiphyKey().then((key) => setApiKey(key));
+    getGiphyImageFormat().then((format) => setImageFormat(format));
+    getGiphyCenterImage().then((center) => setCenterImage(center));
   }, []);
 
   const handleSave = async () => {
@@ -43,6 +56,16 @@ export function GiphyOptionsSection() {
     setApiKey("");
     setStatus("Cleared");
     setTimeout(() => setStatus(""), 1600);
+  };
+
+  const handleFormatChange = async (format: GiphyImageFormat) => {
+    setImageFormat(format);
+    await setGiphyImageFormat(format);
+  };
+
+  const handleCenterChange = async (center: boolean) => {
+    setCenterImage(center);
+    await setGiphyCenterImage(center);
   };
 
   return (
@@ -91,6 +114,65 @@ export function GiphyOptionsSection() {
         </div>
 
         <div className="status">{status}</div>
+
+        <div
+          style={{
+            marginTop: "16px",
+            borderTop: "1px solid rgba(0, 0, 0, 0.08)",
+            paddingTop: "16px",
+          }}
+        >
+          <label style={{ marginBottom: "8px" }}>Image Format</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+              <input
+                type="radio"
+                name="giphy-format"
+                checked={imageFormat === "markdown"}
+                onChange={() => handleFormatChange("markdown")}
+              />
+              <code>![](link)</code> (default)
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+              <input
+                type="radio"
+                name="giphy-format"
+                checked={imageFormat === "img"}
+                onChange={() => handleFormatChange("img")}
+              />
+              <code>{'<img src="link" />'}</code>
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+              <input
+                type="radio"
+                name="giphy-format"
+                checked={imageFormat === "img-fixed"}
+                onChange={() => handleFormatChange("img-fixed")}
+              />
+              <code>{'<img src="link" width="350" />'}</code> (fixed width)
+            </label>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "16px",
+            borderTop: "1px solid rgba(0, 0, 0, 0.08)",
+            paddingTop: "16px",
+          }}
+        >
+          <label style={{ marginBottom: "8px" }}>Alignment</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+              <input
+                type="checkbox"
+                checked={centerImage}
+                onChange={(e) => handleCenterChange(e.target.checked)}
+              />
+              Center image (wrap in <code>{'<p align="center">...</p>'}</code>)
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   );
