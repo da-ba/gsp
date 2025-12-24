@@ -4,8 +4,9 @@ node_modules/
 # Build output
 dist/
 
-# Bun
+# Lock files (using Bun)
 bun.lock
+package-lock.json
 
 # IDE
 .idea/
@@ -19,3 +20,12 @@ Thumbs.db
 
 # Debug
 *.log
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Local environment overrides (not checked in)
+.env.local
+.env.*.local

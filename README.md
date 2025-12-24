@@ -62,6 +62,38 @@ bun run build
 
 ---
 
+## Development
+
+### Watch Mode
+
+For development with automatic rebuilding:
+
+```bash
+bun run dev
+```
+
+This starts Bun in watch mode. Reload the extension in Chrome to see changes.
+
+### Bundle Analysis
+
+To check bundle sizes:
+
+```bash
+bun run analyze
+```
+
+This reports the size of each bundle after building.
+
+### End-to-End Tests
+
+Run Playwright E2E tests:
+
+```bash
+bun run test:e2e
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -75,7 +107,7 @@ src/
 │   │   ├── index.ts
 │   │   ├── registry.ts
 │   │   └── registry.test.ts
-│   ├── picker/         # Picker UI
+│   ├── picker/         # Picker UI (supports .tsx files)
 │   │   ├── picker.ts
 │   │   ├── state.ts
 │   │   └── styles.ts
@@ -95,12 +127,14 @@ docs/                   # Documentation
 │       ├── README.md
 │       ├── giphy/README.md
 │       └── gsp/README.md
+e2e/                    # End-to-end tests (Playwright)
 scripts/                # Build scripts
 │   └── build.ts
 PRIVACY.md              # Privacy policy
 package.json            # Project metadata & scripts
 tsconfig.json           # TypeScript config
 vitest.config.ts        # Test config
+playwright.config.ts    # E2E test config
 ```
 
 ---
@@ -114,10 +148,13 @@ vitest.config.ts        # Test config
 | `bun run typecheck`   | TypeScript type checking           |
 | `bun run lint`        | ESLint check                       |
 | `bun run lint:fix`    | ESLint auto-fix                    |
-| `bun run format`      | Format with Prettier                |
-| `bun run format:check`| Check Prettier formatting           |
+| `bun run format`      | Format with Prettier               |
+| `bun run format:check`| Check Prettier formatting          |
+| `bun run test`        | Run unit tests (Vitest)            |
+| `bun run test:e2e`    | Run E2E tests (Playwright)         |
+| `bun run analyze`     | Build and report bundle sizes      |
 | `bun run check`       | Run all checks (type, lint, format, test) |
-| `bun run clean`       | Remove `dist/` folder               |
+| `bun run clean`       | Remove `dist/` folder              |
 
 ---
 
@@ -163,6 +200,16 @@ registerCommand("mycommand", myCommand);
 
 **Where is the key stored?**
 > The key is stored using `chrome.storage.local` on your device only.
+
+---
+
+## Tech Stack
+
+- **Build Tool**: [Bun](https://bun.sh/) - Fast all-in-one JavaScript runtime
+- **UI Support**: React/JSX available for components
+- **Testing**: [Vitest](https://vitest.dev/) (unit tests) + [Playwright](https://playwright.dev/) (E2E tests)
+- **Language**: TypeScript with JSX support
+- **Linting**: ESLint + Prettier
 
 ---
 

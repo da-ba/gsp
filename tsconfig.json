@@ -15,12 +15,13 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
     "types": ["bun", "chrome", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "vitest.config.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts", "vitest.config.ts", "playwright.config.ts", "e2e/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

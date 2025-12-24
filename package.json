@@ -10,22 +10,34 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "format": "prettier --write \"src/**/*.{ts,html,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,html,json}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,html,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,html,json}\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test"
+    "test:e2e": "playwright test",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test",
+    "analyze": "bun run build && echo '\nBundle sizes reported above'"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
     "@types/bun": "^1.3.5",
     "@types/chrome": "^0.1.32",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
     "@vitest/coverage-v8": "^4.0.16",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.2",
     "happy-dom": "^20.0.11",
     "prettier": "^3.7.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.0",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "zod": "^4.2.1"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.13.10"
   }
 }

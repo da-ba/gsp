@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GSP Extension Test Page</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #0d1117;
+        color: #c9d1d9;
+      }
+      h1 {
+        color: #58a6ff;
+      }
+      .comment-box {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 16px;
+        margin-top: 20px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #c9d1d9;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: #58a6ff;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+      }
+      .hint {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #8b949e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>GitHub Slash Palette Test Page</h1>
+    <p>This page is used for E2E testing of the extension.</p>
+
+    <div class="comment-box">
+      <textarea
+        id="test-textarea"
+        name="comment[body]"
+        placeholder="Type /gsp or /giphy here to test the extension..."
+      ></textarea>
+      <p class="hint">Try typing <code>/gsp</code> or <code>/giphy cats</code></p>
+    </div>
+  </body>
+</html>
