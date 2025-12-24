@@ -287,3 +287,204 @@ test.describe("Slash Commands", () => {
     await context.close();
   });
 });
+
+test.describe("Options Page - Giphy Image Settings", () => {
+  // Helper to start a local server for options page
+  async function startOptionsServer(): Promise<{ server: Server; port: number }> {
+    const optionsPagePath = join(__dirname, "..", "dist", "options.html");
+    const optionsJsPath = join(__dirname, "..", "dist", "options.js");
+
+    return new Promise((resolve) => {
+      const server = createServer(async (req, res) => {
+        if (req.url === "/options.js") {
+          const content = await readFile(optionsJsPath, "utf-8");
+          res.writeHead(200, { "Content-Type": "application/javascript" });
+          res.end(content);
+        } else {
+          const content = await readFile(optionsPagePath, "utf-8");
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(content);
+        }
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  }
+
+  let optionsServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    optionsServer = await startOptionsServer();
+  });
+
+  test.afterAll(async () => {
+    optionsServer?.server?.close();
+  });
+
+  test("options page displays image format radio buttons", async () => {
+    // Use headless mode - options page doesn't require extension APIs
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${optionsServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for React to render
+    await page.waitForTimeout(500);
+
+    // Verify image format section exists
+    const imageFormatLabel = page.locator("text=Image Format");
+    await expect(imageFormatLabel).toBeVisible({ timeout: 3000 });
+
+    // Verify all three format options are present
+    const markdownOption = page.locator("text=![](link)");
+    const imgOption = page.locator('text=<img src="link" />').first();
+    const imgFixedOption = page.locator('text=<img src="link" width="350" />');
+
+    await expect(markdownOption).toBeVisible();
+    await expect(imgOption).toBeVisible();
+    await expect(imgFixedOption).toBeVisible();
+
+    // Verify markdown is selected by default
+    const markdownRadio = page.locator('input[type="radio"][name="giphy-format"]').first();
+    await expect(markdownRadio).toBeChecked();
+
+    await browser.close();
+  });
+
+  test("options page displays center image checkbox", async () => {
+    // Use headless mode - options page doesn't require extension APIs
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${optionsServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for React to render
+    await page.waitForTimeout(500);
+
+    // Verify alignment section exists
+    const alignmentLabel = page.locator("text=Alignment");
+    await expect(alignmentLabel).toBeVisible({ timeout: 3000 });
+
+    // Verify center image checkbox is present
+    const centerCheckboxLabel = page.locator("text=Center image");
+    await expect(centerCheckboxLabel).toBeVisible();
+
+    // Verify checkbox is unchecked by default
+    const centerCheckbox = page.locator('input[type="checkbox"]').nth(1); // Second checkbox (after "Show key")
+    await expect(centerCheckbox).not.toBeChecked();
+
+    await browser.close();
+  });
+
+  test("can select different image formats", async () => {
+    // Use headless mode - options page doesn't require extension APIs
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${optionsServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for React to render
+    await page.waitForTimeout(500);
+
+    // Get all format radio buttons
+    const radios = page.locator('input[type="radio"][name="giphy-format"]');
+
+    // Click on second option (img format)
+    await radios.nth(1).click();
+    await page.waitForTimeout(100);
+    await expect(radios.nth(1)).toBeChecked();
+    await expect(radios.nth(0)).not.toBeChecked();
+
+    // Click on third option (img-fixed format)
+    await radios.nth(2).click();
+    await page.waitForTimeout(100);
+    await expect(radios.nth(2)).toBeChecked();
+    await expect(radios.nth(1)).not.toBeChecked();
+
+    // Click back on first option (markdown format)
+    await radios.nth(0).click();
+    await page.waitForTimeout(100);
+    await expect(radios.nth(0)).toBeChecked();
+    await expect(radios.nth(2)).not.toBeChecked();
+
+    await browser.close();
+  });
+
+  test("can toggle center image checkbox", async () => {
+    // Use headless mode - options page doesn't require extension APIs
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${optionsServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for React to render
+    await page.waitForTimeout(500);
+
+    // Find center checkbox by looking for the checkbox next to "Center image" text
+    const centerCheckbox = page.locator('label:has-text("Center image") input[type="checkbox"]');
+
+    // Initial state should be unchecked
+    await expect(centerCheckbox).not.toBeChecked();
+
+    // Toggle on
+    await centerCheckbox.click();
+    await page.waitForTimeout(100);
+    await expect(centerCheckbox).toBeChecked();
+
+    // Toggle off
+    await centerCheckbox.click();
+    await page.waitForTimeout(100);
+    await expect(centerCheckbox).not.toBeChecked();
+
+    await browser.close();
+  });
+
+  test("image format and center options are independent", async () => {
+    // Use headless mode - options page doesn't require extension APIs
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(`http://localhost:${optionsServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+
+    // Wait for React to render
+    await page.waitForTimeout(500);
+
+    const radios = page.locator('input[type="radio"][name="giphy-format"]');
+    const centerCheckbox = page.locator('label:has-text("Center image") input[type="checkbox"]');
+
+    // Select img-fixed format
+    await radios.nth(2).click();
+    await page.waitForTimeout(100);
+
+    // Enable centering
+    await centerCheckbox.click();
+    await page.waitForTimeout(100);
+
+    // Verify both are set
+    await expect(radios.nth(2)).toBeChecked();
+    await expect(centerCheckbox).toBeChecked();
+
+    // Change format, centering should remain
+    await radios.nth(1).click();
+    await page.waitForTimeout(100);
+    await expect(radios.nth(1)).toBeChecked();
+    await expect(centerCheckbox).toBeChecked();
+
+    // Toggle centering off, format should remain
+    await centerCheckbox.click();
+    await page.waitForTimeout(100);
+    await expect(radios.nth(1)).toBeChecked();
+    await expect(centerCheckbox).not.toBeChecked();
+
+    await browser.close();
+  });
+});
