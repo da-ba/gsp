@@ -4,8 +4,7 @@ node_modules/
 # Build output
 dist/
 
-# Lock files (using Bun)
-bun.lock
+# npm lock file (using Bun instead)
 package-lock.json
 
 # IDE
