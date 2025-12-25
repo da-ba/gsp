@@ -4,11 +4,7 @@
 
 import { isDarkMode, fontSystemUi, fontSansSerif, tokenLinearGradient } from "../../utils/theme.ts";
 
-export interface StyleConfig {
-  dark: boolean;
-}
-
-function getConfig(): StyleConfig {
+function getConfig(): { dark: boolean } {
   return { dark: isDarkMode() };
 }
 
@@ -62,18 +58,6 @@ export function getBadgeStyles(): Partial<CSSStyleDeclaration> {
     padding: "4px 10px",
     border: dark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(0,0,0,0.14)",
     backgroundColor: dark ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.55)",
-    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
-  };
-}
-
-export function getButtonStyles(): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig();
-  return {
-    padding: "10px 12px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    border: dark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(0,0,0,0.18)",
-    backgroundColor: dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.85)",
     color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
   };
 }

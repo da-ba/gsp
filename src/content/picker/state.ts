@@ -31,7 +31,7 @@ export interface PickerState {
   showingSettings: boolean;
 }
 
-export function createPickerState(): PickerState {
+function createPickerState(): PickerState {
   return {
     pickerEl: null,
     headerTitleEl: null,
