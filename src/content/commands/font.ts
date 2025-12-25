@@ -26,7 +26,7 @@ interface FontOption {
 
 /** Available font options */
 const FONT_OPTIONS: FontOption[] = [
-  // Sizes (using sup/sub and font-size)
+  // Sizes (using sup/sub tags and markdown headers)
   { id: "tiny", category: "size", label: "Tiny", template: "<sub>{text}</sub>", preview: "Tiny" },
   {
     id: "small",
@@ -38,7 +38,7 @@ const FONT_OPTIONS: FontOption[] = [
   { id: "large", category: "size", label: "Large", template: "## {text}", preview: "Large" },
   { id: "huge", category: "size", label: "Huge", template: "# {text}", preview: "Huge" },
 
-  // Colors (using span with color style - works in GitHub markdown)
+  // Colors (using LaTeX \color syntax which works in GitHub markdown)
   {
     id: "red",
     category: "color",
