@@ -6,6 +6,58 @@ import { getStorageValue, setStorageValue } from "../utils/storage.ts";
 
 // Storage key for Giphy API key
 const STORAGE_KEY_GIPHY_API = "giphyApiKey";
+const STORAGE_KEY_IMAGE_FORMAT = "giphyImageFormat";
+const STORAGE_KEY_CENTER_IMAGE = "giphyCenterImage";
+
+/** Image format options for inserting GIFs */
+export type GiphyImageFormat = "markdown" | "img" | "img-fixed";
+
+/** Default image format (markdown) */
+export const DEFAULT_IMAGE_FORMAT: GiphyImageFormat = "markdown";
+
+/** Get Giphy image format setting */
+export async function getGiphyImageFormat(): Promise<GiphyImageFormat> {
+  return getStorageValue<GiphyImageFormat>(STORAGE_KEY_IMAGE_FORMAT, DEFAULT_IMAGE_FORMAT);
+}
+
+/** Set Giphy image format setting */
+export async function setGiphyImageFormat(value: GiphyImageFormat): Promise<void> {
+  await setStorageValue(STORAGE_KEY_IMAGE_FORMAT, value);
+}
+
+/** Get Giphy center image setting */
+export async function getGiphyCenterImage(): Promise<boolean> {
+  return getStorageValue<boolean>(STORAGE_KEY_CENTER_IMAGE, false);
+}
+
+/** Set Giphy center image setting */
+export async function setGiphyCenterImage(value: boolean): Promise<void> {
+  await setStorageValue(STORAGE_KEY_CENTER_IMAGE, value);
+}
+
+/** Format a GIF URL for insertion based on settings */
+export function formatGifInsert(url: string, format: GiphyImageFormat, center: boolean): string {
+  let imageMarkup: string;
+
+  switch (format) {
+    case "img":
+      imageMarkup = `<img src="${url}" />`;
+      break;
+    case "img-fixed":
+      imageMarkup = `<img src="${url}" width="350" />`;
+      break;
+    case "markdown":
+    default:
+      imageMarkup = `![](${url})`;
+      break;
+  }
+
+  if (center) {
+    return `<p align="center">${imageMarkup}</p>`;
+  }
+
+  return imageMarkup;
+}
 
 // Build-time injected API key (from environment variable)
 // This is replaced at build time by Bun's define feature
