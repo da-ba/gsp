@@ -168,7 +168,7 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
 
   const saveBtn = document.createElement("button");
   saveBtn.type = "button";
-  saveBtn.setAttribute("data_settings_action", "true");
+  saveBtn.setAttribute("data-settings-action", "true");
   saveBtn.textContent = "Save Key";
   applyStyles(saveBtn, getBadgeStyles());
   saveBtn.style.cursor = "pointer";
@@ -178,7 +178,7 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
   if (showClear) {
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
-    clearBtn.setAttribute("data_settings_action", "true");
+    clearBtn.setAttribute("data-settings-action", "true");
     clearBtn.textContent = "Clear";
     applyStyles(clearBtn, getBadgeStyles());
     clearBtn.style.cursor = "pointer";
