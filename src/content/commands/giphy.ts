@@ -77,6 +77,12 @@ async function getCachedImageSettings(): Promise<{
   return { format, center };
 }
 
+/** Clear image format settings cache (call when settings change) */
+export function clearImageSettingsCache(): void {
+  clearCommandCache(CACHE_IMAGE_FORMAT);
+  clearCommandCache(CACHE_CENTER_IMAGE);
+}
+
 async function insertGifMarkdown(url: string): Promise<void> {
   const field = state.activeField;
   if (!field) return;
