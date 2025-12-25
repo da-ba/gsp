@@ -34,13 +34,6 @@ export function setThemeOverride(pref: ThemePreference): void {
 }
 
 /**
- * Get current theme override
- */
-export function getThemeOverride(): ThemePreference {
-  return themeOverride;
-}
-
-/**
  * Detect if GitHub is in dark mode (respects user override)
  */
 export function isDarkMode(): boolean {
