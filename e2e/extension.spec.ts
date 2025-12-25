@@ -1122,7 +1122,7 @@ test.describe("Font Command Styles", () => {
     await expect(picker).toBeVisible({ timeout: 3000 });
 
     // Check that only filtered results are shown (fewer items)
-    const buttons = picker.locator('button[data_item_index]');
+    const buttons = picker.locator('button[data-item-index]');
     const buttonCount = await buttons.count();
     // Should have only the color items (6 colors)
     expect(buttonCount).toBe(6);

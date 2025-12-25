@@ -237,9 +237,7 @@ export function refreshSelectionStyles(): void {
 
 export function scrollSelectedIntoView(): void {
   if (!state.pickerEl) return;
-  const btn = state.pickerEl.querySelector(
-    `button[data-item-index="${state.selectedIndex}"]`
-  );
+  const btn = state.pickerEl.querySelector(`button[data-item-index="${state.selectedIndex}"]`);
   if (!btn) return;
   btn.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
