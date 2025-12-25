@@ -25,6 +25,7 @@ import {
 // Import giphy command to register it
 import "./commands/giphy.ts";
 import "./commands/gsp.ts";
+import "./commands/font.ts";
 
 /**
  * Update suggestions for the active command

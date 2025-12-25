@@ -814,3 +814,342 @@ test.describe("Giphy Insertion Strategies", () => {
     await browser.close();
   });
 });
+
+test.describe("Font Command Styles", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/font command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/font");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows font styles
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Popular styles");
+
+    await browser.close();
+  });
+
+  test("/font command shows style options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/font");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify style options are shown (check for images in picker grid)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("selecting bold style inserts **text** syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font bold to filter and select bold style
+    await textarea.fill("/font bold");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first (bold) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains bold markdown
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("**bold**");
+
+    await browser.close();
+  });
+
+  test("selecting italic style inserts *text* syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font italic to filter and select italic style
+    await textarea.fill("/font italic");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first (italic) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("*italic*");
+
+    await browser.close();
+  });
+
+  test("selecting strikethrough style inserts ~~text~~ syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font strike to filter and select strikethrough style
+    await textarea.fill("/font strike");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("~~strike~~");
+
+    await browser.close();
+  });
+
+  test("selecting code style inserts `text` syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font code to filter and select code style
+    await textarea.fill("/font code");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("`code`");
+
+    await browser.close();
+  });
+
+  test("selecting red color inserts LaTeX color syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font red to filter and select red color
+    await textarea.fill("/font red");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("$\\color{red}{\\textsf{red}}$");
+
+    await browser.close();
+  });
+
+  test("selecting blue color inserts LaTeX color syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font blue to filter and select blue color
+    await textarea.fill("/font blue");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("$\\color{blue}{\\textsf{blue}}$");
+
+    await browser.close();
+  });
+
+  test("selecting large size inserts ## header syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font large to filter and select large size
+    await textarea.fill("/font large");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("## large");
+
+    await browser.close();
+  });
+
+  test("selecting huge size inserts # header syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font huge to filter and select huge size
+    await textarea.fill("/font huge");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("# huge");
+
+    await browser.close();
+  });
+
+  test("selecting tiny size inserts <sub> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font tiny to filter and select tiny size
+    await textarea.fill("/font tiny");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<sub>tiny</sub>");
+
+    await browser.close();
+  });
+
+  test("selecting quote style inserts > syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /font quote to filter and select quote style
+    await textarea.fill("/font quote");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("> quote");
+
+    await browser.close();
+  });
+
+  test("/font command filtering works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "color" to filter color options
+    await textarea.fill("/font color");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that only filtered results are shown (fewer items)
+    const buttons = picker.locator('button[data_item_index]');
+    const buttonCount = await buttons.count();
+    // Should have only the color items (6 colors)
+    expect(buttonCount).toBe(6);
+
+    await browser.close();
+  });
+
+  test("default text is used when no text provided", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type just /font to show all styles, then filter to bold
+    await textarea.fill("/font");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option (should be a style option)
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Default text should be "text" - check that some formatted text is inserted
+    const textareaValue = await textarea.inputValue();
+    // The first option is Bold, so it should be **text**
+    expect(textareaValue).toBe("**text**");
+
+    await browser.close();
+  });
+});
