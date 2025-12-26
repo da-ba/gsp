@@ -3,15 +3,35 @@
  */
 
 import React from "react";
-import { GiphyOptionsSection } from "../../content/commands/giphy/index.ts";
+import { getOptionsSections } from "../../content/commands/options-registry.ts";
+
+// Import command modules to trigger registration
+import "../../content/commands/giphy/index.ts";
+
+/** Global styles for the options page */
+const globalStyles = `
+  body {
+    font-family: system-ui, sans-serif;
+    padding: 18px;
+    max-width: 760px;
+  }
+  h2 {
+    margin-bottom: 16px;
+  }
+`;
 
 export function OptionsApp() {
+  const sections = getOptionsSections();
+
   return (
-    <div>
+    <>
+      <style>{globalStyles}</style>
       <h2>GitHub Slash Palette</h2>
       <div id="sections">
-        <GiphyOptionsSection />
+        {sections.map(({ name, component: Component }) => (
+          <Component key={name} />
+        ))}
       </div>
-    </div>
+    </>
   );
 }
