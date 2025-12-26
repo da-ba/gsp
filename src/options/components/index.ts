@@ -3,4 +3,5 @@
  */
 
 export { OptionsApp } from "./OptionsApp.tsx";
-export { GiphyOptionsSection } from "./GiphyOptionsSection.tsx";
+// Re-export from command module for backward compatibility
+export { GiphyOptionsSection } from "../../content/commands/giphy/index.ts";

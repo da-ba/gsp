@@ -3,11 +3,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { fontCommand, FONT_OPTIONS, type FontOption } from "./font.ts";
-import type { PickerItem } from "../types.ts";
+import { fontCommand, FONT_OPTIONS, type FontOption } from "./command.ts";
+import type { PickerItem } from "../../types.ts";
 
 // Mock the picker module
-vi.mock("../picker/index.ts", () => ({
+vi.mock("../../picker/index.ts", () => ({
   renderGrid: vi.fn(),
   state: {
     activeField: null,

@@ -5,11 +5,11 @@
  * using HTML formatting that works in GitHub markdown.
  */
 
-import { replaceRange } from "../../utils/dom.ts";
-import { add } from "../../utils/math.ts";
-import { registerCommand, type CommandSpec } from "./registry.ts";
-import { renderGrid, state } from "../picker/index.ts";
-import type { PickerItem } from "../types.ts";
+import { replaceRange } from "../../../utils/dom.ts";
+import { add } from "../../../utils/math.ts";
+import { registerCommand, type CommandSpec } from "../registry.ts";
+import { renderGrid, state } from "../../picker/index.ts";
+import type { PickerItem } from "../../types.ts";
 
 /** Font option types */
 type FontCategory = "size" | "color" | "style";

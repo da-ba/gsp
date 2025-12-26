@@ -12,7 +12,7 @@ import {
   getGiphyCenterImage,
   setGiphyCenterImage,
   type GiphyImageFormat,
-} from "../../api/giphy.ts";
+} from "./api.ts";
 
 export function GiphyOptionsSection() {
   const [apiKey, setApiKey] = React.useState("");

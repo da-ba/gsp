@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { GiphyOptionsSection } from "./GiphyOptionsSection.tsx";
+import { GiphyOptionsSection } from "../../content/commands/giphy/index.ts";
 
 export function OptionsApp() {
   return (
