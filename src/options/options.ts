@@ -4,6 +4,11 @@
 
 import React from "react";
 import { createRoot } from "react-dom/client";
+
+// Import command modules to trigger options section registration
+// This must be done before importing OptionsApp to ensure registrations are complete
+import "../content/commands/giphy/index.ts";
+
 import { OptionsApp } from "./components/index.ts";
 
 function renderOptionsPage(): void {

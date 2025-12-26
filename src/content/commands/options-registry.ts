@@ -4,9 +4,6 @@
 
 import type React from "react";
 
-// Import command modules to trigger options section registration
-import "./giphy/index.ts";
-
 /** Registry of options section components */
 const optionsSectionRegistry: Array<{
   name: string;
