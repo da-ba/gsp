@@ -2,7 +2,7 @@
  * Giphy API Client
  */
 
-import { getStorageValue, setStorageValue } from "../utils/storage.ts";
+import { getStorageValue, setStorageValue } from "../../../utils/storage.ts";
 
 // Storage key for Giphy API key
 const STORAGE_KEY_GIPHY_API = "giphyApiKey";

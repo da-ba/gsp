@@ -22,10 +22,10 @@ import {
   applyPickerStyles,
 } from "./picker/index.ts";
 
-// Import giphy command to register it
-import "./commands/giphy.ts";
-import "./commands/gsp.ts";
-import "./commands/font.ts";
+// Import commands to register them
+import "./commands/giphy/index.ts";
+import "./commands/gsp/index.ts";
+import "./commands/font/index.ts";
 
 /**
  * Update suggestions for the active command

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { formatGifInsert } from "./giphy.ts";
+import { formatGifInsert } from "./api.ts";
 
 describe("formatGifInsert", () => {
   const testUrl = "https://example.com/image.gif";

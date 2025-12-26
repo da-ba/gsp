@@ -1,3 +1,4 @@
 export * from "./registry.ts";
-export * from "./giphy.ts";
-export * from "./font.ts";
+export * from "./giphy/index.ts";
+export * from "./font/index.ts";
+export * from "./gsp/index.ts";

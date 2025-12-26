@@ -5,9 +5,9 @@
  * pick one to insert at the current cursor position.
  */
 
-import type { PickerItem } from "../types.ts";
-import { registerCommand, type CommandSpec, listCommands } from "./registry.ts";
-import { renderGrid, setSlashQueryInField, state } from "../picker/index.ts";
+import type { PickerItem } from "../../types.ts";
+import { registerCommand, type CommandSpec, listCommands } from "../registry.ts";
+import { renderGrid, setSlashQueryInField, state } from "../../picker/index.ts";
 
 let lastForwardedQuery = "";
 

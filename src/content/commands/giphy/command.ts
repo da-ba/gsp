@@ -2,8 +2,8 @@
  * Giphy slash command implementation
  */
 
-import { replaceRange } from "../../utils/dom.ts";
-import { add } from "../../utils/math.ts";
+import { replaceRange } from "../../../utils/dom.ts";
+import { add } from "../../../utils/math.ts";
 import {
   searchGifs,
   getTrendingGifs,
@@ -16,8 +16,8 @@ import {
   formatGifInsert,
   type GifItem,
   type GiphyImageFormat,
-} from "../../api/giphy.ts";
-import { registerCommand, type CommandSpec } from "./registry.ts";
+} from "./api.ts";
+import { registerCommand, type CommandSpec } from "../registry.ts";
 import {
   renderGrid,
   state,
@@ -27,8 +27,8 @@ import {
   getCardStyles,
   getInputStyles,
   getBadgeStyles,
-} from "../picker/index.ts";
-import type { PickerItem } from "../types.ts";
+} from "../../picker/index.ts";
+import type { PickerItem } from "../../types.ts";
 
 // Cache keys for Giphy-specific data
 const CACHE_TRENDING_TERMS = "giphy:trendingTerms";
