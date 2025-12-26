@@ -57,6 +57,13 @@ function escapeForSvg(s: string): string {
     .replaceAll("'", "&apos;");
 }
 
+/** Calculate badge width based on text length (character width ~5px + padding 12px) */
+function calculateBadgeWidth(text: string): number {
+  const charWidth = 5;
+  const padding = 12;
+  return text.length * charWidth + padding;
+}
+
 /** Create a tile for an emoji */
 function makeEmojiTile(item: EmojiItem): PickerItem {
   const categoryColor = getCategoryColor(item.category);
@@ -76,7 +83,7 @@ function makeEmojiTile(item: EmojiItem): PickerItem {
   <text x="60" y="58" text-anchor="middle" dominant-baseline="middle" font-size="42">${escapeForSvg(item.emoji)}</text>
 
   <!-- Category badge -->
-  <rect x="8" y="90" width="${CATEGORY_LABELS[item.category].length * 5 + 12}" height="18" rx="4" fill="${categoryColor}" fill-opacity="0.15"/>
+  <rect x="8" y="90" width="${calculateBadgeWidth(CATEGORY_LABELS[item.category])}" height="18" rx="4" fill="${categoryColor}" fill-opacity="0.15"/>
   <text x="14" y="102" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="9" font-weight="500" fill="${categoryColor}">${escapeForSvg(CATEGORY_LABELS[item.category])}</text>
 </svg>`;
 
@@ -108,8 +115,10 @@ function insertEmoji(emoji: string): void {
   field.setSelectionRange(newPos, newPos);
   field.dispatchEvent(new Event("input", { bubbles: true }));
 
-  // Add to recently used
-  addRecentEmoji(emoji);
+  // Add to recently used (fire-and-forget, errors are non-critical)
+  addRecentEmoji(emoji).catch(() => {
+    // Silently ignore storage errors - not critical for UX
+  });
 }
 
 const emojiCommand: CommandSpec = {
