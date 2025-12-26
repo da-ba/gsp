@@ -7,6 +7,9 @@
  * - Options section component for the extension options page
  */
 
+import { registerOptionsSection } from "../options-registry.ts";
+import { GiphyOptionsSection } from "./GiphyOptionsSection.tsx";
+
 // Export API functions and types
 export * from "./api.ts";
 
@@ -15,3 +18,6 @@ export * from "./command.ts";
 
 // Export options section component
 export { GiphyOptionsSection } from "./GiphyOptionsSection.tsx";
+
+// Register options section
+registerOptionsSection("giphy", GiphyOptionsSection);
