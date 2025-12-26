@@ -5,9 +5,6 @@
 import React from "react";
 import { getOptionsSections } from "../../content/commands/options-registry.ts";
 
-// Import command modules to trigger registration
-import "../../content/commands/giphy/index.ts";
-
 /** Global styles for the options page */
 const globalStyles = `
   body {
