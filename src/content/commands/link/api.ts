@@ -146,15 +146,3 @@ export function formatMarkdownLink(url: string, title: string): string {
 
   return `[${safeTitle}](${normalizedUrl})`
 }
-
-/**
- * Get suggested links based on context (placeholder for future CI/artifact integration)
- */
-export function getSuggestedLinks(): Array<{ url: string; title: string; description: string }> {
-  // TODO: In the future, this could integrate with GitHub API to suggest:
-  // - CI job links
-  // - Artifact downloads
-  // - Deployment URLs
-  // - Related PRs/issues
-  return []
-}
