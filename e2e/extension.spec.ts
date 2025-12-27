@@ -1873,12 +1873,10 @@ test.describe("Mention Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // Verify the picker shows mention content
+    // Verify the picker shows the mention command name in header
     const pickerContent = await picker.textContent();
-    // Should show either "Participants" or "Recent mentions" depending on page content
-    expect(
-      pickerContent?.includes("Participants") || pickerContent?.includes("Recent mentions")
-    ).toBe(true);
+    // Should show the command name "/mention" in the header
+    expect(pickerContent?.includes("/mention")).toBe(true);
 
     await browser.close();
   });
@@ -1921,9 +1919,11 @@ test.describe("Mention Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // Should show matching users title
-    const pickerContent = await picker.textContent();
-    expect(pickerContent).toContain("Matching users");
+    // Should show filtered results - check that buttons are present
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have octocat match since we set it in localStorage
+    expect(buttonCount).toBeGreaterThanOrEqual(1);
 
     await browser.close();
   });
