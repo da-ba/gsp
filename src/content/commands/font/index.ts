@@ -6,4 +6,4 @@
  */
 
 // Export command implementation and types
-export * from "./command.ts";
+export * from "./command.ts"

@@ -2,7 +2,7 @@
  * Giphy Options Section Component
  */
 
-import React from "react";
+import React from "react"
 import {
   getGiphyKey,
   setGiphyKey,
@@ -12,7 +12,7 @@ import {
   getGiphyCenterImage,
   setGiphyCenterImage,
   type GiphyImageFormat,
-} from "./api.ts";
+} from "./api.ts"
 
 /** Styles for the Giphy options section */
 const sectionStyles = `
@@ -76,61 +76,61 @@ const sectionStyles = `
   .giphy-section a {
     color: inherit;
   }
-`;
+`
 
 export function GiphyOptionsSection() {
-  const [apiKey, setApiKey] = React.useState("");
-  const [showKey, setShowKey] = React.useState(false);
-  const [status, setStatus] = React.useState("");
-  const [imageFormat, setImageFormat] = React.useState<GiphyImageFormat>("markdown");
-  const [centerImage, setCenterImage] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState("")
+  const [showKey, setShowKey] = React.useState(false)
+  const [status, setStatus] = React.useState("")
+  const [imageFormat, setImageFormat] = React.useState<GiphyImageFormat>("markdown")
+  const [centerImage, setCenterImage] = React.useState(false)
 
   // Load current settings on mount
   React.useEffect(() => {
-    getGiphyKey().then((key) => setApiKey(key));
-    getGiphyImageFormat().then((format) => setImageFormat(format));
-    getGiphyCenterImage().then((center) => setCenterImage(center));
-  }, []);
+    getGiphyKey().then((key) => setApiKey(key))
+    getGiphyImageFormat().then((format) => setImageFormat(format))
+    getGiphyCenterImage().then((center) => setCenterImage(center))
+  }, [])
 
   const handleSave = async () => {
-    const key = apiKey.trim();
-    await setGiphyKey(key);
-    setStatus(key ? "Saved" : "Saved empty key");
-    setTimeout(() => setStatus(""), 1600);
-  };
+    const key = apiKey.trim()
+    await setGiphyKey(key)
+    setStatus(key ? "Saved" : "Saved empty key")
+    setTimeout(() => setStatus(""), 1600)
+  }
 
   const handleTest = async () => {
-    const key = apiKey.trim();
+    const key = apiKey.trim()
     if (!key) {
-      setStatus("Missing key");
-      return;
+      setStatus("Missing key")
+      return
     }
 
-    setStatus("Testing…");
-    const result = await testGiphyKey(key);
+    setStatus("Testing…")
+    const result = await testGiphyKey(key)
     if (result.error) {
-      setStatus("Test failed: " + result.error);
+      setStatus("Test failed: " + result.error)
     } else {
-      setStatus("Key ok");
+      setStatus("Key ok")
     }
-  };
+  }
 
   const handleClear = async () => {
-    await setGiphyKey("");
-    setApiKey("");
-    setStatus("Cleared");
-    setTimeout(() => setStatus(""), 1600);
-  };
+    await setGiphyKey("")
+    setApiKey("")
+    setStatus("Cleared")
+    setTimeout(() => setStatus(""), 1600)
+  }
 
   const handleFormatChange = async (format: GiphyImageFormat) => {
-    setImageFormat(format);
-    await setGiphyImageFormat(format);
-  };
+    setImageFormat(format)
+    await setGiphyImageFormat(format)
+  }
 
   const handleCenterChange = async (center: boolean) => {
-    setCenterImage(center);
-    await setGiphyCenterImage(center);
-  };
+    setCenterImage(center)
+    await setGiphyCenterImage(center)
+  }
 
   return (
     <>
@@ -242,5 +242,5 @@ export function GiphyOptionsSection() {
         </div>
       </div>
     </>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import tseslint from "typescript-eslint";
+import tseslint from "typescript-eslint"
 
 export default [
   ...tseslint.configs.recommended,
@@ -22,9 +22,10 @@ export default [
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "prefer-const": "error",
       eqeqeq: ["error", "always"],
+      semi: ["error", "never"],
     },
   },
   {
     ignores: ["dist/", "node_modules/", "scripts/", "*.config.js"],
   },
-];
+]

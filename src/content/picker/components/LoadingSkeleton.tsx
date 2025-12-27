@@ -2,11 +2,11 @@
  * Loading Skeleton Component
  */
 
-import React from "react";
-import { getSkeletonStyles } from "../styles.ts";
+import React from "react"
+import { getSkeletonStyles } from "../styles.ts"
 
 export function LoadingSkeleton() {
-  const skeletonStyles = getSkeletonStyles();
+  const skeletonStyles = getSkeletonStyles()
 
   return (
     <div
@@ -29,26 +29,26 @@ export function LoadingSkeleton() {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function SkeletonBox({ styles }: { styles: Partial<CSSStyleDeclaration> }) {
-  const boxRef = React.useRef<HTMLDivElement>(null);
+  const boxRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
-    const el = boxRef.current;
-    if (!el) return;
+    const el = boxRef.current
+    if (!el) return
 
     try {
       const animation = el.animate([{ opacity: 0.55 }, { opacity: 0.9 }, { opacity: 0.55 }], {
         duration: 900,
         iterations: Infinity,
-      });
-      return () => animation.cancel();
+      })
+      return () => animation.cancel()
     } catch {
       // Animation not supported
     }
-  }, []);
+  }, [])
 
-  return <div ref={boxRef} style={styles as React.CSSProperties} />;
+  return <div ref={boxRef} style={styles as React.CSSProperties} />
 }

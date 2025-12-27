@@ -2,20 +2,20 @@
  * Suggest Chips Component
  */
 
-import React from "react";
-import { getBadgeStyles } from "../styles.ts";
+import React from "react"
+import { getBadgeStyles } from "../styles.ts"
 
 export type SuggestChipsProps = {
-  items: string[];
-  title: string;
-  onPick: (term: string) => void;
-};
+  items: string[]
+  title: string
+  onPick: (term: string) => void
+}
 
 export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
-  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
-  const badgeStyles = getBadgeStyles();
+  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null)
+  const badgeStyles = getBadgeStyles()
 
-  if (!items.length) return null;
+  if (!items.length) return null
 
   return (
     <div
@@ -44,9 +44,9 @@ export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
           type="button"
           data-suggest-chip="true"
           onClick={(ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            onPick(term);
+            ev.preventDefault()
+            ev.stopPropagation()
+            onPick(term)
           }}
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
@@ -61,5 +61,5 @@ export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
         </button>
       ))}
     </div>
-  );
+  )
 }

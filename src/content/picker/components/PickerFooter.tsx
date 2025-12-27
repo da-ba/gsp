@@ -2,11 +2,11 @@
  * Picker Footer Component
  */
 
-import React from "react";
-import { isDarkMode } from "../../../utils/theme.ts";
+import React from "react"
+import { isDarkMode } from "../../../utils/theme.ts"
 
 export function PickerFooter() {
-  const dark = isDarkMode();
+  const dark = isDarkMode()
 
   return (
     <div
@@ -30,5 +30,5 @@ export function PickerFooter() {
         Tip: type /gsp to list commands
       </span>
     </div>
-  );
+  )
 }

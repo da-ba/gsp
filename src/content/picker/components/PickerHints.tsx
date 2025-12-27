@@ -2,13 +2,13 @@
  * Picker Hints Component
  */
 
-import React from "react";
-import { getBadgeStyles } from "../styles.ts";
+import React from "react"
+import { getBadgeStyles } from "../styles.ts"
 
-const HINTS = ["Arrows move", "Enter insert", "Esc close"];
+const HINTS = ["Arrows move", "Enter insert", "Esc close"]
 
 export function PickerHints() {
-  const badgeStyles = getBadgeStyles();
+  const badgeStyles = getBadgeStyles()
 
   return (
     <div
@@ -34,5 +34,5 @@ export function PickerHints() {
         </div>
       ))}
     </div>
-  );
+  )
 }

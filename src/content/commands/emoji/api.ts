@@ -2,13 +2,13 @@
  * Emoji API and data
  */
 
-import { getStorageValue, setStorageValue } from "../../../utils/storage.ts";
+import { getStorageValue, setStorageValue } from "../../../utils/storage.ts"
 
 // Storage key for recently used emojis
-const STORAGE_KEY_RECENT_EMOJIS = "recentEmojis";
+const STORAGE_KEY_RECENT_EMOJIS = "recentEmojis"
 
 /** Maximum number of recently used emojis to store */
-const MAX_RECENT_EMOJIS = 16;
+const MAX_RECENT_EMOJIS = 16
 
 /** Emoji category type */
 export type EmojiCategory =
@@ -19,15 +19,15 @@ export type EmojiCategory =
   | "activities"
   | "travel"
   | "objects"
-  | "symbols";
+  | "symbols"
 
 /** Emoji item */
 export type EmojiItem = {
-  emoji: string;
-  name: string;
-  keywords: string[];
-  category: EmojiCategory;
-};
+  emoji: string
+  name: string
+  keywords: string[]
+  category: EmojiCategory
+}
 
 /** Category display labels */
 export const CATEGORY_LABELS: Record<EmojiCategory, string> = {
@@ -39,7 +39,7 @@ export const CATEGORY_LABELS: Record<EmojiCategory, string> = {
   travel: "Travel",
   objects: "Objects",
   symbols: "Symbols",
-};
+}
 
 /** Emoji data - a curated set of commonly used emojis */
 export const EMOJIS: EmojiItem[] = [
@@ -746,47 +746,47 @@ export const EMOJIS: EmojiItem[] = [
     keywords: ["silent", "quiet", "mute"],
     category: "symbols",
   },
-];
+]
 
 /** Get recently used emojis from storage */
 export async function getRecentEmojis(): Promise<string[]> {
-  return getStorageValue<string[]>(STORAGE_KEY_RECENT_EMOJIS, []);
+  return getStorageValue<string[]>(STORAGE_KEY_RECENT_EMOJIS, [])
 }
 
 /** Add an emoji to recently used list */
 export async function addRecentEmoji(emoji: string): Promise<void> {
-  const recent = await getRecentEmojis();
+  const recent = await getRecentEmojis()
   // Remove if already exists (to move it to front)
-  const filtered = recent.filter((e) => e !== emoji);
+  const filtered = recent.filter((e) => e !== emoji)
   // Add to front
-  filtered.unshift(emoji);
+  filtered.unshift(emoji)
   // Limit size
-  const limited = filtered.slice(0, MAX_RECENT_EMOJIS);
-  await setStorageValue(STORAGE_KEY_RECENT_EMOJIS, limited);
+  const limited = filtered.slice(0, MAX_RECENT_EMOJIS)
+  await setStorageValue(STORAGE_KEY_RECENT_EMOJIS, limited)
 }
 
 /** Search emojis by query */
 export function searchEmojis(query: string): EmojiItem[] {
-  const q = (query || "").toLowerCase().trim();
-  if (!q) return EMOJIS;
+  const q = (query || "").toLowerCase().trim()
+  if (!q) return EMOJIS
 
   return EMOJIS.filter((item) => {
     // Match emoji itself
-    if (item.emoji === q) return true;
+    if (item.emoji === q) return true
     // Match name
-    if (item.name.toLowerCase().includes(q)) return true;
+    if (item.name.toLowerCase().includes(q)) return true
     // Match keywords
-    if (item.keywords.some((kw) => kw.toLowerCase().includes(q))) return true;
+    if (item.keywords.some((kw) => kw.toLowerCase().includes(q))) return true
     // Match category
-    if (item.category.toLowerCase().includes(q)) return true;
-    if (CATEGORY_LABELS[item.category].toLowerCase().includes(q)) return true;
-    return false;
-  });
+    if (item.category.toLowerCase().includes(q)) return true
+    if (CATEGORY_LABELS[item.category].toLowerCase().includes(q)) return true
+    return false
+  })
 }
 
 /** Get emojis by category */
 export function getEmojisByCategory(category: EmojiCategory): EmojiItem[] {
-  return EMOJIS.filter((item) => item.category === category);
+  return EMOJIS.filter((item) => item.category === category)
 }
 
 /** Get popular emojis for empty state */
@@ -808,11 +808,11 @@ export function getPopularEmojis(): EmojiItem[] {
     "❌",
     "⭐",
     "💡",
-  ];
-  return EMOJIS.filter((item) => popularIds.includes(item.emoji));
+  ]
+  return EMOJIS.filter((item) => popularIds.includes(item.emoji))
 }
 
 /** Get suggestion terms for autocomplete */
 export function getEmojiSuggestions(): string[] {
-  return ["smile", "heart", "thumbs", "fire", "star", "check"];
+  return ["smile", "heart", "thumbs", "fire", "star", "check"]
 }

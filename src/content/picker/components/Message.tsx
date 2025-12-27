@@ -2,15 +2,15 @@
  * Message Component
  */
 
-import React from "react";
-import { getCardStyles } from "../styles.ts";
+import React from "react"
+import { getCardStyles } from "../styles.ts"
 
 export type MessageProps = {
-  message: string;
-};
+  message: string
+}
 
 export function Message({ message }: MessageProps) {
-  const cardStyles = getCardStyles();
+  const cardStyles = getCardStyles()
 
   return (
     <div
@@ -23,5 +23,5 @@ export function Message({ message }: MessageProps) {
     >
       <div style={cardStyles as React.CSSProperties}>{message}</div>
     </div>
-  );
+  )
 }
