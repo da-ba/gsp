@@ -75,7 +75,7 @@ const DATE_OPTIONS: DateOption[] = [
     format: "iso-date",
     label: "ISO Date",
     description: "Date only (YYYY-MM-DD)",
-    formatter: (date: Date) => date.toISOString().split("T")[0] ?? "",
+    formatter: (date: Date) => date.toISOString().split("T")[0] as string,
   },
   {
     id: "local",
@@ -203,6 +203,12 @@ function escapeForSvg(s: string): string {
     .replaceAll("'", "&apos;")
 }
 
+/** SVG layout constants for tile rendering */
+const TILE_PREVIEW_MAX_LENGTH = 28
+const TILE_PREVIEW_TRUNCATE_AT = 25
+const BADGE_CHAR_WIDTH = 8
+const BADGE_PADDING = 16
+
 /** Create a tile for a date option */
 function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
   const formatColor = getFormatColor(option.format)
@@ -210,7 +216,12 @@ function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
   const previewValue = option.formatter(previewDate)
 
   // Truncate long preview values
-  const displayValue = previewValue.length > 28 ? previewValue.slice(0, 25) + "..." : previewValue
+  const displayValue =
+    previewValue.length > TILE_PREVIEW_MAX_LENGTH
+      ? previewValue.slice(0, TILE_PREVIEW_TRUNCATE_AT) + "..."
+      : previewValue
+
+  const badgeWidth = categoryLabel.length * BADGE_CHAR_WIDTH + BADGE_PADDING
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
@@ -224,7 +235,7 @@ function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
   <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
   
   <!-- Category badge -->
-  <rect x="20" y="20" width="${categoryLabel.length * 8 + 16}" height="24" rx="6" fill="${formatColor}" fill-opacity="0.15"/>
+  <rect x="20" y="20" width="${badgeWidth}" height="24" rx="6" fill="${formatColor}" fill-opacity="0.15"/>
   <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${formatColor}">${escapeForSvg(categoryLabel)}</text>
   
   <!-- Label -->
