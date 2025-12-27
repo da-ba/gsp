@@ -79,44 +79,44 @@ export async function setGiphyKey(value: string): Promise<void> {
 }
 
 // Types
-export interface GifItem {
+export type GifItem = {
   kind: "gif";
   id: string;
   previewUrl: string;
   insertUrl: string;
-}
+};
 
-export interface GiphyResult<T> {
+export type GiphyResult<T> = {
   data?: T;
   error?: string;
-}
+};
 
-interface GiphyImage {
+export type GiphyImage = {
   url?: string;
   https_url?: string;
-}
+};
 
-interface GiphyGifData {
+export type GiphyGifData = {
   id?: string;
   images?: {
     fixed_width?: GiphyImage;
     original?: GiphyImage;
   };
-}
+};
 
-interface GiphyMeta {
+export type GiphyMeta = {
   status?: number;
   msg?: string;
-}
+};
 
-interface GiphyResponse {
+export type GiphyResponse = {
   data?: GiphyGifData[] | string[];
   meta?: GiphyMeta;
-}
+};
 
-interface GiphyTagItem {
+export type GiphyTagItem = {
   name?: string;
-}
+};
 
 // Helpers
 

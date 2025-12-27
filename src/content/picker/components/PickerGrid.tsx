@@ -7,7 +7,7 @@ import { GridItem } from "./GridItem.tsx";
 import { SuggestChips } from "./SuggestChips.tsx";
 import type { PickerItem } from "../../types.ts";
 
-interface PickerGridProps {
+export type PickerGridProps = {
   items: PickerItem[];
   selectedIndex: number;
   imgUrlFn: (item: PickerItem) => string;
@@ -16,7 +16,7 @@ interface PickerGridProps {
   suggestItems?: string[];
   suggestTitle?: string;
   onSuggestPick?: (term: string) => void;
-}
+};
 
 export function PickerGrid({
   items,

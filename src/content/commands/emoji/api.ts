@@ -22,12 +22,12 @@ export type EmojiCategory =
   | "symbols";
 
 /** Emoji item */
-export interface EmojiItem {
+export type EmojiItem = {
   emoji: string;
   name: string;
   keywords: string[];
   category: EmojiCategory;
-}
+};
 
 /** Category display labels */
 export const CATEGORY_LABELS: Record<EmojiCategory, string> = {

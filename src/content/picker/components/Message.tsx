@@ -5,9 +5,9 @@
 import React from "react";
 import { getCardStyles } from "../styles.ts";
 
-interface MessageProps {
+export type MessageProps = {
   message: string;
-}
+};
 
 export function Message({ message }: MessageProps) {
   const cardStyles = getCardStyles();

@@ -4,18 +4,18 @@
 
 import { add, sub } from "./math.ts";
 
-export interface CursorInfo {
+export type CursorInfo = {
   value: string;
   pos: number;
   lineStart: number;
   line: string;
-}
+};
 
-export interface CaretCoordinates {
+export type CaretCoordinates = {
   left: number;
   top: number;
   height: number;
-}
+};
 
 /**
  * Check if element is a GitHub markdown textarea

@@ -7,6 +7,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { add, sub, clamp } from "../../utils/math.ts";
 import { getCaretCoordinates } from "../../utils/dom.ts";
 import type { PickerItem } from "../types.ts";
+import type { Position } from "./types.ts";
 import { state, resetPickerState } from "./state.ts";
 import { applyPickerStyles } from "./styles.ts";
 import { Picker, type PickerView } from "./components/Picker.tsx";
@@ -15,13 +16,13 @@ import { Picker, type PickerView } from "./components/Picker.tsx";
 let pickerRoot: Root | null = null;
 
 // Current picker state for React rendering
-interface ReactPickerState {
+export type ReactPickerState = {
   visible: boolean;
   title: string;
   subtitle: string;
   view: PickerView;
-  position: { left: number; top: number };
-}
+  position: Position;
+};
 
 const reactState: ReactPickerState = {
   visible: false,

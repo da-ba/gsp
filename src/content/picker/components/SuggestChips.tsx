@@ -5,11 +5,11 @@
 import React from "react";
 import { getBadgeStyles } from "../styles.ts";
 
-interface SuggestChipsProps {
+export type SuggestChipsProps = {
   items: string[];
   title: string;
   onPick: (term: string) => void;
-}
+};
 
 export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);

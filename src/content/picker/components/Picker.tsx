@@ -12,6 +12,7 @@ import { Message } from "./Message.tsx";
 import { SettingsPanel } from "./SettingsPanel.tsx";
 import { applyPickerStyles } from "../styles.ts";
 import type { PickerItem } from "../../types.ts";
+import type { Position } from "../types.ts";
 
 export type PickerView =
   | { type: "loading" }
@@ -20,7 +21,7 @@ export type PickerView =
   | { type: "settings" }
   | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void };
 
-interface PickerProps {
+export type PickerProps = {
   visible: boolean;
   title: string;
   subtitle: string;
@@ -32,8 +33,8 @@ interface PickerProps {
   onSuggestPick: (term: string) => void;
   onSettingsClick: () => void;
   onSetupComplete: () => void;
-  position: { left: number; top: number };
-}
+  position: Position;
+};
 
 export function Picker({
   visible,

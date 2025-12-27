@@ -7,14 +7,14 @@ import { isDarkMode } from "../../../utils/theme.ts";
 import { getGridItemSelectedStyles } from "../styles.ts";
 import type { PickerItem } from "../../types.ts";
 
-interface GridItemProps {
+export type GridItemProps = {
   item: PickerItem;
   index: number;
   selected: boolean;
   imgUrlFn: (item: PickerItem) => string;
   onSelect: (item: PickerItem) => void;
   onHover: (index: number) => void;
-}
+};
 
 export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }: GridItemProps) {
   const dark = isDarkMode();
