@@ -4,7 +4,7 @@
 
 import type { PickerItem } from "../types.ts";
 
-export interface PreflightResult {
+export type PreflightResult = {
   showSetup: boolean;
   message?: string;
   /**
@@ -12,26 +12,26 @@ export interface PreflightResult {
    * Receives the picker body element and a callback to invoke after setup completes.
    */
   renderSetup?: (bodyEl: HTMLElement, onComplete: () => void) => void;
-}
+};
 
-export interface EmptyStateResult {
+export type EmptyStateResult = {
   items?: PickerItem[];
   suggest?: string[];
   suggestTitle?: string;
   error?: string;
-}
+};
 
-export interface ResultsResult {
+export type ResultsResult = {
   items?: PickerItem[];
   suggestTitle?: string;
   error?: string;
-}
+};
 
-export interface SuggestionsResult {
+export type SuggestionsResult = {
   items: string[];
-}
+};
 
-export interface CommandSpec {
+export type CommandSpec = {
   preflight: () => Promise<PreflightResult>;
   getEmptyState: () => Promise<EmptyStateResult>;
   getResults: (query: string) => Promise<ResultsResult>;
@@ -46,7 +46,7 @@ export interface CommandSpec {
    * Receives a container element to append settings UI to.
    */
   renderSettings?: (container: HTMLElement) => void;
-}
+};
 
 const commandRegistry: Record<string, CommandSpec> = {};
 

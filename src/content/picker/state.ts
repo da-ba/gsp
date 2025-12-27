@@ -4,7 +4,7 @@
 
 import type { PickerItem } from "../types.ts";
 
-export interface PickerState {
+export type PickerState = {
   pickerEl: HTMLElement | null;
   headerTitleEl: HTMLElement | null;
   headerSubEl: HTMLElement | null;
@@ -29,7 +29,7 @@ export interface PickerState {
   commandCache: Record<string, unknown>;
   /** Whether the settings panel is currently shown */
   showingSettings: boolean;
-}
+};
 
 export function createPickerState(): PickerState {
   return {

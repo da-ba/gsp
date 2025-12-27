@@ -14,7 +14,7 @@ import type { PickerItem } from "../../types.ts";
 /** Font option types */
 type FontCategory = "size" | "color" | "style";
 
-interface FontOption {
+export type FontOption = {
   id: string;
   category: FontCategory;
   label: string;
@@ -22,7 +22,7 @@ interface FontOption {
   template: string;
   /** Preview display text */
   preview: string;
-}
+};
 
 /** Available font options */
 const FONT_OPTIONS: FontOption[] = [
@@ -317,4 +317,4 @@ const fontCommand: CommandSpec = {
 // Register the command
 registerCommand("font", fontCommand);
 
-export { fontCommand, FONT_OPTIONS, type FontOption };
+export { fontCommand, FONT_OPTIONS };

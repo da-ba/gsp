@@ -4,9 +4,9 @@
 
 import { isDarkMode, fontSystemUi, fontSansSerif, tokenLinearGradient } from "../../utils/theme.ts";
 
-export interface StyleConfig {
+export type StyleConfig = {
   dark: boolean;
-}
+};
 
 function getConfig(): StyleConfig {
   return { dark: isDarkMode() };

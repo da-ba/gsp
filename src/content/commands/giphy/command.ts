@@ -115,14 +115,14 @@ function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): voi
   }
 }
 
-interface GiphyKeyFormOptions {
+export type GiphyKeyFormOptions = {
   /** Show Clear button (for settings panel) */
   showClear?: boolean;
   /** Load and show masked current key */
   showCurrentKey?: boolean;
   /** Callback after save completes */
   onSave?: () => void;
-}
+};
 
 /**
  * Render Giphy API key form (shared between setup panel and settings)
