@@ -4,11 +4,11 @@
  * Provides an emoji picker with search and recently used favorites.
  */
 
-import { replaceRange } from "../../../utils/dom.ts";
-import { add } from "../../../utils/math.ts";
-import { registerCommand, type CommandSpec } from "../registry.ts";
-import { renderGrid, state, getCommandCache, setCommandCache } from "../../picker/index.ts";
-import type { PickerItem } from "../../types.ts";
+import { replaceRange } from "../../../utils/dom.ts"
+import { add } from "../../../utils/math.ts"
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { renderGrid, state, getCommandCache, setCommandCache } from "../../picker/index.ts"
+import type { PickerItem } from "../../types.ts"
 import {
   EMOJIS,
   CATEGORY_LABELS,
@@ -19,32 +19,32 @@ import {
   getEmojiSuggestions,
   type EmojiItem,
   type EmojiCategory,
-} from "./api.ts";
+} from "./api.ts"
 
 // Cache keys for emoji-specific data
-const CACHE_RECENT_EMOJIS = "emoji:recentEmojis";
+const CACHE_RECENT_EMOJIS = "emoji:recentEmojis"
 
 /** Get category color for badge */
 function getCategoryColor(category: EmojiCategory): string {
   switch (category) {
     case "smileys":
-      return "#f59e0b";
+      return "#f59e0b"
     case "people":
-      return "#ec4899";
+      return "#ec4899"
     case "nature":
-      return "#22c55e";
+      return "#22c55e"
     case "food":
-      return "#f97316";
+      return "#f97316"
     case "activities":
-      return "#6366f1";
+      return "#6366f1"
     case "travel":
-      return "#3b82f6";
+      return "#3b82f6"
     case "objects":
-      return "#8b5cf6";
+      return "#8b5cf6"
     case "symbols":
-      return "#ef4444";
+      return "#ef4444"
     default:
-      return "#64748b";
+      return "#64748b"
   }
 }
 
@@ -54,19 +54,19 @@ function escapeForSvg(s: string): string {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
+    .replaceAll("'", "&apos;")
 }
 
 /** Calculate badge width based on text length (character width ~5px + padding 12px) */
 function calculateBadgeWidth(text: string): number {
-  const charWidth = 5;
-  const padding = 12;
-  return text.length * charWidth + padding;
+  const charWidth = 5
+  const padding = 12
+  return text.length * charWidth + padding
 }
 
 /** Create a tile for an emoji */
 function makeEmojiTile(item: EmojiItem): PickerItem {
-  const categoryColor = getCategoryColor(item.category);
+  const categoryColor = getCategoryColor(item.category)
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
@@ -85,40 +85,40 @@ function makeEmojiTile(item: EmojiItem): PickerItem {
   <!-- Category badge -->
   <rect x="8" y="90" width="${calculateBadgeWidth(CATEGORY_LABELS[item.category])}" height="18" rx="4" fill="${categoryColor}" fill-opacity="0.15"/>
   <text x="14" y="102" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="9" font-weight="500" fill="${categoryColor}">${escapeForSvg(CATEGORY_LABELS[item.category])}</text>
-</svg>`;
+</svg>`
 
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
 
   return {
     id: item.emoji,
     previewUrl: dataUrl,
     data: item,
-  };
+  }
 }
 
 /** Insert emoji into the textarea */
 function insertEmoji(emoji: string): void {
-  const field = state.activeField;
-  if (!field) return;
-  if (field.tagName !== "TEXTAREA") return;
+  const field = state.activeField
+  if (!field) return
+  if (field.tagName !== "TEXTAREA") return
 
-  const value = field.value || "";
-  const pos = field.selectionStart || 0;
-  const lineStart = state.activeLineStart;
+  const value = field.value || ""
+  const pos = field.selectionStart || 0
+  const lineStart = state.activeLineStart
 
-  const replacement = emoji + " ";
-  const newValue = replaceRange(value, lineStart, pos, replacement);
-  field.value = newValue;
+  const replacement = emoji + " "
+  const newValue = replaceRange(value, lineStart, pos, replacement)
+  field.value = newValue
 
-  const newPos = add(lineStart, replacement.length);
-  field.focus();
-  field.setSelectionRange(newPos, newPos);
-  field.dispatchEvent(new Event("input", { bubbles: true }));
+  const newPos = add(lineStart, replacement.length)
+  field.focus()
+  field.setSelectionRange(newPos, newPos)
+  field.dispatchEvent(new Event("input", { bubbles: true }))
 
   // Add to recently used (fire-and-forget, errors are non-critical)
   addRecentEmoji(emoji).catch(() => {
     // Silently ignore storage errors - not critical for UX
-  });
+  })
 }
 
 const emojiCommand: CommandSpec = {
@@ -126,10 +126,10 @@ const emojiCommand: CommandSpec = {
 
   getEmptyState: async () => {
     // Load recently used emojis if not cached
-    let recentEmojis = getCommandCache<string[]>(CACHE_RECENT_EMOJIS);
+    let recentEmojis = getCommandCache<string[]>(CACHE_RECENT_EMOJIS)
     if (!recentEmojis) {
-      recentEmojis = await getRecentEmojis();
-      setCommandCache(CACHE_RECENT_EMOJIS, recentEmojis);
+      recentEmojis = await getRecentEmojis()
+      setCommandCache(CACHE_RECENT_EMOJIS, recentEmojis)
     }
 
     // If we have recent emojis, show them first
@@ -137,37 +137,37 @@ const emojiCommand: CommandSpec = {
       const recentItems = recentEmojis
         .map((emoji) => EMOJIS.find((e) => e.emoji === emoji))
         .filter((e): e is EmojiItem => e !== undefined)
-        .map(makeEmojiTile);
+        .map(makeEmojiTile)
 
       // Add some popular emojis if not enough recent ones
       const popularItems = getPopularEmojis()
         .filter((e) => !recentEmojis!.includes(e.emoji))
         .slice(0, Math.max(0, 12 - recentItems.length))
-        .map(makeEmojiTile);
+        .map(makeEmojiTile)
 
       return {
         items: [...recentItems, ...popularItems],
         suggest: getEmojiSuggestions(),
         suggestTitle: "Recent & Popular",
-      };
+      }
     }
 
     // Otherwise show popular emojis
-    const items = getPopularEmojis().map(makeEmojiTile);
+    const items = getPopularEmojis().map(makeEmojiTile)
     return {
       items,
       suggest: getEmojiSuggestions(),
       suggestTitle: "Popular emojis",
-    };
+    }
   },
 
   getResults: async (query: string) => {
-    const filtered = searchEmojis(query);
-    const items = filtered.slice(0, 24).map(makeEmojiTile);
+    const filtered = searchEmojis(query)
+    const items = filtered.slice(0, 24).map(makeEmojiTile)
     return {
       items,
       suggestTitle: query ? "Matching emojis" : "All emojis",
-    };
+    }
   },
 
   renderItems: (items: PickerItem[], suggestTitle: string) => {
@@ -176,7 +176,7 @@ const emojiCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertEmoji((it.data as EmojiItem).emoji),
       suggestTitle
-    );
+    )
   },
 
   renderCurrent: () => {
@@ -185,18 +185,18 @@ const emojiCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertEmoji((it.data as EmojiItem).emoji),
       "Emojis"
-    );
+    )
   },
 
   onSelect: (it: PickerItem) => {
-    if (!it) return;
-    insertEmoji((it.data as EmojiItem).emoji);
+    if (!it) return
+    insertEmoji((it.data as EmojiItem).emoji)
   },
 
   noResultsMessage: "No matching emojis found. Try: smile, heart, fire, star",
-};
+}
 
 // Register the command
-registerCommand("emoji", emojiCommand);
+registerCommand("emoji", emojiCommand)
 
-export { emojiCommand, makeEmojiTile };
+export { emojiCommand, makeEmojiTile }

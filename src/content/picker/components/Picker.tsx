@@ -2,39 +2,39 @@
  * Main Picker Component
  */
 
-import React from "react";
-import { PickerHeader } from "./PickerHeader.tsx";
-import { PickerHints } from "./PickerHints.tsx";
-import { PickerFooter } from "./PickerFooter.tsx";
-import { PickerGrid } from "./PickerGrid.tsx";
-import { LoadingSkeleton } from "./LoadingSkeleton.tsx";
-import { Message } from "./Message.tsx";
-import { SettingsPanel } from "./SettingsPanel.tsx";
-import { applyPickerStyles } from "../styles.ts";
-import type { PickerItem } from "../../types.ts";
-import type { Position } from "../types.ts";
+import React from "react"
+import { PickerHeader } from "./PickerHeader.tsx"
+import { PickerHints } from "./PickerHints.tsx"
+import { PickerFooter } from "./PickerFooter.tsx"
+import { PickerGrid } from "./PickerGrid.tsx"
+import { LoadingSkeleton } from "./LoadingSkeleton.tsx"
+import { Message } from "./Message.tsx"
+import { SettingsPanel } from "./SettingsPanel.tsx"
+import { applyPickerStyles } from "../styles.ts"
+import type { PickerItem } from "../../types.ts"
+import type { Position } from "../types.ts"
 
 export type PickerView =
   | { type: "loading" }
   | { type: "message"; message: string }
   | { type: "grid"; items: PickerItem[]; suggestItems?: string[]; suggestTitle?: string }
   | { type: "settings" }
-  | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void };
+  | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void }
 
 export type PickerProps = {
-  visible: boolean;
-  title: string;
-  subtitle: string;
-  view: PickerView;
-  selectedIndex: number;
-  imgUrlFn: (item: PickerItem) => string;
-  onSelect: (item: PickerItem) => void;
-  onHover: (index: number) => void;
-  onSuggestPick: (term: string) => void;
-  onSettingsClick: () => void;
-  onSetupComplete: () => void;
-  position: Position;
-};
+  visible: boolean
+  title: string
+  subtitle: string
+  view: PickerView
+  selectedIndex: number
+  imgUrlFn: (item: PickerItem) => string
+  onSelect: (item: PickerItem) => void
+  onHover: (index: number) => void
+  onSuggestPick: (term: string) => void
+  onSettingsClick: () => void
+  onSetupComplete: () => void
+  position: Position
+}
 
 export function Picker({
   visible,
@@ -50,23 +50,23 @@ export function Picker({
   onSetupComplete,
   position,
 }: PickerProps) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const setupBodyRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const setupBodyRef = React.useRef<HTMLDivElement>(null)
 
   // Apply picker styles on mount and theme changes
   React.useEffect(() => {
     if (containerRef.current) {
-      applyPickerStyles(containerRef.current);
+      applyPickerStyles(containerRef.current)
     }
-  }, [visible]);
+  }, [visible])
 
   // Handle setup panel rendering
   React.useEffect(() => {
     if (view.type === "setup" && setupBodyRef.current) {
-      setupBodyRef.current.innerHTML = "";
-      view.renderFn(setupBodyRef.current, onSetupComplete);
+      setupBodyRef.current.innerHTML = ""
+      view.renderFn(setupBodyRef.current, onSetupComplete)
     }
-  }, [view, onSetupComplete]);
+  }, [view, onSetupComplete])
 
   // Animate on show
   React.useEffect(() => {
@@ -78,21 +78,21 @@ export function Picker({
             { opacity: 1, transform: "scale(1)" },
           ],
           { duration: 120, fill: "both" }
-        );
+        )
       } catch {
         // Animation not supported
       }
     }
-  }, [visible]);
+  }, [visible])
 
-  if (!visible) return null;
+  if (!visible) return null
 
   const renderBody = () => {
     switch (view.type) {
       case "loading":
-        return <LoadingSkeleton />;
+        return <LoadingSkeleton />
       case "message":
-        return <Message message={view.message} />;
+        return <Message message={view.message} />
       case "grid":
         return (
           <PickerGrid
@@ -105,9 +105,9 @@ export function Picker({
             suggestTitle={view.suggestTitle}
             onSuggestPick={onSuggestPick}
           />
-        );
+        )
       case "settings":
-        return <SettingsPanel />;
+        return <SettingsPanel />
       case "setup":
         return (
           <div
@@ -119,11 +119,11 @@ export function Picker({
               minHeight: 0,
             }}
           />
-        );
+        )
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   return (
     <div
@@ -147,5 +147,5 @@ export function Picker({
       {renderBody()}
       <PickerFooter />
     </div>
-  );
+  )
 }

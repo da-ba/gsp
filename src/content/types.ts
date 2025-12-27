@@ -3,8 +3,8 @@
  */
 
 export type PickerItem = {
-  id: string;
-  previewUrl: string;
+  id: string
+  previewUrl: string
   /** Command-specific data passed to onSelect */
-  data?: unknown;
-};
+  data?: unknown
+}

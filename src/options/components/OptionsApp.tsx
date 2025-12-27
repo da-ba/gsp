@@ -2,8 +2,8 @@
  * Options Page App Component
  */
 
-import React from "react";
-import { getOptionsSections } from "../../content/commands/options-registry.ts";
+import React from "react"
+import { getOptionsSections } from "../../content/commands/options-registry.ts"
 
 /** Global styles for the options page */
 const globalStyles = `
@@ -15,10 +15,10 @@ const globalStyles = `
   h2 {
     margin-bottom: 16px;
   }
-`;
+`
 
 export function OptionsApp() {
-  const sections = getOptionsSections();
+  const sections = getOptionsSections()
 
   return (
     <>
@@ -30,5 +30,5 @@ export function OptionsApp() {
         ))}
       </div>
     </>
-  );
+  )
 }

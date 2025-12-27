@@ -2,29 +2,29 @@
  * Grid Item Component
  */
 
-import React from "react";
-import { isDarkMode } from "../../../utils/theme.ts";
-import { getGridItemSelectedStyles } from "../styles.ts";
-import type { PickerItem } from "../../types.ts";
+import React from "react"
+import { isDarkMode } from "../../../utils/theme.ts"
+import { getGridItemSelectedStyles } from "../styles.ts"
+import type { PickerItem } from "../../types.ts"
 
 export type GridItemProps = {
-  item: PickerItem;
-  index: number;
-  selected: boolean;
-  imgUrlFn: (item: PickerItem) => string;
-  onSelect: (item: PickerItem) => void;
-  onHover: (index: number) => void;
-};
+  item: PickerItem
+  index: number
+  selected: boolean
+  imgUrlFn: (item: PickerItem) => string
+  onSelect: (item: PickerItem) => void
+  onHover: (index: number) => void
+}
 
 export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }: GridItemProps) {
-  const dark = isDarkMode();
-  const selectedStyles = getGridItemSelectedStyles(selected);
+  const dark = isDarkMode()
+  const selectedStyles = getGridItemSelectedStyles(selected)
 
   const handleClick = (ev: React.MouseEvent) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    onSelect(item);
-  };
+    ev.preventDefault()
+    ev.stopPropagation()
+    onSelect(item)
+  }
 
   return (
     <button
@@ -55,5 +55,5 @@ export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }:
         }}
       />
     </button>
-  );
+  )
 }

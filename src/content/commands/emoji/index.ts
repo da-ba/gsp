@@ -7,7 +7,7 @@
  */
 
 // Export API functions and types
-export * from "./api.ts";
+export * from "./api.ts"
 
 // Export command implementation
-export * from "./command.ts";
+export * from "./command.ts"

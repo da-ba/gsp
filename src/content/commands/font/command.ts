@@ -5,24 +5,24 @@
  * using HTML formatting that works in GitHub markdown.
  */
 
-import { replaceRange } from "../../../utils/dom.ts";
-import { add } from "../../../utils/math.ts";
-import { registerCommand, type CommandSpec } from "../registry.ts";
-import { renderGrid, state } from "../../picker/index.ts";
-import type { PickerItem } from "../../types.ts";
+import { replaceRange } from "../../../utils/dom.ts"
+import { add } from "../../../utils/math.ts"
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { renderGrid, state } from "../../picker/index.ts"
+import type { PickerItem } from "../../types.ts"
 
 /** Font option types */
-type FontCategory = "size" | "color" | "style";
+type FontCategory = "size" | "color" | "style"
 
 export type FontOption = {
-  id: string;
-  category: FontCategory;
-  label: string;
+  id: string
+  category: FontCategory
+  label: string
   /** HTML template with {text} placeholder */
-  template: string;
+  template: string
   /** Preview display text */
-  preview: string;
-};
+  preview: string
+}
 
 /** Available font options */
 const FONT_OPTIONS: FontOption[] = [
@@ -101,29 +101,29 @@ const FONT_OPTIONS: FontOption[] = [
   },
   { id: "code", category: "style", label: "Code", template: "`{text}`", preview: "Code" },
   { id: "quote", category: "style", label: "Quote", template: "> {text}", preview: "Quote" },
-];
+]
 
 /** Category labels for display */
 const CATEGORY_LABELS: Record<FontCategory, string> = {
   size: "Sizes",
   color: "Colors",
   style: "Styles",
-};
+}
 
 /** Category display order */
-const CATEGORY_ORDER: FontCategory[] = ["style", "color", "size"];
+const CATEGORY_ORDER: FontCategory[] = ["style", "color", "size"]
 
 /** Get color for category badge in SVG */
 function getCategoryColor(category: FontCategory): string {
   switch (category) {
     case "size":
-      return "#6366f1";
+      return "#6366f1"
     case "color":
-      return "#ec4899";
+      return "#ec4899"
     case "style":
-      return "#14b8a6";
+      return "#14b8a6"
     default:
-      return "#64748b";
+      return "#64748b"
   }
 }
 
@@ -131,19 +131,19 @@ function getCategoryColor(category: FontCategory): string {
 function getPreviewColor(id: string): string {
   switch (id) {
     case "red":
-      return "#ef4444";
+      return "#ef4444"
     case "blue":
-      return "#3b82f6";
+      return "#3b82f6"
     case "green":
-      return "#22c55e";
+      return "#22c55e"
     case "orange":
-      return "#f97316";
+      return "#f97316"
     case "purple":
-      return "#a855f7";
+      return "#a855f7"
     case "gray":
-      return "#6b7280";
+      return "#6b7280"
     default:
-      return "#0f172a";
+      return "#0f172a"
   }
 }
 
@@ -153,29 +153,29 @@ function escapeForSvg(s: string): string {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
+    .replaceAll("'", "&apos;")
 }
 
 /** Create a tile for a font option */
 function makeFontTile(option: FontOption): PickerItem {
-  const categoryColor = getCategoryColor(option.category);
-  const previewColor = option.category === "color" ? getPreviewColor(option.id) : "#0f172a";
+  const categoryColor = getCategoryColor(option.category)
+  const previewColor = option.category === "color" ? getPreviewColor(option.id) : "#0f172a"
 
   // Font styling for preview
-  let fontWeight = "500";
-  let fontStyle = "normal";
-  let textDecoration = "none";
-  let fontSize = "22";
+  let fontWeight = "500"
+  let fontStyle = "normal"
+  let textDecoration = "none"
+  let fontSize = "22"
 
-  if (option.id === "bold" || option.id === "bolditalic") fontWeight = "700";
-  if (option.id === "italic" || option.id === "bolditalic") fontStyle = "italic";
-  if (option.id === "strikethrough") textDecoration = "line-through";
-  if (option.id === "tiny") fontSize = "14";
-  if (option.id === "small") fontSize = "16";
-  if (option.id === "large") fontSize = "28";
-  if (option.id === "huge") fontSize = "34";
+  if (option.id === "bold" || option.id === "bolditalic") fontWeight = "700"
+  if (option.id === "italic" || option.id === "bolditalic") fontStyle = "italic"
+  if (option.id === "strikethrough") textDecoration = "line-through"
+  if (option.id === "tiny") fontSize = "14"
+  if (option.id === "small") fontSize = "16"
+  if (option.id === "large") fontSize = "28"
+  if (option.id === "huge") fontSize = "34"
   if (option.id === "code") {
-    fontWeight = "400";
+    fontWeight = "400"
   }
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -198,21 +198,21 @@ function makeFontTile(option: FontOption): PickerItem {
   
   <!-- Label -->
   <text x="120" y="145" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="13" font-weight="500" fill="#0f172a" fill-opacity="0.55">${escapeForSvg(option.label)}</text>
-</svg>`;
+</svg>`
 
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
 
   return {
     id: option.id,
     previewUrl: dataUrl,
     data: option,
-  };
+  }
 }
 
 /** Filter options by query */
 function filterOptions(query: string): FontOption[] {
-  const q = (query || "").toLowerCase().trim();
-  if (!q) return FONT_OPTIONS;
+  const q = (query || "").toLowerCase().trim()
+  if (!q) return FONT_OPTIONS
 
   return FONT_OPTIONS.filter((opt) => {
     return (
@@ -220,72 +220,72 @@ function filterOptions(query: string): FontOption[] {
       opt.label.toLowerCase().includes(q) ||
       opt.category.includes(q) ||
       CATEGORY_LABELS[opt.category].toLowerCase().includes(q)
-    );
-  });
+    )
+  })
 }
 
 /** Get options sorted by category order */
 function getSortedOptions(options: FontOption[]): FontOption[] {
   return [...options].sort((a, b) => {
-    const aIdx = CATEGORY_ORDER.indexOf(a.category);
-    const bIdx = CATEGORY_ORDER.indexOf(b.category);
-    if (aIdx !== bIdx) return aIdx - bIdx;
-    return FONT_OPTIONS.indexOf(a) - FONT_OPTIONS.indexOf(b);
-  });
+    const aIdx = CATEGORY_ORDER.indexOf(a.category)
+    const bIdx = CATEGORY_ORDER.indexOf(b.category)
+    if (aIdx !== bIdx) return aIdx - bIdx
+    return FONT_OPTIONS.indexOf(a) - FONT_OPTIONS.indexOf(b)
+  })
 }
 
 /** Insert formatted text into the textarea */
 function insertFontMarkdown(option: FontOption): void {
-  const field = state.activeField;
-  if (!field) return;
-  if (field.tagName !== "TEXTAREA") return;
+  const field = state.activeField
+  if (!field) return
+  if (field.tagName !== "TEXTAREA") return
 
-  const value = field.value || "";
-  const pos = field.selectionStart || 0;
-  const lineStart = state.activeLineStart;
+  const value = field.value || ""
+  const pos = field.selectionStart || 0
+  const lineStart = state.activeLineStart
 
   // Get any text that was typed after the command
-  const currentLine = value.slice(lineStart, pos);
-  const cmdMatch = currentLine.match(/^\/font\s*(.*)/i);
-  const userText = cmdMatch?.[1]?.trim() || "text";
+  const currentLine = value.slice(lineStart, pos)
+  const cmdMatch = currentLine.match(/^\/font\s*(.*)/i)
+  const userText = cmdMatch?.[1]?.trim() || "text"
 
   // Apply the template
-  const replacement = option.template.replace(/{text}/g, userText);
-  const newValue = replaceRange(value, lineStart, pos, replacement);
-  field.value = newValue;
+  const replacement = option.template.replace(/{text}/g, userText)
+  const newValue = replaceRange(value, lineStart, pos, replacement)
+  field.value = newValue
 
-  const newPos = add(lineStart, replacement.length);
-  field.focus();
-  field.setSelectionRange(newPos, newPos);
-  field.dispatchEvent(new Event("input", { bubbles: true }));
+  const newPos = add(lineStart, replacement.length)
+  field.focus()
+  field.setSelectionRange(newPos, newPos)
+  field.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
 /** Get category suggestions */
 function getCategorySuggestions(): string[] {
-  return ["bold", "italic", "red", "blue", "large", "code"];
+  return ["bold", "italic", "red", "blue", "large", "code"]
 }
 
 const fontCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    const options = getSortedOptions(FONT_OPTIONS);
-    const items = options.map(makeFontTile);
+    const options = getSortedOptions(FONT_OPTIONS)
+    const items = options.map(makeFontTile)
     return {
       items,
       suggest: getCategorySuggestions(),
       suggestTitle: "Popular styles",
-    };
+    }
   },
 
   getResults: async (query: string) => {
-    const filtered = filterOptions(query);
-    const sorted = getSortedOptions(filtered);
-    const items = sorted.map(makeFontTile);
+    const filtered = filterOptions(query)
+    const sorted = getSortedOptions(filtered)
+    const items = sorted.map(makeFontTile)
     return {
       items,
       suggestTitle: query ? "Matching styles" : "Font styles",
-    };
+    }
   },
 
   renderItems: (items: PickerItem[], suggestTitle: string) => {
@@ -294,7 +294,7 @@ const fontCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertFontMarkdown(it.data as FontOption),
       suggestTitle
-    );
+    )
   },
 
   renderCurrent: () => {
@@ -303,18 +303,18 @@ const fontCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertFontMarkdown(it.data as FontOption),
       "Font styles"
-    );
+    )
   },
 
   onSelect: (it: PickerItem) => {
-    if (!it) return;
-    insertFontMarkdown(it.data as FontOption);
+    if (!it) return
+    insertFontMarkdown(it.data as FontOption)
   },
 
   noResultsMessage: "No matching font styles found. Try: bold, italic, red, large",
-};
+}
 
 // Register the command
-registerCommand("font", fontCommand);
+registerCommand("font", fontCommand)
 
-export { fontCommand, FONT_OPTIONS };
+export { fontCommand, FONT_OPTIONS }

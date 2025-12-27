@@ -6,6 +6,6 @@
  * Position coordinates for the picker
  */
 export type Position = {
-  left: number;
-  top: number;
-};
+  left: number
+  top: number
+}

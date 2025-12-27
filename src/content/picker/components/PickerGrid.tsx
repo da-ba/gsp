@@ -2,21 +2,21 @@
  * Picker Grid Component
  */
 
-import React from "react";
-import { GridItem } from "./GridItem.tsx";
-import { SuggestChips } from "./SuggestChips.tsx";
-import type { PickerItem } from "../../types.ts";
+import React from "react"
+import { GridItem } from "./GridItem.tsx"
+import { SuggestChips } from "./SuggestChips.tsx"
+import type { PickerItem } from "../../types.ts"
 
 export type PickerGridProps = {
-  items: PickerItem[];
-  selectedIndex: number;
-  imgUrlFn: (item: PickerItem) => string;
-  onSelect: (item: PickerItem) => void;
-  onHover: (index: number) => void;
-  suggestItems?: string[];
-  suggestTitle?: string;
-  onSuggestPick?: (term: string) => void;
-};
+  items: PickerItem[]
+  selectedIndex: number
+  imgUrlFn: (item: PickerItem) => string
+  onSelect: (item: PickerItem) => void
+  onHover: (index: number) => void
+  suggestItems?: string[]
+  suggestTitle?: string
+  onSuggestPick?: (term: string) => void
+}
 
 export function PickerGrid({
   items,
@@ -63,5 +63,5 @@ export function PickerGrid({
         ))}
       </div>
     </div>
-  );
+  )
 }

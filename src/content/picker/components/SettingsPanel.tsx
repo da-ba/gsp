@@ -2,58 +2,58 @@
  * Settings Panel Component
  */
 
-import React from "react";
-import { setThemeOverride } from "../../../utils/theme.ts";
+import React from "react"
+import { setThemeOverride } from "../../../utils/theme.ts"
 import {
   getThemePreference,
   setThemePreference,
   type ThemePreference,
-} from "../../../utils/storage.ts";
-import { listCommands, getCommand } from "../../commands/registry.ts";
-import { getCardStyles, getBadgeStyles, applyPickerStyles } from "../styles.ts";
-import { state } from "../state.ts";
+} from "../../../utils/storage.ts"
+import { listCommands, getCommand } from "../../commands/registry.ts"
+import { getCardStyles, getBadgeStyles, applyPickerStyles } from "../styles.ts"
+import { state } from "../state.ts"
 
 const THEMES: { value: ThemePreference; label: string }[] = [
   { value: "system", label: "System" },
   { value: "light", label: "Light" },
   { value: "dark", label: "Dark" },
-];
+]
 
 export function SettingsPanel() {
-  const [currentTheme, setCurrentTheme] = React.useState<ThemePreference>("system");
-  const commandSettingsRef = React.useRef<HTMLDivElement>(null);
-  const cardStyles = getCardStyles();
-  const badgeStyles = getBadgeStyles();
+  const [currentTheme, setCurrentTheme] = React.useState<ThemePreference>("system")
+  const commandSettingsRef = React.useRef<HTMLDivElement>(null)
+  const cardStyles = getCardStyles()
+  const badgeStyles = getBadgeStyles()
 
   // Load current theme preference
   React.useEffect(() => {
-    getThemePreference().then(setCurrentTheme);
-  }, []);
+    getThemePreference().then(setCurrentTheme)
+  }, [])
 
   // Render command settings
   React.useEffect(() => {
-    const container = commandSettingsRef.current;
-    if (!container) return;
+    const container = commandSettingsRef.current
+    if (!container) return
 
-    container.innerHTML = "";
-    const commands = listCommands();
+    container.innerHTML = ""
+    const commands = listCommands()
     for (const cmdName of commands) {
-      const cmd = getCommand(cmdName);
+      const cmd = getCommand(cmdName)
       if (cmd?.renderSettings) {
-        cmd.renderSettings(container);
+        cmd.renderSettings(container)
       }
     }
-  }, []);
+  }, [])
 
   const handleThemeChange = async (value: ThemePreference) => {
-    await setThemePreference(value);
-    setThemeOverride(value);
-    setCurrentTheme(value);
+    await setThemePreference(value)
+    setThemeOverride(value)
+    setCurrentTheme(value)
     // Refresh picker styles
     if (state.pickerEl) {
-      applyPickerStyles(state.pickerEl);
+      applyPickerStyles(state.pickerEl)
     }
-  };
+  }
 
   return (
     <div
@@ -82,9 +82,9 @@ export function SettingsPanel() {
                 type="button"
                 data-settings-action="true"
                 onClick={(ev) => {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                  handleThemeChange(value);
+                  ev.preventDefault()
+                  ev.stopPropagation()
+                  handleThemeChange(value)
                 }}
                 style={{
                   ...(badgeStyles as React.CSSProperties),
@@ -104,5 +104,5 @@ export function SettingsPanel() {
         <div ref={commandSettingsRef} />
       </div>
     </div>
-  );
+  )
 }

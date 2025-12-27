@@ -2,9 +2,9 @@
  * Tests for command registry
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { registerCommand, getCommand, listCommands } from "./registry.ts";
-import type { CommandSpec } from "./registry.ts";
+import { describe, it, expect, beforeEach, vi } from "vitest"
+import { registerCommand, getCommand, listCommands } from "./registry.ts"
+import type { CommandSpec } from "./registry.ts"
 
 describe("command registry", () => {
   const mockCommand: CommandSpec = {
@@ -14,41 +14,41 @@ describe("command registry", () => {
     renderItems: vi.fn(),
     renderCurrent: vi.fn(),
     onSelect: vi.fn(),
-  };
+  }
 
   describe("registerCommand", () => {
     it("registers a command", () => {
-      registerCommand("test", mockCommand);
-      const cmd = getCommand("test");
-      expect(cmd).toBe(mockCommand);
-    });
-  });
+      registerCommand("test", mockCommand)
+      const cmd = getCommand("test")
+      expect(cmd).toBe(mockCommand)
+    })
+  })
 
   describe("getCommand", () => {
     beforeEach(() => {
-      registerCommand("mycommand", mockCommand);
-    });
+      registerCommand("mycommand", mockCommand)
+    })
 
     it("returns registered command", () => {
-      const cmd = getCommand("mycommand");
-      expect(cmd).toBe(mockCommand);
-    });
+      const cmd = getCommand("mycommand")
+      expect(cmd).toBe(mockCommand)
+    })
 
     it("returns null for unknown command", () => {
-      const cmd = getCommand("unknown");
-      expect(cmd).toBeNull();
-    });
+      const cmd = getCommand("unknown")
+      expect(cmd).toBeNull()
+    })
 
     it("returns null for empty string", () => {
-      const cmd = getCommand("");
-      expect(cmd).toBeNull();
-    });
-  });
+      const cmd = getCommand("")
+      expect(cmd).toBeNull()
+    })
+  })
 
   describe("listCommands", () => {
     it("returns registered command names", () => {
-      registerCommand("list-test", mockCommand);
-      expect(listCommands()).toContain("list-test");
-    });
-  });
-});
+      registerCommand("list-test", mockCommand)
+      expect(listCommands()).toContain("list-test")
+    })
+  })
+})
