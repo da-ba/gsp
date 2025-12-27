@@ -41,6 +41,20 @@ export function PickerGrid({
         <SuggestChips items={suggestItems} title={suggestTitle} onPick={onSuggestPick} />
       )}
 
+      {/* Show suggestTitle as section header when there are no suggest chips */}
+      {suggestItems.length === 0 && suggestTitle && (
+        <div
+          style={{
+            width: "100%",
+            opacity: 0.72,
+            fontSize: "12px",
+            marginBottom: "8px",
+          }}
+        >
+          {suggestTitle}
+        </div>
+      )}
+
       <div
         style={{
           display: "grid",
