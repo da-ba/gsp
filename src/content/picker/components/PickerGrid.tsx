@@ -48,7 +48,7 @@ export function PickerGrid({
             width: "100%",
             opacity: 0.72,
             fontSize: "12px",
-            marginBottom: "8px",
+            marginBottom: "4px",
           }}
         >
           {suggestTitle}
