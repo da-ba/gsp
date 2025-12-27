@@ -64,7 +64,7 @@ function calculateBadgeWidth(text: string): number {
 /** Create a tile for a mention item */
 function makeMentionTile(item: MentionItem): PickerItem {
   const typeColor = getTypeColor(item.type)
-  const displayUsername = item.type === "team" ? `@${item.username}` : `@${item.username}`
+  const displayUsername = `@${item.username}`
   const truncatedUsername =
     displayUsername.length > 18 ? displayUsername.slice(0, 17) + "…" : displayUsername
 
