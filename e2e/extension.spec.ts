@@ -1153,3 +1153,323 @@ test.describe("Font Command Styles", () => {
     await browser.close();
   });
 });
+
+test.describe("Emoji Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/emoji command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/emoji");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows emoji content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Popular");
+
+    await browser.close();
+  });
+
+  test("/emoji command shows emoji options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/emoji");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify emoji options are shown (check for images in picker grid)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/emoji search filters emojis by name", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "thumbs" to find thumbs up/down emojis
+    await textarea.fill("/emoji thumbs");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have thumbs up and thumbs down at minimum
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThan(20); // Filtered, not showing all
+
+    await browser.close();
+  });
+
+  test("/emoji search filters by keyword", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "love" keyword
+    await textarea.fill("/emoji love");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show matching emojis (hearts, etc.)
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/emoji search filters by category", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "food" category
+    await textarea.fill("/emoji food");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show food emojis
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("selecting emoji inserts it into textarea", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "thumbs up" to get a specific emoji
+    await textarea.fill("/emoji thumbs up");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first emoji
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that an emoji was inserted (thumbs up emoji)
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("👍 ");
+
+    await browser.close();
+  });
+
+  test("selecting smile emoji inserts it", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "grinning" to get the grinning face emoji
+    await textarea.fill("/emoji grinning");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first emoji
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the emoji was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("😀 ");
+
+    await browser.close();
+  });
+
+  test("selecting heart emoji inserts it", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "red heart"
+    await textarea.fill("/emoji red heart");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first emoji
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the heart emoji was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("❤️ ");
+
+    await browser.close();
+  });
+
+  test("selecting fire emoji inserts it", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "flame" which specifically matches the fire emoji
+    await textarea.fill("/emoji flame");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first emoji
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that an emoji was inserted (ends with space, starts with emoji)
+    const textareaValue = await textarea.inputValue();
+    // Fire emoji unicode is U+1F525
+    expect(textareaValue.endsWith(" ")).toBe(true);
+    expect(textareaValue.length).toBeGreaterThan(1);
+    expect(textareaValue.trim().codePointAt(0)).toBe(0x1f525); // Fire emoji code point
+
+    await browser.close();
+  });
+
+  test("picker closes after emoji selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/emoji thumbs");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the emoji
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/emoji");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate emoji grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/emoji");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const initialClass = await firstButton.getAttribute("style");
+    expect(initialClass).toContain("box-shadow");
+
+    // Press right arrow to move selection
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(100);
+
+    // Second item should now be selected
+    const secondButton = picker.locator('button[data-item-index="1"]');
+    const secondClass = await secondButton.getAttribute("style");
+    expect(secondClass).toContain("box-shadow");
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/emoji xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching emojis");
+
+    await browser.close();
+  });
+});
