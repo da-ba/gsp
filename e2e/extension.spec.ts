@@ -1474,11 +1474,7 @@ test.describe("Emoji Command", () => {
   });
 });
 
-<<<<<<< HEAD
-test.describe("Kbd Command", () => {
-=======
 test.describe("Now Command - Date/Time Formatting", () => {
->>>>>>> origin/main
   let testServer: { server: Server; port: number };
 
   test.beforeAll(async () => {
@@ -1527,60 +1523,34 @@ test.describe("Now Command - Date/Time Formatting", () => {
     return { page, textarea };
   }
 
-<<<<<<< HEAD
-  test("/kbd command shows picker", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/kbd");
-=======
   test("/now command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/now");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-<<<<<<< HEAD
-    // Verify the picker shows keyboard shortcuts
-    const pickerContent = await picker.textContent();
-    expect(pickerContent).toContain("Common shortcuts");
-=======
     // Verify the picker shows date format content
     const pickerContent = await picker.textContent();
     expect(pickerContent).toContain("Date formats");
->>>>>>> origin/main
 
     await browser.close();
   });
 
-<<<<<<< HEAD
-  test("/kbd command shows shortcut options", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/kbd");
-=======
   test("/now command shows date format options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/now");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-<<<<<<< HEAD
-    // Verify shortcut options are shown (check for images in picker grid)
-=======
     // Verify date format options are shown (check for images in picker grid)
->>>>>>> origin/main
     const gridImages = picker.locator("img");
     const imageCount = await gridImages.count();
     expect(imageCount).toBeGreaterThan(0);
@@ -1588,7 +1558,346 @@ test.describe("Now Command - Date/Time Formatting", () => {
     await browser.close();
   });
 
-<<<<<<< HEAD
+  test("/now iso filter shows ISO formats", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now iso");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have ISO and ISO Date options
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThan(10); // Filtered, not showing all
+
+    await browser.close();
+  });
+
+  test("/now local filter shows local formats", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now local");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show local date/time formats
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/now utc filter shows UTC formats", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now utc");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show UTC date/time formats
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("selecting ISO 8601 format inserts timestamp", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to ISO format
+    await textarea.fill("/now iso");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first (ISO) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains an ISO timestamp
+    const textareaValue = await textarea.inputValue();
+    // ISO timestamps follow pattern: YYYY-MM-DDTHH:MM:SS.sssZ
+    expect(textareaValue).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+
+    await browser.close();
+  });
+
+  test("selecting ISO Date format inserts date only", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to ISO date format
+    await textarea.fill("/now iso-date");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the ISO Date option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains a date in YYYY-MM-DD format
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    await browser.close();
+  });
+
+  test("selecting Unix timestamp format inserts epoch seconds", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to Unix format
+    await textarea.fill("/now unix");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the Unix option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains a Unix timestamp (numeric string)
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toMatch(/^\d{10}$/); // 10-digit Unix timestamp
+
+    await browser.close();
+  });
+
+  test("selecting relative format inserts human-readable time", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to relative format
+    await textarea.fill("/now relative");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the relative option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains "just now" (since we're inserting current time)
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("just now");
+
+    await browser.close();
+  });
+
+  test("picker closes after date format selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now iso");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the format
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate date format grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const initialClass = await firstButton.getAttribute("style");
+    expect(initialClass).toContain("box-shadow");
+
+    // Press right arrow to move selection
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(100);
+
+    // Second item should now be selected
+    const secondButton = picker.locator('button[data-item-index="1"]');
+    const secondClass = await secondButton.getAttribute("style");
+    expect(secondClass).toContain("box-shadow");
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/now xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching date formats");
+
+    await browser.close();
+  });
+
+  test("selecting local datetime format inserts local time", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to local format and select the first one (Local DateTime)
+    await textarea.fill("/now local");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the Local DateTime option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains a local datetime string
+    const textareaValue = await textarea.inputValue();
+    // Local datetime format varies by locale, but should have date and time components
+    expect(textareaValue.length).toBeGreaterThan(5);
+    // Should contain at least one slash or hyphen (date separator) or colon (time separator)
+    expect(textareaValue).toMatch(/[\/\-:]|\d/);
+
+    await browser.close();
+  });
+});
+
+test.describe("Kbd Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/kbd command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows keyboard shortcuts
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Common shortcuts");
+
+    await browser.close();
+  });
+
+  test("/kbd command shows shortcut options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify shortcut options are shown (check for images in picker grid)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
   test("selecting copy shortcut inserts <kbd> syntax", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
@@ -1742,13 +2051,6 @@ test.describe("Now Command - Date/Time Formatting", () => {
 
     // Search for "editing" category
     await textarea.fill("/kbd editing");
-=======
-  test("/now iso filter shows ISO formats", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/now iso");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1757,183 +2059,43 @@ test.describe("Now Command - Date/Time Formatting", () => {
     // Check that filtered results are shown
     const buttons = picker.locator("button[data-item-index]");
     const buttonCount = await buttons.count();
-<<<<<<< HEAD
     // Should have editing shortcuts (copy, paste, cut, undo, redo, selectall, save, find)
     expect(buttonCount).toBe(8);
-=======
-    // Should have ISO and ISO Date options
-    expect(buttonCount).toBeGreaterThan(0);
-    expect(buttonCount).toBeLessThan(10); // Filtered, not showing all
->>>>>>> origin/main
 
     await browser.close();
   });
 
-<<<<<<< HEAD
   test("/kbd filtering by label works", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "save" label
     await textarea.fill("/kbd save");
-=======
-  test("/now local filter shows local formats", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/now local");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-<<<<<<< HEAD
     // Should show filtered results
     const buttons = picker.locator("button[data-item-index]");
     const buttonCount = await buttons.count();
     expect(buttonCount).toBeGreaterThan(0);
     expect(buttonCount).toBeLessThan(20);
-=======
-    // Should show local date/time formats
-    const buttons = picker.locator("button[data-item-index]");
-    const buttonCount = await buttons.count();
-    expect(buttonCount).toBeGreaterThan(0);
->>>>>>> origin/main
 
     await browser.close();
   });
 
-<<<<<<< HEAD
   test("picker closes after shortcut selection", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/kbd copy");
-=======
-  test("/now utc filter shows UTC formats", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/now utc");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-<<<<<<< HEAD
     // Select the shortcut
-=======
-    // Should show UTC date/time formats
-    const buttons = picker.locator("button[data-item-index]");
-    const buttonCount = await buttons.count();
-    expect(buttonCount).toBeGreaterThan(0);
-
-    await browser.close();
-  });
-
-  test("selecting ISO 8601 format inserts timestamp", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    // Filter to ISO format
-    await textarea.fill("/now iso");
-    await page.waitForTimeout(500);
-
-    const picker = page.locator("#slashPalettePicker");
-    await expect(picker).toBeVisible({ timeout: 3000 });
-
-    // Press Enter to select the first (ISO) option
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-
-    // Check that the textarea contains an ISO timestamp
-    const textareaValue = await textarea.inputValue();
-    // ISO timestamps follow pattern: YYYY-MM-DDTHH:MM:SS.sssZ
-    expect(textareaValue).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-
-    await browser.close();
-  });
-
-  test("selecting ISO Date format inserts date only", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    // Filter to ISO date format
-    await textarea.fill("/now iso-date");
-    await page.waitForTimeout(500);
-
-    const picker = page.locator("#slashPalettePicker");
-    await expect(picker).toBeVisible({ timeout: 3000 });
-
-    // Press Enter to select the ISO Date option
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-
-    // Check that the textarea contains a date in YYYY-MM-DD format
-    const textareaValue = await textarea.inputValue();
-    expect(textareaValue).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-
-    await browser.close();
-  });
-
-  test("selecting Unix timestamp format inserts epoch seconds", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    // Filter to Unix format
-    await textarea.fill("/now unix");
-    await page.waitForTimeout(500);
-
-    const picker = page.locator("#slashPalettePicker");
-    await expect(picker).toBeVisible({ timeout: 3000 });
-
-    // Press Enter to select the Unix option
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-
-    // Check that the textarea contains a Unix timestamp (numeric string)
-    const textareaValue = await textarea.inputValue();
-    expect(textareaValue).toMatch(/^\d{10}$/); // 10-digit Unix timestamp
-
-    await browser.close();
-  });
-
-  test("selecting relative format inserts human-readable time", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    // Filter to relative format
-    await textarea.fill("/now relative");
-    await page.waitForTimeout(500);
-
-    const picker = page.locator("#slashPalettePicker");
-    await expect(picker).toBeVisible({ timeout: 3000 });
-
-    // Press Enter to select the relative option
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-
-    // Check that the textarea contains "just now" (since we're inserting current time)
-    const textareaValue = await textarea.inputValue();
-    expect(textareaValue).toBe("just now");
-
-    await browser.close();
-  });
-
-  test("picker closes after date format selection", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/now iso");
-    await page.waitForTimeout(500);
-
-    const picker = page.locator("#slashPalettePicker");
-    await expect(picker).toBeVisible({ timeout: 3000 });
-
-    // Select the format
->>>>>>> origin/main
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
 
@@ -1947,11 +2109,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-<<<<<<< HEAD
     await textarea.fill("/kbd");
-=======
-    await textarea.fill("/now");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1967,19 +2125,11 @@ test.describe("Now Command - Date/Time Formatting", () => {
     await browser.close();
   });
 
-<<<<<<< HEAD
   test("arrow keys navigate shortcut grid", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/kbd");
-=======
-  test("arrow keys navigate date format grid", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    await textarea.fill("/now");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1987,13 +2137,8 @@ test.describe("Now Command - Date/Time Formatting", () => {
 
     // First item should be selected by default
     const firstButton = picker.locator('button[data-item-index="0"]');
-<<<<<<< HEAD
     const initialStyle = await firstButton.getAttribute("style");
     expect(initialStyle).toContain("box-shadow");
-=======
-    const initialClass = await firstButton.getAttribute("style");
-    expect(initialClass).toContain("box-shadow");
->>>>>>> origin/main
 
     // Press right arrow to move selection
     await page.keyboard.press("ArrowRight");
@@ -2001,13 +2146,8 @@ test.describe("Now Command - Date/Time Formatting", () => {
 
     // Second item should now be selected
     const secondButton = picker.locator('button[data-item-index="1"]');
-<<<<<<< HEAD
     const secondStyle = await secondButton.getAttribute("style");
     expect(secondStyle).toContain("box-shadow");
-=======
-    const secondClass = await secondButton.getAttribute("style");
-    expect(secondClass).toContain("box-shadow");
->>>>>>> origin/main
 
     await browser.close();
   });
@@ -2017,11 +2157,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
-<<<<<<< HEAD
     await textarea.fill("/kbd xyznonexistent123");
-=======
-    await textarea.fill("/now xyznonexistent123");
->>>>>>> origin/main
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2029,36 +2165,22 @@ test.describe("Now Command - Date/Time Formatting", () => {
 
     // Should show no results message
     const pickerContent = await picker.textContent();
-<<<<<<< HEAD
     expect(pickerContent).toContain("No matching shortcuts");
-=======
-    expect(pickerContent).toContain("No matching date formats");
->>>>>>> origin/main
 
     await browser.close();
   });
 
-<<<<<<< HEAD
   test("selecting navigation shortcut inserts correct <kbd> syntax", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter for refresh shortcut
     await textarea.fill("/kbd refresh");
-=======
-  test("selecting local datetime format inserts local time", async () => {
-    const browser = await chromium.launch({ headless: false });
-    const { page, textarea } = await setupPage(browser, testServer.port);
-
-    // Filter to local format and select the first one (Local DateTime)
-    await textarea.fill("/now local");
->>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-<<<<<<< HEAD
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
 
@@ -2104,18 +2226,6 @@ test.describe("Now Command - Date/Time Formatting", () => {
 
     const textareaValue = await textarea.inputValue();
     expect(textareaValue).toBe("<kbd>fn</kbd><kbd>1/2/3</kbd> ");
-=======
-    // Press Enter to select the Local DateTime option
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-
-    // Check that the textarea contains a local datetime string
-    const textareaValue = await textarea.inputValue();
-    // Local datetime format varies by locale, but should have date and time components
-    expect(textareaValue.length).toBeGreaterThan(5);
-    // Should contain at least one slash or hyphen (date separator) or colon (time separator)
-    expect(textareaValue).toMatch(/[\/\-:]|\d/);
->>>>>>> origin/main
 
     await browser.close();
   });
