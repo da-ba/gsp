@@ -333,7 +333,7 @@ const kbdCommand: CommandSpec = {
 
   getResults: async (query: string) => {
     // Check if query looks like a custom shortcut input
-    const hasModifier = /[\+]/i.test(query)
+    const hasModifier = /\+/i.test(query)
     const hasKnownKey = Object.keys(KEY_ALIASES).some((alias) => query.toLowerCase().includes(alias))
 
     // If it looks like a custom shortcut input
