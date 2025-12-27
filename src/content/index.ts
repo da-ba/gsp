@@ -27,6 +27,7 @@ import "./commands/giphy/index.ts"
 import "./commands/gsp/index.ts"
 import "./commands/font/index.ts"
 import "./commands/emoji/index.ts"
+import "./commands/mention/index.ts"
 
 /**
  * Update suggestions for the active command
