@@ -1474,6 +1474,449 @@ test.describe("Emoji Command", () => {
   });
 });
 
+
+test.describe("Mermaid Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/mermaid command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mermaid");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows diagram content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Popular diagrams");
+
+    await browser.close();
+  });
+
+  test("/mermaid command shows diagram template options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mermaid");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify diagram options are shown (check for images in picker grid)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/mermaid search filters by flowchart", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "flowchart" to filter flowchart diagrams
+    await textarea.fill("/mermaid flowchart");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have flowchart templates (3 flowchart templates)
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThanOrEqual(5); // Filtered, not showing all 14
+
+    await browser.close();
+  });
+
+  test("/mermaid search filters by sequence", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "sequence" to filter sequence diagrams
+    await textarea.fill("/mermaid sequence");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have sequence templates (3 sequence templates)
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThanOrEqual(5);
+
+    await browser.close();
+  });
+
+  test("/mermaid search filters by class diagram", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "class" to filter class diagrams
+    await textarea.fill("/mermaid class");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have class templates (2 class templates)
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThanOrEqual(3);
+
+    await browser.close();
+  });
+
+  test("/mermaid search filters by state diagram", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "state" to filter state diagrams
+    await textarea.fill("/mermaid state");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have state templates (2 state templates)
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThanOrEqual(3);
+
+    await browser.close();
+  });
+
+  test("/mermaid search filters by pie chart", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "pie" to find pie chart
+    await textarea.fill("/mermaid pie");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBe(1); // Only one pie chart template
+
+    await browser.close();
+  });
+
+  test("selecting basic flowchart inserts mermaid code block", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /mermaid flowchart to filter and select flowchart
+    await textarea.fill("/mermaid flowchart-basic");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains mermaid code block
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("flowchart TD");
+    expect(textareaValue).toContain("```");
+
+    await browser.close();
+  });
+
+  test("selecting sequence diagram inserts mermaid code block", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /mermaid sequence-basic to filter
+    await textarea.fill("/mermaid sequence-basic");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains sequence diagram
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("sequenceDiagram");
+    expect(textareaValue).toContain("```");
+
+    await browser.close();
+  });
+
+  test("selecting pie chart inserts mermaid code block", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /mermaid pie to filter
+    await textarea.fill("/mermaid pie");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the pie chart option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains pie chart
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("pie");
+    expect(textareaValue).toContain("```");
+
+    await browser.close();
+  });
+
+  test("selecting gantt chart inserts mermaid code block", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /mermaid gantt to filter
+    await textarea.fill("/mermaid gantt");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the gantt chart option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains gantt chart
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("gantt");
+    expect(textareaValue).toContain("```");
+
+    await browser.close();
+  });
+
+  test("selecting ER diagram inserts mermaid code block", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /mermaid er to filter
+    await textarea.fill("/mermaid er-diagram");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the ER diagram option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains ER diagram
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("erDiagram");
+    expect(textareaValue).toContain("```");
+
+    await browser.close();
+  });
+
+  test("selecting git graph inserts mermaid code block", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /mermaid git to filter
+    await textarea.fill("/mermaid git-graph");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the git graph option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains git graph
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("gitGraph");
+    expect(textareaValue).toContain("```");
+
+    await browser.close();
+  });
+
+  test("picker closes after diagram selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mermaid flowchart");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the diagram
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mermaid");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate mermaid grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mermaid");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const initialStyle = await firstButton.getAttribute("style");
+    expect(initialStyle).toContain("box-shadow");
+
+    // Press right arrow to move selection
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(100);
+
+    // Second item should now be selected
+    const secondButton = picker.locator('button[data-item-index="1"]');
+    const secondStyle = await secondButton.getAttribute("style");
+    expect(secondStyle).toContain("box-shadow");
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/mermaid xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching diagrams");
+
+    await browser.close();
+  });
+
+  test("inserted diagram has proper mermaid syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Select the class-basic diagram
+    await textarea.fill("/mermaid class-basic");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+
+    // Verify proper mermaid syntax elements
+    expect(textareaValue).toContain("```mermaid");
+    expect(textareaValue).toContain("classDiagram");
+    expect(textareaValue).toContain("class ");
+    expect(textareaValue.endsWith("```\n")).toBe(true);
+
+    await browser.close();
+  });
+});
+
 test.describe("Now Command - Date/Time Formatting", () => {
   let testServer: { server: Server; port: number };
 
