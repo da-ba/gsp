@@ -2230,3 +2230,268 @@ test.describe("Kbd Command", () => {
     await browser.close();
   });
 });
+
+test.describe("Link Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/link command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows link content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("URL");
+
+    await browser.close();
+  });
+
+  test("/link command shows empty state when no URL provided", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify empty state hint is shown
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/link with URL shows link preview", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify link preview is shown
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Link preview");
+
+    await browser.close();
+  });
+
+  test("/link with URL inserts markdown link on Enter", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the markdown link was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[example.com](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with URL and custom title inserts correct markdown", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill('/link example.com "My Example"');
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the markdown link with custom title was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[My Example](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with full URL preserves protocol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link https://docs.github.com/path");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the full URL was preserved
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[docs.github.com](https://docs.github.com/path) ");
+
+    await browser.close();
+  });
+
+  test("/link with www URL strips www from title", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link www.example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that www was stripped from the title
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[example.com](https://www.example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with single-quoted title works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com 'Single Quoted'");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that single-quoted title was used
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[Single Quoted](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("picker closes after link selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("/link with invalid URL shows empty state", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type something that doesn't look like a URL
+    await textarea.fill("/link not a url");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show hint about entering a valid URL
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("valid URL");
+
+    await browser.close();
+  });
+});
