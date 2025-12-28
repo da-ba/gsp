@@ -1,6 +1,6 @@
 # GitHub Slash Palette
 
-Slash commands for GitHub markdown fields. Includes `/giphy` GIF search and insert.
+Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Mermaid diagrams, and more.
 
 ## Latest Release In Chrome Web Store
 
@@ -12,6 +12,13 @@ Slash commands for GitHub markdown fields. Includes `/giphy` GIF search and inse
 
 - Adds slash command palette to GitHub markdown textareas
 - `/giphy` to search and insert GIFs
+- `/emoji` to search and insert emojis
+- `/font` to style text with sizes, colors, and formatting
+- `/kbd` to format keyboard shortcuts
+- `/link` to insert markdown links with auto-generated titles
+- `/mention` for context-aware participant mentions
+- `/mermaid` to insert diagram templates
+- `/now` to insert formatted timestamps
 - Easily extensible with new commands
 
 ---
@@ -98,15 +105,20 @@ bun run test:e2e
 
 ```
 src/
-├── api/                # API clients (e.g., giphy.ts)
 ├── assets/             # Static assets (icons, images)
 ├── content/            # Content scripts
 │   ├── commands/       # Slash command implementations
-│   │   ├── giphy.ts
-│   │   ├── gsp.ts
-│   │   ├── index.ts
-│   │   ├── registry.ts
-│   │   └── registry.test.ts
+│   │   ├── emoji/      # Emoji picker command
+│   │   ├── font/       # Font styling command
+│   │   ├── giphy/      # GIF search command
+│   │   ├── gsp/        # Command palette command
+│   │   ├── kbd/        # Keyboard shortcut command
+│   │   ├── link/       # Link insertion command
+│   │   ├── mention/    # Mention autocomplete command
+│   │   ├── mermaid/    # Diagram templates command
+│   │   ├── now/        # Timestamp command
+│   │   ├── index.ts    # Command exports
+│   │   └── registry.ts # Command registry
 │   ├── picker/         # Picker UI (supports .tsx files)
 │   │   ├── picker.ts
 │   │   ├── state.ts
@@ -115,18 +127,22 @@ src/
 │   └── types.ts
 ├── utils/              # Shared utilities
 │   ├── dom.ts
-│   ├── dom.test.ts
 │   ├── math.ts
-│   ├── math.test.ts
 │   ├── storage.ts
-│   ├── storage.test.ts
 │   └── theme.ts
 dist/                   # Build output (load in Chrome)
 docs/                   # Documentation
 │   └── commands/       # Per-command docs
-│       ├── README.md
-│       ├── giphy/README.md
-│       └── gsp/README.md
+│       ├── README.md   # Command list
+│       ├── emoji/      # /emoji docs
+│       ├── font/       # /font docs
+│       ├── giphy/      # /giphy docs
+│       ├── gsp/        # /gsp docs
+│       ├── kbd/        # /kbd docs
+│       ├── link/       # /link docs
+│       ├── mention/    # /mention docs
+│       ├── mermaid/    # /mermaid docs
+│       └── now/        # /now docs
 e2e/                    # End-to-end tests (Playwright)
 scripts/                # Build scripts
 │   └── build.ts
