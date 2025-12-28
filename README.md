@@ -1,3 +1,6 @@
+![GitHub branch check runs](https://img.shields.io/github/check-runs/da-ba/gsp/main?label=main) ![GitHub Release Date](https://img.shields.io/github/release-date/da-ba/gsp?logo=github&label=GitHub%20Release%20Date) ![Chrome Web Store Release Date](https://img.shields.io/chrome-web-store/last-updated/kkcajoojbaidfdnjecjnbeaheepknkpf?logo=chromewebstore&label=Chrome%20Web%20Store%20Last%20Updated)
+
+
 # GitHub Slash Palette
 
 Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Mermaid diagrams, and more.
