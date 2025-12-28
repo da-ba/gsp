@@ -1122,7 +1122,7 @@ test.describe("Font Command Styles", () => {
     await expect(picker).toBeVisible({ timeout: 3000 });
 
     // Check that only filtered results are shown (fewer items)
-    const buttons = picker.locator("button[data-item-index]");
+    const buttons = picker.locator('button[data-item-index]');
     const buttonCount = await buttons.count();
     // Should have only the color items (6 colors)
     expect(buttonCount).toBe(6);
@@ -1814,6 +1814,687 @@ test.describe("Now Command - Date/Time Formatting", () => {
   });
 });
 
+test.describe("Kbd Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/kbd command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows keyboard shortcuts
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Common shortcuts");
+
+    await browser.close();
+  });
+
+  test("/kbd command shows shortcut options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify shortcut options are shown (check for images in picker grid)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("selecting copy shortcut inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /kbd copy to filter and select copy shortcut
+    await textarea.fill("/kbd copy");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first (copy) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains kbd HTML
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>C</kbd> ");
+
+    await browser.close();
+  });
+
+  test("selecting paste shortcut inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /kbd paste to filter and select paste shortcut
+    await textarea.fill("/kbd paste");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>V</kbd> ");
+
+    await browser.close();
+  });
+
+  test("selecting undo shortcut inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /kbd undo to filter and select undo shortcut
+    await textarea.fill("/kbd undo");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>Z</kbd> ");
+
+    await browser.close();
+  });
+
+  test("custom shortcut with + inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a custom shortcut with +
+    await textarea.fill("/kbd ctrl+shift+t");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be custom shortcut
+    // Press Enter to select it
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>⇧</kbd><kbd>T</kbd> ");
+
+    await browser.close();
+  });
+
+  test("custom shortcut with spaces inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a custom shortcut with spaces around +
+    await textarea.fill("/kbd ctrl + p");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be custom shortcut
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>P</kbd> ");
+
+    await browser.close();
+  });
+
+  test("Mac cmd shortcut inserts ⌘ symbol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a Mac-style shortcut
+    await textarea.fill("/kbd cmd+opt+arrowLeft");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌘</kbd><kbd>⌥</kbd><kbd>←</kbd> ");
+
+    await browser.close();
+  });
+
+  test("Windows shortcut inserts Win symbol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a Windows-style shortcut
+    await textarea.fill("/kbd Win+shift+s");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>Win</kbd><kbd>⇧</kbd><kbd>S</kbd> ");
+
+    await browser.close();
+  });
+
+  test("/kbd filtering by category works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "editing" category
+    await textarea.fill("/kbd editing");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have editing shortcuts (copy, paste, cut, undo, redo, selectall, save, find)
+    expect(buttonCount).toBe(8);
+
+    await browser.close();
+  });
+
+  test("/kbd filtering by label works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "save" label
+    await textarea.fill("/kbd save");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show filtered results
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThan(20);
+
+    await browser.close();
+  });
+
+  test("picker closes after shortcut selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd copy");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the shortcut
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate shortcut grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const initialStyle = await firstButton.getAttribute("style");
+    expect(initialStyle).toContain("box-shadow");
+
+    // Press right arrow to move selection
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(100);
+
+    // Second item should now be selected
+    const secondButton = picker.locator('button[data-item-index="1"]');
+    const secondStyle = await secondButton.getAttribute("style");
+    expect(secondStyle).toContain("box-shadow");
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/kbd xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching shortcuts");
+
+    await browser.close();
+  });
+
+  test("selecting navigation shortcut inserts correct <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter for refresh shortcut
+    await textarea.fill("/kbd refresh");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>R</kbd> ");
+
+    await browser.close();
+  });
+
+  test("selecting system shortcut inserts correct <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter for desktop shortcut (Win+D)
+    await textarea.fill("/kbd desktop");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>Win</kbd><kbd>D</kbd> ");
+
+    await browser.close();
+  });
+
+  test("shortcut with alternative keys inserts correct syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a shortcut with alternative keys notation
+    await textarea.fill("/kbd fn+1/2/3");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>fn</kbd><kbd>1/2/3</kbd> ");
+
+    await browser.close();
+  });
+});
+
+test.describe("Link Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/link command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows link content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("URL");
+
+    await browser.close();
+  });
+
+  test("/link command shows empty state when no URL provided", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify empty state hint is shown
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/link with URL shows link preview", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify link preview is shown
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Link preview");
+
+    await browser.close();
+  });
+
+  test("/link with URL inserts markdown link on Enter", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the markdown link was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[example.com](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with URL and custom title inserts correct markdown", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill('/link example.com "My Example"');
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the markdown link with custom title was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[My Example](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with full URL preserves protocol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link https://docs.github.com/path");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the full URL was preserved
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[docs.github.com](https://docs.github.com/path) ");
+
+    await browser.close();
+  });
+
+  test("/link with www URL strips www from title", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link www.example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that www was stripped from the title
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[example.com](https://www.example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with single-quoted title works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com 'Single Quoted'");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that single-quoted title was used
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[Single Quoted](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("picker closes after link selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("/link with invalid URL shows empty state", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type something that doesn't look like a URL
+    await textarea.fill("/link not a url");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show hint about entering a valid URL
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("valid URL");
+
+    await browser.close();
+  });
+});
 test.describe("Mention Command", () => {
   let testServer: { server: Server; port: number };
 
@@ -2120,3 +2801,4 @@ test.describe("Mention Command", () => {
     await browser.close();
   });
 });
+
