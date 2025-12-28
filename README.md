@@ -232,3 +232,7 @@ registerCommand("mycommand", myCommand);
 ## Privacy
 
 See [PRIVACY.md](PRIVACY.md) for the privacy policy.
+
+## License
+
+See [LICENSE](LICENSE).
