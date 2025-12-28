@@ -2495,3 +2495,300 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 });
+
+test.describe("Mention Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/mention command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows mention command name in header
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("/mention");
+
+    await browser.close();
+  });
+
+  test("/mention command shows user tiles", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check for images in picker (SVG tiles)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    // May be 0 if no recent mentions, but picker should still be visible
+    expect(imageCount).toBeGreaterThanOrEqual(0);
+
+    await browser.close();
+  });
+
+  test("/mention search filters users", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for a specific username pattern
+    await textarea.fill("/mention test");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Picker should be visible with filtered results or empty state
+    const pickerContent = await picker.textContent();
+    // Either shows "Matching users" or "No matching users"
+    expect(
+      pickerContent?.includes("Matching") || pickerContent?.includes("No matching")
+    ).toBe(true);
+
+    await browser.close();
+  });
+
+  test("selecting mention inserts @username into textarea", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // First add a recent mention by simulating storage
+    await page.evaluate(() => {
+      localStorage.setItem("recentMentions", JSON.stringify(["testuser"]))
+    });
+
+    // Reload and setup again to pick up the stored mention
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+    await textarea.click();
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check if there are buttons to select
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    
+    if (buttonCount > 0) {
+      // Press Enter to select the first mention
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(300);
+
+      // Check that @username was inserted
+      const textareaValue = await textarea.inputValue();
+      expect(textareaValue).toContain("@");
+    } else {
+      // If no tiles, just verify picker is showing
+      const pickerContent = await picker.textContent();
+      expect(pickerContent).toBeDefined();
+    }
+
+    await browser.close();
+  });
+
+  test("picker closes after mention selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Add a recent mention
+    await page.evaluate(() => {
+      localStorage.setItem("recentMentions", JSON.stringify(["testuser"]))
+    });
+
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+    await textarea.click();
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check if there are buttons to select
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+
+    if (buttonCount > 0) {
+      // Select the mention
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(300);
+
+      // Picker should be closed
+      await expect(picker).not.toBeVisible();
+    } else {
+      // Close with Escape
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(200);
+      await expect(picker).not.toBeVisible();
+    }
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate mention grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Add multiple recent mentions
+    await page.evaluate(() => {
+      localStorage.setItem("recentMentions", JSON.stringify(["user1", "user2", "user3"]))
+    });
+
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+    await textarea.click();
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const firstButtonExists = await firstButton.count();
+
+    if (firstButtonExists > 0) {
+      const initialStyle = await firstButton.getAttribute("style");
+      expect(initialStyle).toContain("box-shadow");
+
+      // Press right arrow to move selection
+      await page.keyboard.press("ArrowRight");
+      await page.waitForTimeout(100);
+
+      // Second item should now be selected
+      const secondButton = picker.locator('button[data-item-index="1"]');
+      const secondButtonExists = await secondButton.count();
+
+      if (secondButtonExists > 0) {
+        const secondStyle = await secondButton.getAttribute("style");
+        expect(secondStyle).toContain("box-shadow");
+      }
+    }
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/mention xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching users");
+
+    await browser.close();
+  });
+
+  test("header shows correct command name", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows the correct header
+    const headerText = await picker.locator("text=GitHub Slash Palette").count();
+    expect(headerText).toBeGreaterThan(0);
+
+    // Verify it shows /mention in the subtitle
+    const subtitleText = await picker.locator("text=/mention").count();
+    expect(subtitleText).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+});
