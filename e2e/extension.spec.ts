@@ -1474,7 +1474,11 @@ test.describe("Emoji Command", () => {
   });
 });
 
+<<<<<<< HEAD
 test.describe("Mermaid Command", () => {
+=======
+test.describe("Now Command - Date/Time Formatting", () => {
+>>>>>>> origin/main
   let testServer: { server: Server; port: number };
 
   test.beforeAll(async () => {
@@ -1523,34 +1527,60 @@ test.describe("Mermaid Command", () => {
     return { page, textarea };
   }
 
+<<<<<<< HEAD
   test("/mermaid command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/mermaid");
+=======
+  test("/now command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Verify the picker shows diagram content
     const pickerContent = await picker.textContent();
     expect(pickerContent).toContain("Popular diagrams");
+=======
+    // Verify the picker shows date format content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Date formats");
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("/mermaid command shows diagram template options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/mermaid");
+=======
+  test("/now command shows date format options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Verify diagram options are shown (check for images in picker grid)
+=======
+    // Verify date format options are shown (check for images in picker grid)
+>>>>>>> origin/main
     const gridImages = picker.locator("img");
     const imageCount = await gridImages.count();
     expect(imageCount).toBeGreaterThan(0);
@@ -1558,12 +1588,20 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("/mermaid search filters by flowchart", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "flowchart" to filter flowchart diagrams
     await textarea.fill("/mermaid flowchart");
+=======
+  test("/now iso filter shows ISO formats", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now iso");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1572,66 +1610,112 @@ test.describe("Mermaid Command", () => {
     // Check that filtered results are shown
     const buttons = picker.locator("button[data-item-index]");
     const buttonCount = await buttons.count();
+<<<<<<< HEAD
     // Should have flowchart templates (3 flowchart templates)
     expect(buttonCount).toBeGreaterThan(0);
     expect(buttonCount).toBeLessThanOrEqual(5); // Filtered, not showing all 14
+=======
+    // Should have ISO and ISO Date options
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThan(10); // Filtered, not showing all
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("/mermaid search filters by sequence", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "sequence" to filter sequence diagrams
     await textarea.fill("/mermaid sequence");
+=======
+  test("/now local filter shows local formats", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now local");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Check that filtered results are shown
     const buttons = picker.locator("button[data-item-index]");
     const buttonCount = await buttons.count();
     // Should have sequence templates (3 sequence templates)
     expect(buttonCount).toBeGreaterThan(0);
     expect(buttonCount).toBeLessThanOrEqual(5);
+=======
+    // Should show local date/time formats
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("/mermaid search filters by class diagram", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "class" to filter class diagrams
     await textarea.fill("/mermaid class");
+=======
+  test("/now utc filter shows UTC formats", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now utc");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Check that filtered results are shown
     const buttons = picker.locator("button[data-item-index]");
     const buttonCount = await buttons.count();
     // Should have class templates (2 class templates)
     expect(buttonCount).toBeGreaterThan(0);
     expect(buttonCount).toBeLessThanOrEqual(3);
+=======
+    // Should show UTC date/time formats
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("/mermaid search filters by state diagram", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "state" to filter state diagrams
     await textarea.fill("/mermaid state");
+=======
+  test("selecting ISO 8601 format inserts timestamp", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to ISO format
+    await textarea.fill("/now iso");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Check that filtered results are shown
     const buttons = picker.locator("button[data-item-index]");
     const buttonCount = await buttons.count();
@@ -1681,21 +1765,41 @@ test.describe("Mermaid Command", () => {
     expect(textareaValue).toContain("```mermaid");
     expect(textareaValue).toContain("flowchart TD");
     expect(textareaValue).toContain("```");
+=======
+    // Press Enter to select the first (ISO) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains an ISO timestamp
+    const textareaValue = await textarea.inputValue();
+    // ISO timestamps follow pattern: YYYY-MM-DDTHH:MM:SS.sssZ
+    expect(textareaValue).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("selecting sequence diagram inserts mermaid code block", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid sequence-basic to filter
     await textarea.fill("/mermaid sequence-basic");
+=======
+  test("selecting ISO Date format inserts date only", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to ISO date format
+    await textarea.fill("/now iso-date");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Press Enter to select the first option
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
@@ -1705,21 +1809,40 @@ test.describe("Mermaid Command", () => {
     expect(textareaValue).toContain("```mermaid");
     expect(textareaValue).toContain("sequenceDiagram");
     expect(textareaValue).toContain("```");
+=======
+    // Press Enter to select the ISO Date option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains a date in YYYY-MM-DD format
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("selecting pie chart inserts mermaid code block", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid pie to filter
     await textarea.fill("/mermaid pie");
+=======
+  test("selecting Unix timestamp format inserts epoch seconds", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to Unix format
+    await textarea.fill("/now unix");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Press Enter to select the pie chart option
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
@@ -1729,21 +1852,40 @@ test.describe("Mermaid Command", () => {
     expect(textareaValue).toContain("```mermaid");
     expect(textareaValue).toContain("pie");
     expect(textareaValue).toContain("```");
+=======
+    // Press Enter to select the Unix option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains a Unix timestamp (numeric string)
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toMatch(/^\d{10}$/); // 10-digit Unix timestamp
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("selecting gantt chart inserts mermaid code block", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid gantt to filter
     await textarea.fill("/mermaid gantt");
+=======
+  test("selecting relative format inserts human-readable time", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to relative format
+    await textarea.fill("/now relative");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Press Enter to select the gantt chart option
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
@@ -1753,21 +1895,39 @@ test.describe("Mermaid Command", () => {
     expect(textareaValue).toContain("```mermaid");
     expect(textareaValue).toContain("gantt");
     expect(textareaValue).toContain("```");
+=======
+    // Press Enter to select the relative option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains "just now" (since we're inserting current time)
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("just now");
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("selecting ER diagram inserts mermaid code block", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid er to filter
     await textarea.fill("/mermaid er-diagram");
+=======
+  test("picker closes after date format selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now iso");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
+<<<<<<< HEAD
     // Press Enter to select the ER diagram option
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
@@ -1816,6 +1976,9 @@ test.describe("Mermaid Command", () => {
     await expect(picker).toBeVisible({ timeout: 3000 });
 
     // Select the diagram
+=======
+    // Select the format
+>>>>>>> origin/main
     await page.keyboard.press("Enter");
     await page.waitForTimeout(300);
 
@@ -1829,7 +1992,11 @@ test.describe("Mermaid Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
+<<<<<<< HEAD
     await textarea.fill("/mermaid");
+=======
+    await textarea.fill("/now");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1845,11 +2012,401 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("arrow keys navigate mermaid grid", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     await textarea.fill("/mermaid");
+=======
+  test("arrow keys navigate date format grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/now");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const initialClass = await firstButton.getAttribute("style");
+    expect(initialClass).toContain("box-shadow");
+
+    // Press right arrow to move selection
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(100);
+
+    // Second item should now be selected
+    const secondButton = picker.locator('button[data-item-index="1"]');
+    const secondClass = await secondButton.getAttribute("style");
+    expect(secondClass).toContain("box-shadow");
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/now xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching date formats");
+
+    await browser.close();
+  });
+
+  test("selecting local datetime format inserts local time", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter to local format and select the first one (Local DateTime)
+    await textarea.fill("/now local");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the Local DateTime option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea contains a local datetime string
+    const textareaValue = await textarea.inputValue();
+    // Local datetime format varies by locale, but should have date and time components
+    expect(textareaValue.length).toBeGreaterThan(5);
+    // Should contain at least one slash or hyphen (date separator) or colon (time separator)
+    expect(textareaValue).toMatch(/[\/\-:]|\d/);
+
+    await browser.close();
+  });
+});
+
+test.describe("Kbd Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/kbd command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows keyboard shortcuts
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Common shortcuts");
+
+    await browser.close();
+  });
+
+  test("/kbd command shows shortcut options", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify shortcut options are shown (check for images in picker grid)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("selecting copy shortcut inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /kbd copy to filter and select copy shortcut
+    await textarea.fill("/kbd copy");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first (copy) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the textarea now contains kbd HTML
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>C</kbd> ");
+
+    await browser.close();
+  });
+
+  test("selecting paste shortcut inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /kbd paste to filter and select paste shortcut
+    await textarea.fill("/kbd paste");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>V</kbd> ");
+
+    await browser.close();
+  });
+
+  test("selecting undo shortcut inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type /kbd undo to filter and select undo shortcut
+    await textarea.fill("/kbd undo");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>Z</kbd> ");
+
+    await browser.close();
+  });
+
+  test("custom shortcut with + inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a custom shortcut with +
+    await textarea.fill("/kbd ctrl+shift+t");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be custom shortcut
+    // Press Enter to select it
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>⇧</kbd><kbd>T</kbd> ");
+
+    await browser.close();
+  });
+
+  test("custom shortcut with spaces inserts <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a custom shortcut with spaces around +
+    await textarea.fill("/kbd ctrl + p");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be custom shortcut
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>P</kbd> ");
+
+    await browser.close();
+  });
+
+  test("Mac cmd shortcut inserts ⌘ symbol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a Mac-style shortcut
+    await textarea.fill("/kbd cmd+opt+arrowLeft");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>⌘</kbd><kbd>⌥</kbd><kbd>←</kbd> ");
+
+    await browser.close();
+  });
+
+  test("Windows shortcut inserts Win symbol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a Windows-style shortcut
+    await textarea.fill("/kbd Win+shift+s");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>Win</kbd><kbd>⇧</kbd><kbd>S</kbd> ");
+
+    await browser.close();
+  });
+
+  test("/kbd filtering by category works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "editing" category
+    await textarea.fill("/kbd editing");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check that filtered results are shown
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    // Should have editing shortcuts (copy, paste, cut, undo, redo, selectall, save, find)
+    expect(buttonCount).toBe(8);
+
+    await browser.close();
+  });
+
+  test("/kbd filtering by label works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for "save" label
+    await textarea.fill("/kbd save");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show filtered results
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    expect(buttonCount).toBeGreaterThan(0);
+    expect(buttonCount).toBeLessThan(20);
+
+    await browser.close();
+  });
+
+  test("picker closes after shortcut selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd copy");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the shortcut
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate shortcut grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/kbd");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1877,7 +2434,11 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
+<<<<<<< HEAD
     await textarea.fill("/mermaid xyznonexistent123");
+=======
+    await textarea.fill("/kbd xyznonexistent123");
+>>>>>>> origin/main
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1885,17 +2446,30 @@ test.describe("Mermaid Command", () => {
 
     // Should show no results message
     const pickerContent = await picker.textContent();
+<<<<<<< HEAD
     expect(pickerContent).toContain("No matching diagrams");
+=======
+    expect(pickerContent).toContain("No matching shortcuts");
+>>>>>>> origin/main
 
     await browser.close();
   });
 
+<<<<<<< HEAD
   test("inserted diagram has proper mermaid syntax", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Select the class-basic diagram
     await textarea.fill("/mermaid class-basic");
+=======
+  test("selecting navigation shortcut inserts correct <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter for refresh shortcut
+    await textarea.fill("/kbd refresh");
+>>>>>>> origin/main
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1905,12 +2479,618 @@ test.describe("Mermaid Command", () => {
     await page.waitForTimeout(300);
 
     const textareaValue = await textarea.inputValue();
+<<<<<<< HEAD
 
     // Verify proper mermaid syntax elements
     expect(textareaValue).toContain("```mermaid");
     expect(textareaValue).toContain("classDiagram");
     expect(textareaValue).toContain("class ");
     expect(textareaValue.endsWith("```\n")).toBe(true);
+=======
+    expect(textareaValue).toBe("<kbd>⌃</kbd><kbd>R</kbd> ");
+
+    await browser.close();
+  });
+
+  test("selecting system shortcut inserts correct <kbd> syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Filter for desktop shortcut (Win+D)
+    await textarea.fill("/kbd desktop");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>Win</kbd><kbd>D</kbd> ");
+
+    await browser.close();
+  });
+
+  test("shortcut with alternative keys inserts correct syntax", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a shortcut with alternative keys notation
+    await textarea.fill("/kbd fn+1/2/3");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("<kbd>fn</kbd><kbd>1/2/3</kbd> ");
+
+    await browser.close();
+  });
+});
+
+test.describe("Link Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/link command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows link content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("URL");
+
+    await browser.close();
+  });
+
+  test("/link command shows empty state when no URL provided", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify empty state hint is shown
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/link with URL shows link preview", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify link preview is shown
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Link preview");
+
+    await browser.close();
+  });
+
+  test("/link with URL inserts markdown link on Enter", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the markdown link was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[example.com](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with URL and custom title inserts correct markdown", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill('/link example.com "My Example"');
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the markdown link with custom title was inserted
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[My Example](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with full URL preserves protocol", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link https://docs.github.com/path");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that the full URL was preserved
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[docs.github.com](https://docs.github.com/path) ");
+
+    await browser.close();
+  });
+
+  test("/link with www URL strips www from title", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link www.example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that www was stripped from the title
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[example.com](https://www.example.com) ");
+
+    await browser.close();
+  });
+
+  test("/link with single-quoted title works", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com 'Single Quoted'");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that single-quoted title was used
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("[Single Quoted](https://example.com) ");
+
+    await browser.close();
+  });
+
+  test("picker closes after link selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link example.com");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Select the link
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("/link with invalid URL shows empty state", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type something that doesn't look like a URL
+    await textarea.fill("/link not a url");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show hint about entering a valid URL
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("valid URL");
+
+    await browser.close();
+  });
+});
+
+test.describe("Mention Command", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("/mention command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows mention command name in header
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("/mention");
+
+    await browser.close();
+  });
+
+  test("/mention command shows user tiles", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check for images in picker (SVG tiles)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    // May be 0 if no recent mentions, but picker should still be visible
+    expect(imageCount).toBeGreaterThanOrEqual(0);
+
+    await browser.close();
+  });
+
+  test("/mention search filters users", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for a specific username pattern
+    await textarea.fill("/mention test");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Picker should be visible with filtered results or empty state
+    const pickerContent = await picker.textContent();
+    // Either shows "Matching users" or "No matching users"
+    expect(
+      pickerContent?.includes("Matching") || pickerContent?.includes("No matching")
+    ).toBe(true);
+
+    await browser.close();
+  });
+
+  test("selecting mention inserts @username into textarea", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // First add a recent mention by simulating storage
+    await page.evaluate(() => {
+      localStorage.setItem("recentMentions", JSON.stringify(["testuser"]))
+    });
+
+    // Reload and setup again to pick up the stored mention
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+    await textarea.click();
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check if there are buttons to select
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+    
+    if (buttonCount > 0) {
+      // Press Enter to select the first mention
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(300);
+
+      // Check that @username was inserted
+      const textareaValue = await textarea.inputValue();
+      expect(textareaValue).toContain("@");
+    } else {
+      // If no tiles, just verify picker is showing
+      const pickerContent = await picker.textContent();
+      expect(pickerContent).toBeDefined();
+    }
+
+    await browser.close();
+  });
+
+  test("picker closes after mention selection", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Add a recent mention
+    await page.evaluate(() => {
+      localStorage.setItem("recentMentions", JSON.stringify(["testuser"]))
+    });
+
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+    await textarea.click();
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Check if there are buttons to select
+    const buttons = picker.locator("button[data-item-index]");
+    const buttonCount = await buttons.count();
+
+    if (buttonCount > 0) {
+      // Select the mention
+      await page.keyboard.press("Enter");
+      await page.waitForTimeout(300);
+
+      // Picker should be closed
+      await expect(picker).not.toBeVisible();
+    } else {
+      // Close with Escape
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(200);
+      await expect(picker).not.toBeVisible();
+    }
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("arrow keys navigate mention grid", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Add multiple recent mentions
+    await page.evaluate(() => {
+      localStorage.setItem("recentMentions", JSON.stringify(["user1", "user2", "user3"]))
+    });
+
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+    await textarea.click();
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const firstButtonExists = await firstButton.count();
+
+    if (firstButtonExists > 0) {
+      const initialStyle = await firstButton.getAttribute("style");
+      expect(initialStyle).toContain("box-shadow");
+
+      // Press right arrow to move selection
+      await page.keyboard.press("ArrowRight");
+      await page.waitForTimeout(100);
+
+      // Second item should now be selected
+      const secondButton = picker.locator('button[data-item-index="1"]');
+      const secondButtonExists = await secondButton.count();
+
+      if (secondButtonExists > 0) {
+        const secondStyle = await secondButton.getAttribute("style");
+        expect(secondStyle).toContain("box-shadow");
+      }
+    }
+
+    await browser.close();
+  });
+
+  test("no results message shown for invalid search", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Search for something that won't match
+    await textarea.fill("/mention xyznonexistent123");
+    await page.waitForTimeout(800);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show no results message
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("No matching users");
+
+    await browser.close();
+  });
+
+  test("header shows correct command name", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/mention");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows the correct header
+    const headerText = await picker.locator("text=GitHub Slash Palette").count();
+    expect(headerText).toBeGreaterThan(0);
+
+    // Verify it shows /mention in the subtitle
+    const subtitleText = await picker.locator("text=/mention").count();
+    expect(subtitleText).toBeGreaterThan(0);
+>>>>>>> origin/main
 
     await browser.close();
   });
