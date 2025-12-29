@@ -55,7 +55,7 @@ function renderPicker(): void {
       onSelect: (item: PickerItem) => {
         const field = state.activeField
         currentOnSelect(item)
-        // Don't hide picker if settings view was shown by the onSelect handler
+        // Don't hide picker if settings view is currently being shown
         if (!state.showingSettings) {
           hidePicker()
           if (field) {
