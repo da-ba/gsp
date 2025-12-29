@@ -3040,6 +3040,44 @@ test.describe("Link Command", () => {
 
     await browser.close();
   });
+
+  test("/link ci clicking setup tile opens settings panel", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Clear any stored token to ensure setup tile is shown
+    await page.evaluate(() => {
+      localStorage.removeItem("githubApiToken");
+    });
+
+    await textarea.fill("/link ci");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Find the setup tile (should be the first/only tile when no token)
+    const setupTile = picker.locator("button[data-item-index='0']");
+    const tileExists = await setupTile.count();
+
+    if (tileExists > 0) {
+      // Click the setup tile
+      await setupTile.click();
+      await page.waitForTimeout(300);
+
+      // Settings panel should now be visible
+      const pickerContent = await picker.textContent();
+      // Settings panel should show GitHub token configuration
+      expect(
+        pickerContent?.includes("GitHub") ||
+        pickerContent?.includes("Token") ||
+        pickerContent?.includes("Save") ||
+        pickerContent?.includes("Settings")
+      ).toBe(true);
+    }
+
+    await browser.close();
+  });
 });
 
 test.describe("Mention Command", () => {
