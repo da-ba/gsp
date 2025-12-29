@@ -2,7 +2,8 @@
  * Picker Header Component
  */
 
-import React from "react"
+import { useState } from "preact/hooks"
+import type { JSX } from "preact"
 import { isDarkMode } from "../../../utils/theme.ts"
 import { getBadgeStyles } from "../styles.ts"
 
@@ -20,7 +21,7 @@ const SettingsIcon = () => (
 )
 
 export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const dark = isDarkMode()
   const badgeStyles = getBadgeStyles()
 
@@ -50,7 +51,7 @@ export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderP
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <div style={badgeStyles as React.CSSProperties}>Esc close</div>
+        <div style={badgeStyles as JSX.CSSProperties}>Esc close</div>
         <button
           type="button"
           data-settings-btn="true"

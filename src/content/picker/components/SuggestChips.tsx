@@ -2,7 +2,8 @@
  * Suggest Chips Component
  */
 
-import React from "react"
+import { useState } from "preact/hooks"
+import type { JSX } from "preact"
 import { getBadgeStyles } from "../styles.ts"
 
 export type SuggestChipsProps = {
@@ -12,7 +13,7 @@ export type SuggestChipsProps = {
 }
 
 export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
-  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const badgeStyles = getBadgeStyles()
 
   if (!items.length) return null
@@ -51,7 +52,7 @@ export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
           style={{
-            ...(badgeStyles as React.CSSProperties),
+            ...(badgeStyles as JSX.CSSProperties),
             cursor: "pointer",
             padding: "6px 10px",
             transform: hoveredIndex === idx ? "scale(1.03)" : "scale(1)",

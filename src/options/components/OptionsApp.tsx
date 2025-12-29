@@ -2,7 +2,6 @@
  * Options Page App Component
  */
 
-import React from "react"
 import { getOptionsSections } from "../../content/commands/options-registry.ts"
 
 /** Global styles for the options page */

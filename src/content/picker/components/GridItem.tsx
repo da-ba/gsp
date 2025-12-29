@@ -2,7 +2,7 @@
  * Grid Item Component
  */
 
-import React from "react"
+import type { JSX } from "preact"
 import { isDarkMode } from "../../../utils/theme.ts"
 import { getGridItemSelectedStyles } from "../styles.ts"
 import type { PickerItem } from "../../types.ts"
@@ -20,7 +20,7 @@ export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }:
   const dark = isDarkMode()
   const selectedStyles = getGridItemSelectedStyles(selected)
 
-  const handleClick = (ev: React.MouseEvent) => {
+  const handleClick = (ev: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
     ev.preventDefault()
     ev.stopPropagation()
     onSelect(item)
@@ -42,7 +42,7 @@ export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }:
         border: "1px solid rgba(0,0,0,0)",
         transition: "transform 90ms ease, boxShadow 90ms ease",
         boxShadow: dark ? "0 6px 14px rgba(0,0,0,0.40)" : "0 6px 14px rgba(0,0,0,0.12)",
-        ...(selectedStyles as React.CSSProperties),
+        ...(selectedStyles as JSX.CSSProperties),
       }}
     >
       <img

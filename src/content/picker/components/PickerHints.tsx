@@ -2,7 +2,7 @@
  * Picker Hints Component
  */
 
-import React from "react"
+import type { JSX } from "preact"
 import { getBadgeStyles } from "../styles.ts"
 
 const HINTS = ["Arrows move", "Enter insert", "Esc close"]
@@ -25,7 +25,7 @@ export function PickerHints() {
         <div
           key={hint}
           style={{
-            ...(badgeStyles as React.CSSProperties),
+            ...(badgeStyles as JSX.CSSProperties),
             padding: "3px 10px",
             fontWeight: 600,
           }}

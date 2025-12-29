@@ -1,9 +1,8 @@
 /**
- * Options page entry point - React version
+ * Options page entry point - Preact version
  */
 
-import React from "react"
-import { createRoot } from "react-dom/client"
+import { render, createElement } from "preact"
 
 // Import command modules to trigger options section registration
 // This must be done before importing OptionsApp to ensure registrations are complete
@@ -15,8 +14,7 @@ function renderOptionsPage(): void {
   const container = document.getElementById("sections")
   if (!container) return
 
-  const root = createRoot(container)
-  root.render(React.createElement(OptionsApp))
+  render(createElement(OptionsApp, null), container)
 }
 
 // Initialize when DOM is ready

@@ -2,7 +2,7 @@
  * Main Picker Component
  */
 
-import React from "react"
+import { useRef, useEffect } from "preact/hooks"
 import { PickerHeader } from "./PickerHeader.tsx"
 import { PickerHints } from "./PickerHints.tsx"
 import { PickerFooter } from "./PickerFooter.tsx"
@@ -50,18 +50,18 @@ export function Picker({
   onSetupComplete,
   position,
 }: PickerProps) {
-  const containerRef = React.useRef<HTMLDivElement>(null)
-  const setupBodyRef = React.useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const setupBodyRef = useRef<HTMLDivElement>(null)
 
   // Apply picker styles on mount and theme changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (containerRef.current) {
       applyPickerStyles(containerRef.current)
     }
   }, [visible])
 
   // Handle setup panel rendering
-  React.useEffect(() => {
+  useEffect(() => {
     if (view.type === "setup" && setupBodyRef.current) {
       setupBodyRef.current.innerHTML = ""
       view.renderFn(setupBodyRef.current, onSetupComplete)
@@ -69,7 +69,7 @@ export function Picker({
   }, [view, onSetupComplete])
 
   // Animate on show
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible && containerRef.current) {
       try {
         containerRef.current.animate(

@@ -1,9 +1,8 @@
 /**
- * React-based Picker UI - replaces vanilla JS picker.ts
+ * Preact-based Picker UI - replaces vanilla JS picker.ts
  */
 
-import React from "react"
-import { createRoot, type Root } from "react-dom/client"
+import { render, createElement } from "preact"
 import { add, sub, clamp } from "../../utils/math.ts"
 import { getCaretCoordinates } from "../../utils/dom.ts"
 import type { PickerItem } from "../types.ts"
@@ -12,8 +11,8 @@ import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
 
-// React root for the picker
-let pickerRoot: Root | null = null
+// Preact container element
+let pickerContainer: HTMLElement | null = null
 
 // Current picker state for React rendering
 export type ReactPickerState = {
@@ -39,13 +38,13 @@ let currentOnSuggestPick: (term: string) => void = () => {}
 let currentOnSetupComplete: () => void = () => {}
 
 /**
- * Re-render the React picker with current state
+ * Re-render the Preact picker with current state
  */
 function renderPicker(): void {
-  if (!pickerRoot || !state.pickerEl) return
+  if (!pickerContainer || !state.pickerEl) return
 
-  pickerRoot.render(
-    React.createElement(Picker, {
+  render(
+    createElement(Picker, {
       visible: reactState.visible,
       title: reactState.title,
       subtitle: reactState.subtitle,
@@ -72,7 +71,8 @@ function renderPicker(): void {
       },
       onSetupComplete: currentOnSetupComplete,
       position: reactState.position,
-    })
+    }),
+    pickerContainer
   )
 }
 
@@ -152,9 +152,9 @@ export function ensurePicker(field?: HTMLElement | null): HTMLElement {
 
   mount.appendChild(el)
   state.pickerEl = el
+  pickerContainer = el
 
-  // Create React root
-  pickerRoot = createRoot(el)
+  // Initial render
   renderPicker()
 
   return el

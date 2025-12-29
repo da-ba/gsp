@@ -2,7 +2,7 @@
  * Picker Grid Component
  */
 
-import React from "react"
+// No hooks needed - this is a simple functional component
 import { GridItem } from "./GridItem.tsx"
 import { SuggestChips } from "./SuggestChips.tsx"
 import type { PickerItem } from "../../types.ts"

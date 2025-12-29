@@ -2,7 +2,7 @@
  * Picker Footer Component
  */
 
-import React from "react"
+// No hooks needed - this is a simple functional component
 import { isDarkMode } from "../../../utils/theme.ts"
 
 export function PickerFooter() {

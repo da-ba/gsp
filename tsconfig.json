@@ -16,10 +16,13 @@
     "noImplicitOverride": true,
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "types": ["bun", "chrome", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "react": ["./node_modules/preact/compat/"],
+      "react-dom": ["./node_modules/preact/compat/"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts", "vitest.config.ts", "playwright.config.ts", "e2e/**/*.ts"],

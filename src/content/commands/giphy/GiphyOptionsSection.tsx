@@ -2,7 +2,7 @@
  * Giphy Options Section Component
  */
 
-import React from "react"
+import { useState, useEffect } from "preact/hooks"
 import {
   getGiphyKey,
   setGiphyKey,
@@ -79,14 +79,14 @@ const sectionStyles = `
 `
 
 export function GiphyOptionsSection() {
-  const [apiKey, setApiKey] = React.useState("")
-  const [showKey, setShowKey] = React.useState(false)
-  const [status, setStatus] = React.useState("")
-  const [imageFormat, setImageFormat] = React.useState<GiphyImageFormat>("markdown")
-  const [centerImage, setCenterImage] = React.useState(false)
+  const [apiKey, setApiKey] = useState("")
+  const [showKey, setShowKey] = useState(false)
+  const [status, setStatus] = useState("")
+  const [imageFormat, setImageFormat] = useState<GiphyImageFormat>("markdown")
+  const [centerImage, setCenterImage] = useState(false)
 
   // Load current settings on mount
-  React.useEffect(() => {
+  useEffect(() => {
     getGiphyKey().then((key) => setApiKey(key))
     getGiphyImageFormat().then((format) => setImageFormat(format))
     getGiphyCenterImage().then((center) => setCenterImage(center))
@@ -157,7 +157,7 @@ export function GiphyOptionsSection() {
               placeholder="Paste your Giphy API key"
               autoComplete="off"
               value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              onChange={(e) => setApiKey((e.target as HTMLInputElement).value)}
             />
           </div>
 
@@ -167,7 +167,7 @@ export function GiphyOptionsSection() {
                 type="checkbox"
                 id="giphy-show-key"
                 checked={showKey}
-                onChange={(e) => setShowKey(e.target.checked)}
+                onChange={(e) => setShowKey((e.target as HTMLInputElement).checked)}
               />
               Show key
             </label>
@@ -233,7 +233,7 @@ export function GiphyOptionsSection() {
                 <input
                   type="checkbox"
                   checked={centerImage}
-                  onChange={(e) => handleCenterChange(e.target.checked)}
+                  onChange={(e) => handleCenterChange((e.target as HTMLInputElement).checked)}
                 />
                 Center image (wrap in <code>{'<p align="center">...</p>'}</code>)
               </label>

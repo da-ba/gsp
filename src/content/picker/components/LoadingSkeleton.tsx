@@ -2,7 +2,8 @@
  * Loading Skeleton Component
  */
 
-import React from "react"
+import { useRef, useEffect } from "preact/hooks"
+import type { JSX } from "preact"
 import { getSkeletonStyles } from "../styles.ts"
 
 export function LoadingSkeleton() {
@@ -33,9 +34,9 @@ export function LoadingSkeleton() {
 }
 
 function SkeletonBox({ styles }: { styles: Partial<CSSStyleDeclaration> }) {
-  const boxRef = React.useRef<HTMLDivElement>(null)
+  const boxRef = useRef<HTMLDivElement>(null)
 
-  React.useEffect(() => {
+  useEffect(() => {
     const el = boxRef.current
     if (!el) return
 
@@ -50,5 +51,5 @@ function SkeletonBox({ styles }: { styles: Partial<CSSStyleDeclaration> }) {
     }
   }, [])
 
-  return <div ref={boxRef} style={styles as React.CSSProperties} />
+  return <div ref={boxRef} style={styles as JSX.CSSProperties} />
 }

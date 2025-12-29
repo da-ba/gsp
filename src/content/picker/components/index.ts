@@ -1,5 +1,5 @@
 /**
- * React Components Export
+ * Preact Components Export
  */
 
 export { Picker, type PickerView } from "./Picker.tsx"

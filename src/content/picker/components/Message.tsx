@@ -2,7 +2,7 @@
  * Message Component
  */
 
-import React from "react"
+import type { JSX } from "preact"
 import { getCardStyles } from "../styles.ts"
 
 export type MessageProps = {
@@ -21,7 +21,7 @@ export function Message({ message }: MessageProps) {
         minHeight: 0,
       }}
     >
-      <div style={cardStyles as React.CSSProperties}>{message}</div>
+      <div style={cardStyles as JSX.CSSProperties}>{message}</div>
     </div>
   )
 }

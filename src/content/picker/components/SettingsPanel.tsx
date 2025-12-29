@@ -2,7 +2,8 @@
  * Settings Panel Component
  */
 
-import React from "react"
+import { useState, useEffect, useRef } from "preact/hooks"
+import type { JSX } from "preact"
 import { setThemeOverride } from "../../../utils/theme.ts"
 import {
   getThemePreference,
@@ -20,18 +21,18 @@ const THEMES: { value: ThemePreference; label: string }[] = [
 ]
 
 export function SettingsPanel() {
-  const [currentTheme, setCurrentTheme] = React.useState<ThemePreference>("system")
-  const commandSettingsRef = React.useRef<HTMLDivElement>(null)
+  const [currentTheme, setCurrentTheme] = useState<ThemePreference>("system")
+  const commandSettingsRef = useRef<HTMLDivElement>(null)
   const cardStyles = getCardStyles()
   const badgeStyles = getBadgeStyles()
 
   // Load current theme preference
-  React.useEffect(() => {
+  useEffect(() => {
     getThemePreference().then(setCurrentTheme)
   }, [])
 
   // Render command settings
-  React.useEffect(() => {
+  useEffect(() => {
     const container = commandSettingsRef.current
     if (!container) return
 
@@ -66,7 +67,7 @@ export function SettingsPanel() {
     >
       <div
         style={{
-          ...(cardStyles as React.CSSProperties),
+          ...(cardStyles as JSX.CSSProperties),
           display: "flex",
           flexDirection: "column",
           gap: "14px",
@@ -87,7 +88,7 @@ export function SettingsPanel() {
                   handleThemeChange(value)
                 }}
                 style={{
-                  ...(badgeStyles as React.CSSProperties),
+                  ...(badgeStyles as JSX.CSSProperties),
                   cursor: "pointer",
                   padding: "6px 12px",
                   opacity: value === currentTheme ? 1 : undefined,
