@@ -19,6 +19,7 @@ Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Me
 - `/font` to style text with sizes, colors, and formatting
 - `/kbd` to format keyboard shortcuts
 - `/link` to insert markdown links with auto-generated titles
+- `/link ci` to link to CI jobs and artifacts (requires GitHub token)
 - `/mention` for context-aware participant mentions
 - `/mermaid` to insert diagram templates
 - `/now` to insert formatted timestamps
@@ -116,7 +117,7 @@ src/
 │   │   ├── giphy/      # GIF search command
 │   │   ├── gsp/        # Command palette command
 │   │   ├── kbd/        # Keyboard shortcut command
-│   │   ├── link/       # Link insertion command
+│   │   ├── link/       # Link insertion command (includes CI links)
 │   │   ├── mention/    # Mention autocomplete command
 │   │   ├── mermaid/    # Diagram templates command
 │   │   ├── now/        # Timestamp command
@@ -128,6 +129,8 @@ src/
 │   │   └── styles.ts
 │   ├── index.ts        # Content entry
 │   └── types.ts
+├── options/            # Options page and shared options
+│   └── github/         # Shared GitHub API options
 ├── utils/              # Shared utilities
 │   ├── dom.ts
 │   ├── math.ts
@@ -135,17 +138,19 @@ src/
 │   └── theme.ts
 dist/                   # Build output (load in Chrome)
 docs/                   # Documentation
-│   └── commands/       # Per-command docs
-│       ├── README.md   # Command list
-│       ├── emoji/      # /emoji docs
-│       ├── font/       # /font docs
-│       ├── giphy/      # /giphy docs
-│       ├── gsp/        # /gsp docs
-│       ├── kbd/        # /kbd docs
-│       ├── link/       # /link docs
-│       ├── mention/    # /mention docs
-│       ├── mermaid/    # /mermaid docs
-│       └── now/        # /now docs
+│   ├── commands/       # Per-command docs
+│   │   ├── README.md   # Command list
+│   │   ├── emoji/      # /emoji docs
+│   │   ├── font/       # /font docs
+│   │   ├── giphy/      # /giphy docs
+│   │   ├── gsp/        # /gsp docs
+│   │   ├── kbd/        # /kbd docs
+│   │   ├── link/       # /link docs
+│   │   ├── mention/    # /mention docs
+│   │   ├── mermaid/    # /mermaid docs
+│   │   └── now/        # /now docs
+│   └── options/        # Options documentation
+│       └── github/     # GitHub API options docs
 e2e/                    # End-to-end tests (Playwright)
 scripts/                # Build scripts
 │   └── build.ts
@@ -199,6 +204,34 @@ const myCommand: CommandSpec = {
 
 registerCommand("mycommand", myCommand);
 ```
+
+---
+
+## GitHub API Token Setup
+
+Some features require a GitHub Personal Access Token (PAT):
+
+- `/link ci` - Link to CI jobs and artifacts
+
+### Option 1: In picker settings
+1. Type `/link ci` or click the settings gear
+2. Find **GitHub Token** section
+3. Paste your token and click **Save**
+
+### Option 2: In options page
+1. Open `chrome://extensions`
+2. Find GitHub Slash Palette → **Details**
+3. Click **Extension options**
+4. Find **GitHub API** section
+5. Paste the token and Save
+
+**Token requirements:**
+- Create a [Personal Access Token](https://github.com/settings/tokens/new)
+- For public repos: `public_repo` scope
+- For private repos: `repo` scope
+
+**Where is the token stored?**
+> The token is stored using `chrome.storage.local` on your device only.
 
 ---
 
