@@ -1,8 +1,8 @@
 /**
- * Grid Item Component
+ * Grid Item Component - SolidJS version
  */
 
-import type { JSX } from "preact"
+import type { JSX } from "solid-js"
 import { isDarkMode } from "../../../utils/theme.ts"
 import { getGridItemSelectedStyles } from "../styles.ts"
 import type { PickerItem } from "../../types.ts"
@@ -16,37 +16,37 @@ export type GridItemProps = {
   onHover: (index: number) => void
 }
 
-export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }: GridItemProps) {
+export function GridItem(props: GridItemProps) {
   const dark = isDarkMode()
-  const selectedStyles = getGridItemSelectedStyles(selected)
+  const selectedStyles = getGridItemSelectedStyles(props.selected)
 
-  const handleClick = (ev: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
+  const handleClick = (ev: MouseEvent) => {
     ev.preventDefault()
     ev.stopPropagation()
-    onSelect(item)
+    props.onSelect(props.item)
   }
 
   return (
     <button
       type="button"
-      data-item-index={index}
+      data-item-index={props.index}
       onClick={handleClick}
-      onMouseEnter={() => onHover(index)}
+      onMouseEnter={() => props.onHover(props.index)}
       style={{
-        padding: 0,
-        margin: 0,
-        backgroundColor: "transparent",
+        padding: "0",
+        margin: "0",
+        "background-color": "transparent",
         cursor: "pointer",
-        borderRadius: "12px",
+        "border-radius": "12px",
         overflow: "hidden",
         border: "1px solid rgba(0,0,0,0)",
         transition: "transform 90ms ease, boxShadow 90ms ease",
-        boxShadow: dark ? "0 6px 14px rgba(0,0,0,0.40)" : "0 6px 14px rgba(0,0,0,0.12)",
+        "box-shadow": dark ? "0 6px 14px rgba(0,0,0,0.40)" : "0 6px 14px rgba(0,0,0,0.12)",
         ...(selectedStyles as JSX.CSSProperties),
       }}
     >
       <img
-        src={imgUrlFn(item)}
+        src={props.imgUrlFn(props.item)}
         alt="item"
         style={{
           width: "100%",

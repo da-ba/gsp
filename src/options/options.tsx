@@ -1,8 +1,8 @@
 /**
- * Options page entry point - Preact version
+ * Options page entry point - SolidJS version
  */
 
-import { render, createElement } from "preact"
+import { render } from "solid-js/web"
 
 // Import command modules to trigger options section registration
 // This must be done before importing OptionsApp to ensure registrations are complete
@@ -14,7 +14,7 @@ function renderOptionsPage(): void {
   const container = document.getElementById("sections")
   if (!container) return
 
-  render(createElement(OptionsApp, null), container)
+  render(() => <OptionsApp />, container)
 }
 
 // Initialize when DOM is ready

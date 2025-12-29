@@ -2,6 +2,7 @@
  * Options Page App Component
  */
 
+import { For } from "solid-js"
 import { getOptionsSections } from "../../content/commands/options-registry.ts"
 
 /** Global styles for the options page */
@@ -24,9 +25,12 @@ export function OptionsApp() {
       <style>{globalStyles}</style>
       <h2>GitHub Slash Palette</h2>
       <div id="sections">
-        {sections.map(({ name, component: Component }) => (
-          <Component key={name} />
-        ))}
+        <For each={sections}>
+          {(section) => {
+            const Component = section.component
+            return <Component />
+          }}
+        </For>
       </div>
     </>
   )

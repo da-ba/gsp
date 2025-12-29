@@ -1,5 +1,5 @@
 /**
- * Preact Components Export
+ * SolidJS Components Export
  */
 
 export { Picker, type PickerView } from "./Picker.tsx"

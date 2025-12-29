@@ -1,9 +1,9 @@
 /**
- * Picker Header Component
+ * Picker Header Component - SolidJS version
  */
 
-import { useState } from "preact/hooks"
-import type { JSX } from "preact"
+import { createSignal } from "solid-js"
+import type { JSX } from "solid-js"
 import { isDarkMode } from "../../../utils/theme.ts"
 import { getBadgeStyles } from "../styles.ts"
 
@@ -20,8 +20,8 @@ const SettingsIcon = () => (
   </svg>
 )
 
-export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderProps) {
-  const [isHovered, setIsHovered] = useState(false)
+export function PickerHeader(props: PickerHeaderProps) {
+  const [isHovered, setIsHovered] = createSignal(false)
   const dark = isDarkMode()
   const badgeStyles = getBadgeStyles()
 
@@ -29,34 +29,34 @@ export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderP
     <div
       style={{
         display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
+        "align-items": "center",
+        "justify-content": "space-between",
         padding: "10px 10px 8px 10px",
         height: "44px",
-        boxSizing: "border-box",
+        "box-sizing": "border-box",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      <div style={{ display: "flex", "flex-direction": "column", gap: "2px" }}>
         <div
           style={{
-            fontWeight: 700,
-            letterSpacing: "0.4px",
-            fontSize: "12px",
-            opacity: 0.92,
+            "font-weight": "700",
+            "letter-spacing": "0.4px",
+            "font-size": "12px",
+            opacity: "0.92",
           }}
         >
-          {title}
+          {props.title}
         </div>
-        <div style={{ fontSize: "12px", opacity: 0.72 }}>{subtitle}</div>
+        <div style={{ "font-size": "12px", opacity: "0.72" }}>{props.subtitle}</div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div style={{ display: "flex", "align-items": "center", gap: "8px" }}>
         <div style={badgeStyles as JSX.CSSProperties}>Esc close</div>
         <button
           type="button"
           data-settings-btn="true"
           title="Settings"
-          onClick={onSettingsClick}
+          onClick={props.onSettingsClick}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           style={{
@@ -64,10 +64,10 @@ export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderP
             border: "none",
             cursor: "pointer",
             padding: "4px",
-            opacity: isHovered ? 1 : 0.62,
+            opacity: isHovered() ? "1" : "0.62",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            "align-items": "center",
+            "justify-content": "center",
             color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
           }}
         >

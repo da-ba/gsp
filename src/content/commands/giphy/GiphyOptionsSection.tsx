@@ -1,8 +1,8 @@
 /**
- * Giphy Options Section Component
+ * Giphy Options Section Component - SolidJS version
  */
 
-import { useState, useEffect } from "preact/hooks"
+import { createSignal, onMount } from "solid-js"
 import {
   getGiphyKey,
   setGiphyKey,
@@ -79,28 +79,28 @@ const sectionStyles = `
 `
 
 export function GiphyOptionsSection() {
-  const [apiKey, setApiKey] = useState("")
-  const [showKey, setShowKey] = useState(false)
-  const [status, setStatus] = useState("")
-  const [imageFormat, setImageFormat] = useState<GiphyImageFormat>("markdown")
-  const [centerImage, setCenterImage] = useState(false)
+  const [apiKey, setApiKey] = createSignal("")
+  const [showKey, setShowKey] = createSignal(false)
+  const [status, setStatus] = createSignal("")
+  const [imageFormat, setImageFormatState] = createSignal<GiphyImageFormat>("markdown")
+  const [centerImage, setCenterImageState] = createSignal(false)
 
   // Load current settings on mount
-  useEffect(() => {
+  onMount(() => {
     getGiphyKey().then((key) => setApiKey(key))
-    getGiphyImageFormat().then((format) => setImageFormat(format))
-    getGiphyCenterImage().then((center) => setCenterImage(center))
-  }, [])
+    getGiphyImageFormat().then((format) => setImageFormatState(format))
+    getGiphyCenterImage().then((center) => setCenterImageState(center))
+  })
 
   const handleSave = async () => {
-    const key = apiKey.trim()
+    const key = apiKey().trim()
     await setGiphyKey(key)
     setStatus(key ? "Saved" : "Saved empty key")
     setTimeout(() => setStatus(""), 1600)
   }
 
   const handleTest = async () => {
-    const key = apiKey.trim()
+    const key = apiKey().trim()
     if (!key) {
       setStatus("Missing key")
       return
@@ -123,22 +123,22 @@ export function GiphyOptionsSection() {
   }
 
   const handleFormatChange = async (format: GiphyImageFormat) => {
-    setImageFormat(format)
+    setImageFormatState(format)
     await setGiphyImageFormat(format)
   }
 
   const handleCenterChange = async (center: boolean) => {
-    setCenterImage(center)
+    setCenterImageState(center)
     await setGiphyCenterImage(center)
   }
 
   return (
     <>
       <style>{sectionStyles}</style>
-      <div className="giphy-section">
-        <div className="section-title">/giphy</div>
-        <div className="section-content">
-          <div className="muted">
+      <div class="giphy-section">
+        <div class="section-title">/giphy</div>
+        <div class="section-content">
+          <div class="muted">
             Giphy requires an API key. Get a free key at{" "}
             <a
               href="https://developers.giphy.com/dashboard/"
@@ -150,69 +150,92 @@ export function GiphyOptionsSection() {
           </div>
 
           <div>
-            <label htmlFor="giphy-key">API Key</label>
+            <label for="giphy-key">API Key</label>
             <input
-              type={showKey ? "text" : "password"}
+              type={showKey() ? "text" : "password"}
               id="giphy-key"
               placeholder="Paste your Giphy API key"
-              autoComplete="off"
-              value={apiKey}
-              onChange={(e) => setApiKey((e.target as HTMLInputElement).value)}
+              autocomplete="off"
+              value={apiKey()}
+              onInput={(e) => setApiKey((e.target as HTMLInputElement).value)}
             />
           </div>
 
-          <div className="row">
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+          <div class="row">
+            <label
+              style={{ display: "flex", "align-items": "center", gap: "8px", "font-weight": "400" }}
+            >
               <input
                 type="checkbox"
                 id="giphy-show-key"
-                checked={showKey}
+                checked={showKey()}
                 onChange={(e) => setShowKey((e.target as HTMLInputElement).checked)}
               />
               Show key
             </label>
           </div>
 
-          <div className="row">
+          <div class="row">
             <button onClick={handleSave}>Save</button>
             <button onClick={handleTest}>Test</button>
             <button onClick={handleClear}>Clear</button>
           </div>
 
-          <div className="status">{status}</div>
+          <div class="status">{status()}</div>
 
           <div
             style={{
-              marginTop: "16px",
-              borderTop: "1px solid rgba(0, 0, 0, 0.08)",
-              paddingTop: "16px",
+              "margin-top": "16px",
+              "border-top": "1px solid rgba(0, 0, 0, 0.08)",
+              "padding-top": "16px",
             }}
           >
-            <label style={{ marginBottom: "8px" }}>Image Format</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+            <label style={{ "margin-bottom": "8px" }}>Image Format</label>
+            <div style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
+              <label
+                style={{
+                  display: "flex",
+                  "align-items": "center",
+                  gap: "8px",
+                  "font-weight": "400",
+                }}
+              >
                 <input
                   type="radio"
                   name="giphy-format"
-                  checked={imageFormat === "markdown"}
+                  checked={imageFormat() === "markdown"}
                   onChange={() => handleFormatChange("markdown")}
                 />
                 <code>![](link)</code> (default)
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+              <label
+                style={{
+                  display: "flex",
+                  "align-items": "center",
+                  gap: "8px",
+                  "font-weight": "400",
+                }}
+              >
                 <input
                   type="radio"
                   name="giphy-format"
-                  checked={imageFormat === "img"}
+                  checked={imageFormat() === "img"}
                   onChange={() => handleFormatChange("img")}
                 />
                 <code>{'<img src="link" />'}</code>
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+              <label
+                style={{
+                  display: "flex",
+                  "align-items": "center",
+                  gap: "8px",
+                  "font-weight": "400",
+                }}
+              >
                 <input
                   type="radio"
                   name="giphy-format"
-                  checked={imageFormat === "img-fixed"}
+                  checked={imageFormat() === "img-fixed"}
                   onChange={() => handleFormatChange("img-fixed")}
                 />
                 <code>{'<img src="link" width="350" />'}</code> (fixed width)
@@ -222,17 +245,24 @@ export function GiphyOptionsSection() {
 
           <div
             style={{
-              marginTop: "16px",
-              borderTop: "1px solid rgba(0, 0, 0, 0.08)",
-              paddingTop: "16px",
+              "margin-top": "16px",
+              "border-top": "1px solid rgba(0, 0, 0, 0.08)",
+              "padding-top": "16px",
             }}
           >
-            <label style={{ marginBottom: "8px" }}>Alignment</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
+            <label style={{ "margin-bottom": "8px" }}>Alignment</label>
+            <div style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
+              <label
+                style={{
+                  display: "flex",
+                  "align-items": "center",
+                  gap: "8px",
+                  "font-weight": "400",
+                }}
+              >
                 <input
                   type="checkbox"
-                  checked={centerImage}
+                  checked={centerImage()}
                   onChange={(e) => handleCenterChange((e.target as HTMLInputElement).checked)}
                 />
                 Center image (wrap in <code>{'<p align="center">...</p>'}</code>)

@@ -1,8 +1,7 @@
 /**
- * Picker Footer Component
+ * Picker Footer Component - SolidJS version
  */
 
-// No hooks needed - this is a simple functional component
 import { isDarkMode } from "../../../utils/theme.ts"
 
 export function PickerFooter() {
@@ -12,18 +11,18 @@ export function PickerFooter() {
     <div
       style={{
         padding: "10px",
-        fontSize: "12px",
+        "font-size": "12px",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
+        "align-items": "center",
+        "justify-content": "space-between",
         height: "44px",
-        boxSizing: "border-box",
-        borderTop: dark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.10)",
+        "box-sizing": "border-box",
+        "border-top": dark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.10)",
       }}
     >
       <span
         style={{
-          opacity: 0.62,
+          opacity: "0.62",
           color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
         }}
       >

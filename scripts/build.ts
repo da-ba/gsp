@@ -4,6 +4,8 @@ import { join } from "path";
 import { config } from "dotenv";
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-core";
+import * as esbuild from "esbuild";
+import { solidPlugin } from "esbuild-plugin-solid";
 
 const isWatch = process.argv.includes("--watch");
 const srcDir = "src";
@@ -82,43 +84,31 @@ async function getFileSize(path: string): Promise<number> {
 }
 
 async function bundleContentScript(envDefines: Record<string, string>) {
-  const result = await Bun.build({
-    entrypoints: [join(srcDir, "content", "index.ts")],
-    outdir: distDir,
-    naming: "content.js",
+  await esbuild.build({
+    entryPoints: [join(srcDir, "content", "index.ts")],
+    outfile: join(distDir, "content.js"),
+    bundle: true,
     minify: !isWatch,
-    sourcemap: isWatch ? "inline" : "none",
-    target: "browser",
+    sourcemap: isWatch ? "inline" : false,
+    target: "es2020",
+    format: "iife",
     define: envDefines,
+    plugins: [solidPlugin()],
   });
-
-  if (!result.success) {
-    console.error("Content script build failed:");
-    for (const log of result.logs) {
-      console.error(log);
-    }
-    process.exit(1);
-  }
 }
 
 async function bundleOptionsScript(envDefines: Record<string, string>) {
-  const result = await Bun.build({
-    entrypoints: [join(srcDir, "options", "options.ts")],
-    outdir: distDir,
-    naming: "options.js",
+  await esbuild.build({
+    entryPoints: [join(srcDir, "options", "options.tsx")],
+    outfile: join(distDir, "options.js"),
+    bundle: true,
     minify: !isWatch,
-    sourcemap: isWatch ? "inline" : "none",
-    target: "browser",
+    sourcemap: isWatch ? "inline" : false,
+    target: "es2020",
+    format: "iife",
     define: envDefines,
+    plugins: [solidPlugin()],
   });
-
-  if (!result.success) {
-    console.error("Options script build failed:");
-    for (const log of result.logs) {
-      console.error(log);
-    }
-    process.exit(1);
-  }
 }
 
 async function reportBundleSizes() {

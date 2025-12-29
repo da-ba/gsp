@@ -1,8 +1,8 @@
 /**
- * Main Picker Component
+ * Main Picker Component - SolidJS version
  */
 
-import { useRef, useEffect } from "preact/hooks"
+import { Show, onMount, createEffect } from "solid-js"
 import { PickerHeader } from "./PickerHeader.tsx"
 import { PickerHints } from "./PickerHints.tsx"
 import { PickerFooter } from "./PickerFooter.tsx"
@@ -36,43 +36,17 @@ export type PickerProps = {
   position: Position
 }
 
-export function Picker({
-  visible,
-  title,
-  subtitle,
-  view,
-  selectedIndex,
-  imgUrlFn,
-  onSelect,
-  onHover,
-  onSuggestPick,
-  onSettingsClick,
-  onSetupComplete,
-  position,
-}: PickerProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const setupBodyRef = useRef<HTMLDivElement>(null)
+export function Picker(props: PickerProps) {
+  let containerRef: HTMLDivElement | undefined
+  let setupBodyRef: HTMLDivElement | undefined
 
-  // Apply picker styles on mount and theme changes
-  useEffect(() => {
-    if (containerRef.current) {
-      applyPickerStyles(containerRef.current)
-    }
-  }, [visible])
-
-  // Handle setup panel rendering
-  useEffect(() => {
-    if (view.type === "setup" && setupBodyRef.current) {
-      setupBodyRef.current.innerHTML = ""
-      view.renderFn(setupBodyRef.current, onSetupComplete)
-    }
-  }, [view, onSetupComplete])
-
-  // Animate on show
-  useEffect(() => {
-    if (visible && containerRef.current) {
+  // Apply picker styles on mount
+  onMount(() => {
+    if (containerRef) {
+      applyPickerStyles(containerRef)
+      // Animate on show
       try {
-        containerRef.current.animate(
+        containerRef.animate(
           [
             { opacity: 0, transform: "scale(0.98)" },
             { opacity: 1, transform: "scale(1)" },
@@ -83,27 +57,33 @@ export function Picker({
         // Animation not supported
       }
     }
-  }, [visible])
+  })
 
-  if (!visible) return null
+  // Handle setup panel rendering
+  createEffect(() => {
+    if (props.view.type === "setup" && setupBodyRef) {
+      setupBodyRef.innerHTML = ""
+      props.view.renderFn(setupBodyRef, props.onSetupComplete)
+    }
+  })
 
   const renderBody = () => {
-    switch (view.type) {
+    switch (props.view.type) {
       case "loading":
         return <LoadingSkeleton />
       case "message":
-        return <Message message={view.message} />
+        return <Message message={props.view.message} />
       case "grid":
         return (
           <PickerGrid
-            items={view.items}
-            selectedIndex={selectedIndex}
-            imgUrlFn={imgUrlFn}
-            onSelect={onSelect}
-            onHover={onHover}
-            suggestItems={view.suggestItems}
-            suggestTitle={view.suggestTitle}
-            onSuggestPick={onSuggestPick}
+            items={props.view.items}
+            selectedIndex={props.selectedIndex}
+            imgUrlFn={props.imgUrlFn}
+            onSelect={props.onSelect}
+            onHover={props.onHover}
+            suggestItems={props.view.suggestItems}
+            suggestTitle={props.view.suggestTitle}
+            onSuggestPick={props.onSuggestPick}
           />
         )
       case "settings":
@@ -116,7 +96,7 @@ export function Picker({
               overflow: "auto",
               padding: "0 10px 10px 10px",
               flex: "1 1 auto",
-              minHeight: 0,
+              "min-height": "0",
             }}
           />
         )
@@ -126,26 +106,32 @@ export function Picker({
   }
 
   return (
-    <div
-      ref={containerRef}
-      id="slashPalettePicker"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "380px",
-        maxHeight: "380px",
-        width: "400px",
-        maxWidth: "400px",
-        boxSizing: "border-box",
-        position: "fixed",
-        left: `${position.left}px`,
-        top: `${position.top}px`,
-      }}
-    >
-      <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
-      <PickerHints />
-      {renderBody()}
-      <PickerFooter />
-    </div>
+    <Show when={props.visible}>
+      <div
+        ref={containerRef}
+        id="slashPalettePicker"
+        style={{
+          display: "flex",
+          "flex-direction": "column",
+          height: "380px",
+          "max-height": "380px",
+          width: "400px",
+          "max-width": "400px",
+          "box-sizing": "border-box",
+          position: "fixed",
+          left: `${props.position.left}px`,
+          top: `${props.position.top}px`,
+        }}
+      >
+        <PickerHeader
+          title={props.title}
+          subtitle={props.subtitle}
+          onSettingsClick={props.onSettingsClick}
+        />
+        <PickerHints />
+        {renderBody()}
+        <PickerFooter />
+      </div>
+    </Show>
   )
 }

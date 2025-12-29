@@ -1,8 +1,8 @@
 /**
- * Picker Grid Component
+ * Picker Grid Component - SolidJS version
  */
 
-// No hooks needed - this is a simple functional component
+import { Show, For } from "solid-js"
 import { GridItem } from "./GridItem.tsx"
 import { SuggestChips } from "./SuggestChips.tsx"
 import type { PickerItem } from "../../types.ts"
@@ -18,63 +18,59 @@ export type PickerGridProps = {
   onSuggestPick?: (term: string) => void
 }
 
-export function PickerGrid({
-  items,
-  selectedIndex,
-  imgUrlFn,
-  onSelect,
-  onHover,
-  suggestItems = [],
-  suggestTitle = "",
-  onSuggestPick,
-}: PickerGridProps) {
+export function PickerGrid(props: PickerGridProps) {
   return (
     <div
       style={{
         overflow: "auto",
         padding: "0 10px 10px 10px",
         flex: "1 1 auto",
-        minHeight: 0,
+        "min-height": "0",
       }}
     >
-      {suggestItems.length > 0 && onSuggestPick && (
-        <SuggestChips items={suggestItems} title={suggestTitle} onPick={onSuggestPick} />
-      )}
+      <Show when={(props.suggestItems?.length ?? 0) > 0 && props.onSuggestPick}>
+        <SuggestChips
+          items={props.suggestItems ?? []}
+          title={props.suggestTitle ?? ""}
+          onPick={props.onSuggestPick!}
+        />
+      </Show>
 
       {/* Show suggestTitle as section header when there are no suggest chips */}
-      {suggestItems.length === 0 && suggestTitle && (
+      <Show when={(props.suggestItems?.length ?? 0) === 0 && props.suggestTitle}>
         <div
           style={{
             width: "100%",
-            opacity: 0.72,
-            fontSize: "12px",
-            marginBottom: "4px",
+            opacity: "0.72",
+            "font-size": "12px",
+            "margin-bottom": "4px",
           }}
         >
-          {suggestTitle}
+          {props.suggestTitle}
         </div>
-      )}
+      </Show>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          "grid-template-columns": "repeat(3, 1fr)",
           gap: "8px",
-          maxHeight: "100%",
-          overflowY: "auto",
+          "max-height": "100%",
+          "overflow-y": "auto",
         }}
       >
-        {items.map((item, idx) => (
-          <GridItem
-            key={item.id}
-            item={item}
-            index={idx}
-            selected={idx === selectedIndex}
-            imgUrlFn={imgUrlFn}
-            onSelect={onSelect}
-            onHover={onHover}
-          />
-        ))}
+        <For each={props.items}>
+          {(item, idx) => (
+            <GridItem
+              item={item}
+              index={idx()}
+              selected={idx() === props.selectedIndex}
+              imgUrlFn={props.imgUrlFn}
+              onSelect={props.onSelect}
+              onHover={props.onHover}
+            />
+          )}
+        </For>
       </div>
     </div>
   )

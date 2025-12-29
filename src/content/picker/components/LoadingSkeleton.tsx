@@ -1,9 +1,9 @@
 /**
- * Loading Skeleton Component
+ * Loading Skeleton Component - SolidJS version
  */
 
-import { useRef, useEffect } from "preact/hooks"
-import type { JSX } from "preact"
+import { onMount, onCleanup, For } from "solid-js"
+import type { JSX } from "solid-js"
 import { getSkeletonStyles } from "../styles.ts"
 
 export function LoadingSkeleton() {
@@ -15,41 +15,41 @@ export function LoadingSkeleton() {
         overflow: "auto",
         padding: "0 10px 10px 10px",
         flex: "1 1 auto",
-        minHeight: 0,
+        "min-height": "0",
       }}
     >
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          "grid-template-columns": "repeat(3, 1fr)",
           gap: "8px",
         }}
       >
-        {Array.from({ length: 12 }).map((_, idx) => (
-          <SkeletonBox key={idx} styles={skeletonStyles} />
-        ))}
+        <For each={Array.from({ length: 12 })}>{() => <SkeletonBox styles={skeletonStyles} />}</For>
       </div>
     </div>
   )
 }
 
-function SkeletonBox({ styles }: { styles: Partial<CSSStyleDeclaration> }) {
-  const boxRef = useRef<HTMLDivElement>(null)
+function SkeletonBox(props: { styles: Partial<CSSStyleDeclaration> }) {
+  let boxRef: HTMLDivElement | undefined
+  let animation: Animation | undefined
 
-  useEffect(() => {
-    const el = boxRef.current
-    if (!el) return
-
+  onMount(() => {
+    if (!boxRef) return
     try {
-      const animation = el.animate([{ opacity: 0.55 }, { opacity: 0.9 }, { opacity: 0.55 }], {
+      animation = boxRef.animate([{ opacity: 0.55 }, { opacity: 0.9 }, { opacity: 0.55 }], {
         duration: 900,
         iterations: Infinity,
       })
-      return () => animation.cancel()
     } catch {
       // Animation not supported
     }
-  }, [])
+  })
 
-  return <div ref={boxRef} style={styles as JSX.CSSProperties} />
+  onCleanup(() => {
+    if (animation) animation.cancel()
+  })
+
+  return <div ref={boxRef} style={props.styles as JSX.CSSProperties} />
 }

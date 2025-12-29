@@ -1,8 +1,9 @@
 /**
- * Picker Hints Component
+ * Picker Hints Component - SolidJS version
  */
 
-import type { JSX } from "preact"
+import { For } from "solid-js"
+import type { JSX } from "solid-js"
 import { getBadgeStyles } from "../styles.ts"
 
 const HINTS = ["Arrows move", "Enter insert", "Esc close"]
@@ -14,25 +15,26 @@ export function PickerHints() {
     <div
       style={{
         display: "flex",
-        flexWrap: "wrap",
+        "flex-wrap": "wrap",
         gap: "6px",
         padding: "0 10px 10px 10px",
         height: "32px",
-        boxSizing: "border-box",
+        "box-sizing": "border-box",
       }}
     >
-      {HINTS.map((hint) => (
-        <div
-          key={hint}
-          style={{
-            ...(badgeStyles as JSX.CSSProperties),
-            padding: "3px 10px",
-            fontWeight: 600,
-          }}
-        >
-          {hint}
-        </div>
-      ))}
+      <For each={HINTS}>
+        {(hint) => (
+          <div
+            style={{
+              ...(badgeStyles as JSX.CSSProperties),
+              padding: "3px 10px",
+              "font-weight": "600",
+            }}
+          >
+            {hint}
+          </div>
+        )}
+      </For>
     </div>
   )
 }

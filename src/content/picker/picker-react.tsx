@@ -1,8 +1,8 @@
 /**
- * Preact-based Picker UI - replaces vanilla JS picker.ts
+ * SolidJS-based Picker UI - replaces vanilla JS picker.ts
  */
 
-import { render, createElement } from "preact"
+import { render } from "solid-js/web"
 import { add, sub, clamp } from "../../utils/math.ts"
 import { getCaretCoordinates } from "../../utils/dom.ts"
 import type { PickerItem } from "../types.ts"
@@ -11,10 +11,12 @@ import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
 
-// Preact container element
+// SolidJS container element
 let pickerContainer: HTMLElement | null = null
+// SolidJS dispose function
+let disposePickerFn: (() => void) | null = null
 
-// Current picker state for React rendering
+// Current picker state for rendering
 export type ReactPickerState = {
   visible: boolean
   title: string
@@ -38,40 +40,47 @@ let currentOnSuggestPick: (term: string) => void = () => {}
 let currentOnSetupComplete: () => void = () => {}
 
 /**
- * Re-render the Preact picker with current state
+ * Re-render the SolidJS picker with current state
  */
 function renderPicker(): void {
   if (!pickerContainer || !state.pickerEl) return
 
-  render(
-    createElement(Picker, {
-      visible: reactState.visible,
-      title: reactState.title,
-      subtitle: reactState.subtitle,
-      view: reactState.view,
-      selectedIndex: state.selectedIndex,
-      imgUrlFn: currentImgUrlFn,
-      onSelect: (item: PickerItem) => {
-        const field = state.activeField
-        currentOnSelect(item)
-        hidePicker()
-        if (field) {
-          setTimeout(() => field.focus(), 0)
-        }
-      },
-      onHover: (index: number) => {
-        state.selectedIndex = index
-        renderPicker()
-      },
-      onSuggestPick: currentOnSuggestPick,
-      onSettingsClick: () => {
-        state.showingSettings = true
-        reactState.view = { type: "settings" }
-        renderPicker()
-      },
-      onSetupComplete: currentOnSetupComplete,
-      position: reactState.position,
-    }),
+  // Dispose previous render if exists
+  if (disposePickerFn) {
+    disposePickerFn()
+  }
+
+  disposePickerFn = render(
+    () => (
+      <Picker
+        visible={reactState.visible}
+        title={reactState.title}
+        subtitle={reactState.subtitle}
+        view={reactState.view}
+        selectedIndex={state.selectedIndex}
+        imgUrlFn={currentImgUrlFn}
+        onSelect={(item: PickerItem) => {
+          const field = state.activeField
+          currentOnSelect(item)
+          hidePicker()
+          if (field) {
+            setTimeout(() => field.focus(), 0)
+          }
+        }}
+        onHover={(index: number) => {
+          state.selectedIndex = index
+          renderPicker()
+        }}
+        onSuggestPick={currentOnSuggestPick}
+        onSettingsClick={() => {
+          state.showingSettings = true
+          reactState.view = { type: "settings" }
+          renderPicker()
+        }}
+        onSetupComplete={currentOnSetupComplete}
+        position={reactState.position}
+      />
+    ),
     pickerContainer
   )
 }
@@ -102,7 +111,7 @@ export function ensurePicker(field?: HTMLElement | null): HTMLElement {
     return state.pickerEl
   }
 
-  // Create container element for React
+  // Create container element for SolidJS
   const el = document.createElement("div")
   el.id = "slashPalettePickerContainer"
 

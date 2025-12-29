@@ -1,9 +1,9 @@
 /**
- * Settings Panel Component
+ * Settings Panel Component - SolidJS version
  */
 
-import { useState, useEffect, useRef } from "preact/hooks"
-import type { JSX } from "preact"
+import { createSignal, onMount, For } from "solid-js"
+import type { JSX } from "solid-js"
 import { setThemeOverride } from "../../../utils/theme.ts"
 import {
   getThemePreference,
@@ -21,30 +21,28 @@ const THEMES: { value: ThemePreference; label: string }[] = [
 ]
 
 export function SettingsPanel() {
-  const [currentTheme, setCurrentTheme] = useState<ThemePreference>("system")
-  const commandSettingsRef = useRef<HTMLDivElement>(null)
+  const [currentTheme, setCurrentTheme] = createSignal<ThemePreference>("system")
+  let commandSettingsRef: HTMLDivElement | undefined
   const cardStyles = getCardStyles()
   const badgeStyles = getBadgeStyles()
 
   // Load current theme preference
-  useEffect(() => {
+  onMount(() => {
     getThemePreference().then(setCurrentTheme)
-  }, [])
+  })
 
   // Render command settings
-  useEffect(() => {
-    const container = commandSettingsRef.current
-    if (!container) return
-
-    container.innerHTML = ""
+  onMount(() => {
+    if (!commandSettingsRef) return
+    commandSettingsRef.innerHTML = ""
     const commands = listCommands()
     for (const cmdName of commands) {
       const cmd = getCommand(cmdName)
       if (cmd?.renderSettings) {
-        cmd.renderSettings(container)
+        cmd.renderSettings(commandSettingsRef)
       }
     }
-  }, [])
+  })
 
   const handleThemeChange = async (value: ThemePreference) => {
     await setThemePreference(value)
@@ -62,42 +60,43 @@ export function SettingsPanel() {
         overflow: "auto",
         padding: "0 10px 10px 10px",
         flex: "1 1 auto",
-        minHeight: 0,
+        "min-height": "0",
       }}
     >
       <div
         style={{
           ...(cardStyles as JSX.CSSProperties),
           display: "flex",
-          flexDirection: "column",
+          "flex-direction": "column",
           gap: "14px",
         }}
       >
         {/* Theme Section */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div style={{ fontWeight: 600 }}>Theme</div>
+        <div style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
+          <div style={{ "font-weight": "600" }}>Theme</div>
           <div style={{ display: "flex", gap: "6px" }}>
-            {THEMES.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                data-settings-action="true"
-                onClick={(ev) => {
-                  ev.preventDefault()
-                  ev.stopPropagation()
-                  handleThemeChange(value)
-                }}
-                style={{
-                  ...(badgeStyles as JSX.CSSProperties),
-                  cursor: "pointer",
-                  padding: "6px 12px",
-                  opacity: value === currentTheme ? 1 : undefined,
-                  fontWeight: value === currentTheme ? 600 : undefined,
-                }}
-              >
-                {label}
-              </button>
-            ))}
+            <For each={THEMES}>
+              {(theme) => (
+                <button
+                  type="button"
+                  data-settings-action="true"
+                  onClick={(ev) => {
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    handleThemeChange(theme.value)
+                  }}
+                  style={{
+                    ...(badgeStyles as JSX.CSSProperties),
+                    cursor: "pointer",
+                    padding: "6px 12px",
+                    opacity: theme.value === currentTheme() ? "1" : undefined,
+                    "font-weight": theme.value === currentTheme() ? "600" : undefined,
+                  }}
+                >
+                  {theme.label}
+                </button>
+              )}
+            </For>
           </div>
         </div>
 

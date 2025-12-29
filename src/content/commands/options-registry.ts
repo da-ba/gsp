@@ -2,18 +2,18 @@
  * Options section registry for command-specific settings UI
  */
 
-import type React from "react"
+import type { Component } from "solid-js"
 
 /** Registry of options section components */
 const optionsSectionRegistry: Array<{
   name: string
-  component: React.ComponentType
+  component: Component
 }> = []
 
 /**
  * Register an options section component for a command
  */
-export function registerOptionsSection(name: string, component: React.ComponentType): void {
+export function registerOptionsSection(name: string, component: Component): void {
   optionsSectionRegistry.push({ name, component })
 }
 
@@ -22,7 +22,7 @@ export function registerOptionsSection(name: string, component: React.ComponentT
  */
 export function getOptionsSections(): Array<{
   name: string
-  component: React.ComponentType
+  component: Component
 }> {
   return [...optionsSectionRegistry]
 }
