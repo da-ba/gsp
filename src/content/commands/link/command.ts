@@ -7,6 +7,8 @@
  * - /link                    - Opens empty link input form
  * - /link google.com         - Prefills URL, auto-generates title
  * - /link google.com "Title" - Prefills URL and title
+ * - /link ci                  - Shows recent CI jobs and artifacts
+ * - /link ci <query>          - Searches CI jobs/artifacts matching query
  */
 
 import { replaceRange } from "../../../utils/dom.ts"
@@ -15,6 +17,12 @@ import { registerCommand, type CommandSpec } from "../registry.ts"
 import { renderGrid, state } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { parseLinkQuery, formatMarkdownLink, type LinkParseResult } from "./api.ts"
+import {
+  getGitHubToken,
+  getRepoContext,
+  searchCIResources,
+  type CILinkSuggestion,
+} from "../../../options/github/api.ts"
 
 function escapeForSvg(s: string): string {
   return String(s)
@@ -116,6 +124,246 @@ function insertLink(parsed: LinkParseResult): void {
   field.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
+/** Insert a CI link into the textarea */
+function insertCILink(suggestion: CILinkSuggestion): void {
+  const field = state.activeField
+  if (!field) return
+  if (field.tagName !== "TEXTAREA") return
+
+  const value = field.value || ""
+  const pos = field.selectionStart || 0
+  const lineStart = state.activeLineStart
+
+  const markdown = formatMarkdownLink(suggestion.url, suggestion.name)
+  const replacement = markdown + " "
+  const newValue = replaceRange(value, lineStart, pos, replacement)
+  field.value = newValue
+
+  const newPos = add(lineStart, replacement.length)
+  field.focus()
+  field.setSelectionRange(newPos, newPos)
+  field.dispatchEvent(new Event("input", { bubbles: true }))
+}
+
+/** Create a tile for a CI job or artifact */
+function makeCITile(suggestion: CILinkSuggestion): PickerItem {
+  const displayName = suggestion.name.slice(0, 24)
+  const displayRun = suggestion.runName.slice(0, 20)
+  const typeLabel = suggestion.type === "job" ? "Job" : "Artifact"
+  const iconColor = suggestion.type === "job" ? "#22c55e" : "#f59e0b"
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <defs>
+    <linearGradient id="bg-ci" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#f0fdf4" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-ci)"/>
+  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.08"/>
+
+  <!-- CI icon (gear/cog for job, package for artifact) -->
+  ${
+    suggestion.type === "job"
+      ? `<circle cx="30" cy="50" r="12" stroke="${iconColor}" stroke-width="2" fill="none"/>
+         <circle cx="30" cy="50" r="5" fill="${iconColor}" fill-opacity="0.3"/>
+         <line x1="30" y1="35" x2="30" y2="40" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+         <line x1="30" y1="60" x2="30" y2="65" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+         <line x1="15" y1="50" x2="20" y2="50" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>
+         <line x1="40" y1="50" x2="45" y2="50" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>`
+      : `<rect x="18" y="38" width="24" height="24" rx="3" stroke="${iconColor}" stroke-width="2" fill="none"/>
+         <path d="M22 38 L22 35 L38 35 L38 38" stroke="${iconColor}" stroke-width="2" fill="none"/>
+         <line x1="30" y1="45" x2="30" y2="55" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"/>`
+  }
+
+  <!-- Type label -->
+  <rect x="50" y="30" width="40" height="16" rx="4" fill="${iconColor}" fill-opacity="0.15"/>
+  <text x="70" y="42" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="10" font-weight="500" fill="${iconColor}">${escapeForSvg(typeLabel)}</text>
+
+  <!-- Name -->
+  <text x="50" y="60" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="13" font-weight="600" fill="#0f172a" fill-opacity="0.86">${escapeForSvg(displayName)}</text>
+
+  <!-- Run name -->
+  <text x="50" y="78" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="10" fill="#0f172a" fill-opacity="0.55">${escapeForSvg(displayRun)}</text>
+
+  <!-- Insert hint -->
+  <rect x="164" y="88" width="64" height="22" rx="6" fill="${iconColor}" fill-opacity="0.12"/>
+  <text x="196" y="103" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="10" font-weight="500" fill="${iconColor}">Insert Link</text>
+</svg>`
+
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+
+  return {
+    id: `ci-${suggestion.type}-${suggestion.runId}-${suggestion.name}`,
+    previewUrl: dataUrl,
+    data: { type: "ci", suggestion },
+  }
+}
+
+/** Create a tile for CI setup/token required */
+function makeCISetupTile(): PickerItem {
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <defs>
+    <linearGradient id="bg-setup" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fef3c7" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#fef9c3" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-setup)"/>
+  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
+
+  <!-- Warning icon -->
+  <path d="M120 35 L135 60 L105 60 Z" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linejoin="round"/>
+  <line x1="120" y1="45" x2="120" y2="50" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="120" cy="55" r="1.5" fill="#f59e0b"/>
+
+  <!-- Text -->
+  <text x="120" y="80" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#92400e">GitHub token required</text>
+  <text x="120" y="96" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="10" fill="#92400e" fill-opacity="0.7">Configure in extension options</text>
+</svg>`
+
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+
+  return {
+    id: "ci-setup",
+    previewUrl: dataUrl,
+    data: { type: "setup" },
+  }
+}
+
+/** Create a tile for CI loading state */
+function makeCILoadingTile(): PickerItem {
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <defs>
+    <linearGradient id="bg-loading" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#f1f5f9" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-loading)"/>
+  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
+
+  <!-- Loading spinner -->
+  <circle cx="120" cy="50" r="12" stroke="#94a3b8" stroke-width="2" fill="none" stroke-dasharray="18 18" stroke-linecap="round">
+    <animateTransform attributeName="transform" type="rotate" from="0 120 50" to="360 120 50" dur="1s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Text -->
+  <text x="120" y="85" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#64748b">Loading CI resources...</text>
+</svg>`
+
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+
+  return {
+    id: "ci-loading",
+    previewUrl: dataUrl,
+    data: { type: "loading" },
+  }
+}
+
+/** Create a tile for CI error state */
+function makeCIErrorTile(error: string): PickerItem {
+  const displayError = error.slice(0, 40)
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <defs>
+    <linearGradient id="bg-error" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fef2f2" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#fee2e2" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-error)"/>
+  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
+
+  <!-- Error icon -->
+  <circle cx="120" cy="45" r="12" stroke="#ef4444" stroke-width="2" fill="none"/>
+  <line x1="115" y1="40" x2="125" y2="50" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+  <line x1="125" y1="40" x2="115" y2="50" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Text -->
+  <text x="120" y="80" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#dc2626">${escapeForSvg(displayError)}</text>
+</svg>`
+
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+
+  return {
+    id: "ci-error",
+    previewUrl: dataUrl,
+    data: { type: "error" },
+  }
+}
+
+/** Create a tile for no CI results */
+function makeCINoResultsTile(): PickerItem {
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <defs>
+    <linearGradient id="bg-noresults" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#f1f5f9" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-noresults)"/>
+  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
+
+  <!-- Search icon -->
+  <circle cx="115" cy="45" r="12" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <line x1="123" y1="53" x2="130" y2="60" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Text -->
+  <text x="120" y="85" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#64748b">No matching CI resources</text>
+</svg>`
+
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+
+  return {
+    id: "ci-noresults",
+    previewUrl: dataUrl,
+    data: { type: "noresults" },
+  }
+}
+
+/** Check if query is a CI query */
+function isCIQuery(query: string): boolean {
+  const trimmed = query.trim().toLowerCase()
+  return trimmed === "ci" || trimmed.startsWith("ci ")
+}
+
+/** Extract search term from CI query */
+function extractCISearchTerm(query: string): string {
+  const trimmed = query.trim()
+  if (trimmed.toLowerCase() === "ci") {
+    return ""
+  }
+  // Remove "ci " prefix
+  return trimmed.slice(3).trim()
+}
+
+/** Type guard for CI data */
+type CIItemData = { type: "ci"; suggestion: CILinkSuggestion }
+type SetupItemData = { type: "setup" }
+type LinkItemData = LinkParseResult
+type ItemData =
+  | CIItemData
+  | SetupItemData
+  | LinkItemData
+  | { type: "loading" }
+  | { type: "error" }
+  | { type: "noresults" }
+  | null
+
+function isCIItemData(data: ItemData): data is CIItemData {
+  return data !== null && typeof data === "object" && "type" in data && data.type === "ci"
+}
+
+function isLinkItemData(data: ItemData): data is LinkItemData {
+  return data !== null && typeof data === "object" && "isValid" in data
+}
+
 const linkCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
@@ -123,11 +371,55 @@ const linkCommand: CommandSpec = {
     // Show empty state with hint
     return {
       items: [makeEmptyLinkTile()],
-      suggestTitle: "Enter a URL",
+      suggestTitle: "Enter a URL or try /link ci",
     }
   },
 
   getResults: async (query: string) => {
+    // Check if this is a CI query
+    if (isCIQuery(query)) {
+      const token = await getGitHubToken()
+      if (!token) {
+        return {
+          items: [makeCISetupTile()],
+          suggestTitle: "CI Links",
+        }
+      }
+
+      const context = getRepoContext()
+      if (!context) {
+        return {
+          items: [makeCIErrorTile("Not on a GitHub repository page")],
+          suggestTitle: "CI Links",
+        }
+      }
+
+      const searchTerm = extractCISearchTerm(query)
+      const result = await searchCIResources(token, context.owner, context.repo, searchTerm)
+
+      if (result.error) {
+        return {
+          items: [makeCIErrorTile(result.error)],
+          suggestTitle: "CI Links",
+        }
+      }
+
+      const suggestions = result.data || []
+      if (suggestions.length === 0) {
+        return {
+          items: [makeCINoResultsTile()],
+          suggestTitle: searchTerm ? `No CI matches for "${searchTerm}"` : "No recent CI runs",
+        }
+      }
+
+      const items = suggestions.map(makeCITile)
+      return {
+        items,
+        suggestTitle: searchTerm ? `CI matches for "${searchTerm}"` : "Recent CI jobs & artifacts",
+      }
+    }
+
+    // Regular URL link handling
     const parsed = parseLinkQuery(query)
 
     if (parsed.isValid) {
@@ -150,8 +442,10 @@ const linkCommand: CommandSpec = {
       items,
       (it) => it.previewUrl,
       (it) => {
-        const data = it.data as LinkParseResult | null
-        if (data?.isValid) {
+        const data = it.data as ItemData
+        if (isCIItemData(data)) {
+          insertCILink(data.suggestion)
+        } else if (isLinkItemData(data) && data.isValid) {
           insertLink(data)
         }
       },
@@ -165,8 +459,10 @@ const linkCommand: CommandSpec = {
       items,
       (it) => it.previewUrl,
       (it) => {
-        const data = it.data as LinkParseResult | null
-        if (data?.isValid) {
+        const data = it.data as ItemData
+        if (isCIItemData(data)) {
+          insertCILink(data.suggestion)
+        } else if (isLinkItemData(data) && data.isValid) {
           insertLink(data)
         }
       },
@@ -176,16 +472,28 @@ const linkCommand: CommandSpec = {
 
   onSelect: (it: PickerItem) => {
     if (!it) return
-    const data = it.data as LinkParseResult | null
-    if (data?.isValid) {
+    const data = it.data as ItemData
+    if (isCIItemData(data)) {
+      insertCILink(data.suggestion)
+    } else if (isLinkItemData(data) && data.isValid) {
       insertLink(data)
     }
   },
 
-  noResultsMessage: 'Type a URL like: /link example.com or /link example.com "My Title"',
+  noResultsMessage:
+    'Type a URL like: /link example.com or /link example.com "My Title", or use /link ci to search CI jobs',
 }
 
 // Register the command
 registerCommand("link", linkCommand)
 
-export { linkCommand, makeLinkTile, makeEmptyLinkTile }
+export {
+  linkCommand,
+  makeLinkTile,
+  makeEmptyLinkTile,
+  makeCITile,
+  makeCISetupTile,
+  makeCILoadingTile,
+  makeCIErrorTile,
+  makeCINoResultsTile,
+}
