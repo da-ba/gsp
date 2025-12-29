@@ -356,17 +356,20 @@ function extractCISearchTerm(query: string): string {
   return trimmed.slice(3).trim()
 }
 
-/** Type guard for CI data */
+/** Type definitions for picker item data */
 type CIItemData = { type: "ci"; suggestion: CILinkSuggestion }
 type SetupItemData = { type: "setup" }
+type LoadingItemData = { type: "loading" }
+type ErrorItemData = { type: "error" }
+type NoResultsItemData = { type: "noresults" }
 type LinkItemData = LinkParseResult
 type ItemData =
   | CIItemData
   | SetupItemData
+  | LoadingItemData
+  | ErrorItemData
+  | NoResultsItemData
   | LinkItemData
-  | { type: "loading" }
-  | { type: "error" }
-  | { type: "noresults" }
   | null
 
 function isCIItemData(data: ItemData): data is CIItemData {

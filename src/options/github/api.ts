@@ -291,7 +291,8 @@ export async function searchCIResources(
     const artifactsResult = await getWorkflowArtifacts(token, owner, repo, run.id)
     if (artifactsResult.data) {
       for (const artifact of artifactsResult.data) {
-        if (!artifact.expired && (!searchQuery || fuzzyMatch(searchQuery, artifact.name))) {
+        // Check search match first (lightweight) before expiration check
+        if ((!searchQuery || fuzzyMatch(searchQuery, artifact.name)) && !artifact.expired) {
           // Link to the run page where artifacts can be downloaded
           // Individual artifact pages don't exist in GitHub's UI
           const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${run.id}`
