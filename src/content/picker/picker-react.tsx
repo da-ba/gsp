@@ -325,5 +325,15 @@ export function moveSelectionGrid(dx: number, dy: number): void {
   scrollSelectedIntoView()
 }
 
+/**
+ * Show the settings panel programmatically
+ */
+export function showSettings(): void {
+  ensurePicker()
+  state.showingSettings = true
+  reactState.view = { type: "settings" }
+  renderPicker()
+}
+
 // Re-export applyPickerStyles for use in content/index.ts
 export { applyPickerStyles }
