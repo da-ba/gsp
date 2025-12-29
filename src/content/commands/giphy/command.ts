@@ -24,9 +24,6 @@ import {
   getCommandCache,
   setCommandCache,
   clearCommandCache,
-  getCardStyles,
-  getInputStyles,
-  getBadgeStyles,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
@@ -103,8 +100,39 @@ async function insertGifMarkdown(url: string): Promise<void> {
   field.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
+/** Get theme-aware styles for setup form elements */
+function getFormStyles() {
+  return {
+    card: {
+      padding: "12px",
+      borderRadius: "8px",
+      border: "1px solid var(--gray-6)",
+      backgroundColor: "var(--gray-2)",
+    },
+    input: {
+      width: "100%",
+      boxSizing: "border-box" as const,
+      padding: "8px 12px",
+      borderRadius: "6px",
+      border: "1px solid var(--gray-6)",
+      backgroundColor: "var(--gray-1)",
+      color: "inherit",
+      fontSize: "14px",
+    },
+    button: {
+      padding: "6px 12px",
+      borderRadius: "6px",
+      cursor: "pointer",
+      border: "1px solid var(--gray-6)",
+      backgroundColor: "var(--gray-3)",
+      color: "inherit",
+      fontSize: "13px",
+    },
+  }
+}
+
 /** Helper to apply style object to element */
-function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): void {
+function applyStyles(el: HTMLElement, styles: Record<string, string>): void {
   for (const [key, value] of Object.entries(styles)) {
     if (value !== undefined && typeof value === "string") {
       el.style.setProperty(
@@ -129,6 +157,7 @@ export type GiphyKeyFormOptions = {
  */
 function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions = {}): void {
   const { showClear = false, showCurrentKey = false, onSave } = options
+  const styles = getFormStyles()
 
   const section = document.createElement("div")
   section.style.display = "flex"
@@ -138,6 +167,7 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
   const label = document.createElement("div")
   label.textContent = "Giphy API Key"
   label.style.fontWeight = "600"
+  label.style.fontSize = "13px"
   section.appendChild(label)
 
   const desc = document.createElement("div")
@@ -150,7 +180,7 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
   const input = document.createElement("input")
   input.type = "text"
   input.placeholder = "Paste API key…"
-  applyStyles(input, getInputStyles())
+  applyStyles(input, styles.input as Record<string, string>)
   section.appendChild(input)
 
   // Load current key if requested
@@ -170,9 +200,7 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
   saveBtn.type = "button"
   saveBtn.setAttribute("data-settings-action", "true")
   saveBtn.textContent = "Save Key"
-  applyStyles(saveBtn, getBadgeStyles())
-  saveBtn.style.cursor = "pointer"
-  saveBtn.style.padding = "6px 12px"
+  applyStyles(saveBtn, styles.button as Record<string, string>)
   btnRow.appendChild(saveBtn)
 
   if (showClear) {
@@ -180,9 +208,7 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
     clearBtn.type = "button"
     clearBtn.setAttribute("data-settings-action", "true")
     clearBtn.textContent = "Clear"
-    applyStyles(clearBtn, getBadgeStyles())
-    clearBtn.style.cursor = "pointer"
-    clearBtn.style.padding = "6px 12px"
+    applyStyles(clearBtn, styles.button as Record<string, string>)
     clearBtn.style.opacity = "0.72"
     btnRow.appendChild(clearBtn)
 
@@ -230,8 +256,9 @@ function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions
  * Render the Giphy API key setup panel (preflight).
  */
 function renderGiphySetupPanel(bodyEl: HTMLElement, onComplete: () => void): void {
+  const styles = getFormStyles()
   const wrap = document.createElement("div")
-  applyStyles(wrap, getCardStyles())
+  applyStyles(wrap, styles.card as Record<string, string>)
   wrap.style.display = "flex"
   wrap.style.flexDirection = "column"
   wrap.style.gap = "10px"

@@ -3,36 +3,18 @@
  */
 
 import React from "react"
-import { getBadgeStyles } from "../styles.ts"
+import { Flex, Badge } from "@radix-ui/themes"
 
 const HINTS = ["Arrows move", "Enter insert", "Esc close"]
 
 export function PickerHints() {
-  const badgeStyles = getBadgeStyles()
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "6px",
-        padding: "0 10px 10px 10px",
-        height: "32px",
-        boxSizing: "border-box",
-      }}
-    >
+    <Flex wrap="wrap" gap="1" className="px-2.5 pb-2.5 h-8 box-border">
       {HINTS.map((hint) => (
-        <div
-          key={hint}
-          style={{
-            ...(badgeStyles as React.CSSProperties),
-            padding: "3px 10px",
-            fontWeight: 600,
-          }}
-        >
+        <Badge key={hint} variant="soft" radius="full" size="1">
           {hint}
-        </div>
+        </Badge>
       ))}
-    </div>
+    </Flex>
   )
 }

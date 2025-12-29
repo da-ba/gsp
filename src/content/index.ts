@@ -19,7 +19,6 @@ import {
   renderSetupPanel,
   refreshSelectionStyles,
   moveSelectionGrid,
-  applyPickerStyles,
 } from "./picker/index.ts"
 
 // Import commands to register them
@@ -339,10 +338,9 @@ function boot(): void {
     }
   })
 
-  // Handle theme changes
+  // Handle theme changes - Radix Theme handles dark/light automatically
   onThemeChange(() => {
     if (!isPickerVisible()) return
-    if (state.pickerEl) applyPickerStyles(state.pickerEl)
     refreshSelectionStyles()
   })
 }

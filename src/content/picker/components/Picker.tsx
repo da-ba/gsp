@@ -3,6 +3,7 @@
  */
 
 import React from "react"
+import { Theme, Box, Flex, Card } from "@radix-ui/themes"
 import { PickerHeader } from "./PickerHeader.tsx"
 import { PickerHints } from "./PickerHints.tsx"
 import { PickerFooter } from "./PickerFooter.tsx"
@@ -10,7 +11,7 @@ import { PickerGrid } from "./PickerGrid.tsx"
 import { LoadingSkeleton } from "./LoadingSkeleton.tsx"
 import { Message } from "./Message.tsx"
 import { SettingsPanel } from "./SettingsPanel.tsx"
-import { applyPickerStyles } from "../styles.ts"
+import { isDarkMode } from "../../../utils/theme.ts"
 import type { PickerItem } from "../../types.ts"
 import type { Position } from "../types.ts"
 
@@ -52,13 +53,7 @@ export function Picker({
 }: PickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const setupBodyRef = React.useRef<HTMLDivElement>(null)
-
-  // Apply picker styles on mount and theme changes
-  React.useEffect(() => {
-    if (containerRef.current) {
-      applyPickerStyles(containerRef.current)
-    }
-  }, [visible])
+  const dark = isDarkMode()
 
   // Handle setup panel rendering
   React.useEffect(() => {
@@ -109,43 +104,36 @@ export function Picker({
       case "settings":
         return <SettingsPanel />
       case "setup":
-        return (
-          <div
-            ref={setupBodyRef}
-            style={{
-              overflow: "auto",
-              padding: "0 10px 10px 10px",
-              flex: "1 1 auto",
-              minHeight: 0,
-            }}
-          />
-        )
+        return <Box ref={setupBodyRef} className="overflow-auto flex-1 min-h-0 p-2.5" />
       default:
         return null
     }
   }
 
   return (
-    <div
-      ref={containerRef}
-      id="slashPalettePicker"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "380px",
-        maxHeight: "380px",
-        width: "400px",
-        maxWidth: "400px",
-        boxSizing: "border-box",
-        position: "fixed",
-        left: `${position.left}px`,
-        top: `${position.top}px`,
-      }}
+    <Theme
+      appearance={dark ? "dark" : "light"}
+      accentColor="blue"
+      grayColor="slate"
+      radius="medium"
+      scaling="100%"
     >
-      <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
-      <PickerHints />
-      {renderBody()}
-      <PickerFooter />
-    </div>
+      <Card
+        ref={containerRef}
+        id="slashPalettePicker"
+        className="fixed z-[999999] w-[400px] h-[380px] max-h-[380px] backdrop-blur-xl shadow-2xl"
+        style={{
+          left: `${position.left}px`,
+          top: `${position.top}px`,
+        }}
+      >
+        <Flex direction="column" className="h-full">
+          <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
+          <PickerHints />
+          {renderBody()}
+          <PickerFooter />
+        </Flex>
+      </Card>
+    </Theme>
   )
 }

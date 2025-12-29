@@ -122,9 +122,9 @@ async function bundleOptionsScript(envDefines: Record<string, string>) {
   }
 }
 
-async function buildOptionsCss(): Promise<void> {
-  const inputPath = join(srcDir, "options", "options.css");
-  const outputPath = join(distDir, "options.css");
+async function buildCss(inputFile: string, outputFile: string): Promise<void> {
+  const inputPath = join(srcDir, inputFile);
+  const outputPath = join(distDir, outputFile);
   const args = [
     "@tailwindcss/cli",
     "-i", inputPath,
@@ -138,7 +138,7 @@ async function buildOptionsCss(): Promise<void> {
   return new Promise((resolve, reject) => {
     execFile("npx", args, { maxBuffer: 10 * 1024 * 1024 }, (error, _stdout, stderr) => {
       if (error) {
-        console.error("Tailwind CSS build failed:");
+        console.error(`Tailwind CSS build failed for ${inputFile}:`);
         console.error(stderr);
         reject(error);
       } else {
@@ -148,13 +148,23 @@ async function buildOptionsCss(): Promise<void> {
   });
 }
 
+async function buildOptionsCss(): Promise<void> {
+  return buildCss("options/options.css", "options.css");
+}
+
+async function buildContentCss(): Promise<void> {
+  return buildCss("content/content.css", "content.css");
+}
+
 async function reportBundleSizes() {
   const contentSize = await getFileSize(join(distDir, "content.js"));
+  const contentCssSize = await getFileSize(join(distDir, "content.css"));
   const optionsSize = await getFileSize(join(distDir, "options.js"));
   const optionsCssSize = await getFileSize(join(distDir, "options.css"));
 
   console.log("\n📦 Bundle sizes:");
   console.log(`  content.js: ${formatSize(contentSize)}`);
+  console.log(`  content.css: ${formatSize(contentCssSize)}`);
   console.log(`  options.js: ${formatSize(optionsSize)}`);
   console.log(`  options.css: ${formatSize(optionsCssSize)}`);
 }
@@ -175,6 +185,7 @@ async function build() {
   await copyStaticAssets();
   await bundleContentScript(envDefines);
   await bundleOptionsScript(envDefines);
+  await buildContentCss();
   await buildOptionsCss();
 
   const duration = (performance.now() - start).toFixed(0);

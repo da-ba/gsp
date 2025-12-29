@@ -14,13 +14,7 @@
 import { replaceRange } from "../../../utils/dom.ts"
 import { add } from "../../../utils/math.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import {
-  renderGrid,
-  state,
-  showSettings,
-  getInputStyles,
-  getBadgeStyles,
-} from "../../picker/index.ts"
+import { renderGrid, state, showSettings } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { parseLinkQuery, formatMarkdownLink, type LinkParseResult } from "./api.ts"
 import {
@@ -391,8 +385,33 @@ function isLinkItemData(data: ItemData): data is LinkItemData {
   return data !== null && typeof data === "object" && "isValid" in data
 }
 
+/** Get theme-aware styles for setup form elements */
+function getFormStyles() {
+  return {
+    input: {
+      width: "100%",
+      boxSizing: "border-box" as const,
+      padding: "8px 12px",
+      borderRadius: "6px",
+      border: "1px solid var(--gray-6)",
+      backgroundColor: "var(--gray-1)",
+      color: "inherit",
+      fontSize: "14px",
+    },
+    button: {
+      padding: "6px 12px",
+      borderRadius: "6px",
+      cursor: "pointer",
+      border: "1px solid var(--gray-6)",
+      backgroundColor: "var(--gray-3)",
+      color: "inherit",
+      fontSize: "13px",
+    },
+  }
+}
+
 /** Helper to apply style object to element */
-function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): void {
+function applyStyles(el: HTMLElement, styles: Record<string, string>): void {
   for (const [key, value] of Object.entries(styles)) {
     if (value !== undefined && typeof value === "string") {
       el.style.setProperty(
@@ -407,6 +426,8 @@ function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): voi
  * Render GitHub Token form for settings panel
  */
 function renderGitHubTokenForm(container: HTMLElement): void {
+  const styles = getFormStyles()
+
   const section = document.createElement("div")
   section.style.display = "flex"
   section.style.flexDirection = "column"
@@ -415,6 +436,7 @@ function renderGitHubTokenForm(container: HTMLElement): void {
   const label = document.createElement("div")
   label.textContent = "GitHub Token (for /link ci)"
   label.style.fontWeight = "600"
+  label.style.fontSize = "13px"
   section.appendChild(label)
 
   const desc = document.createElement("div")
@@ -427,7 +449,7 @@ function renderGitHubTokenForm(container: HTMLElement): void {
   const input = document.createElement("input")
   input.type = "text"
   input.placeholder = "Paste GitHub token…"
-  applyStyles(input, getInputStyles())
+  applyStyles(input, styles.input as Record<string, string>)
   section.appendChild(input)
 
   // Load current token (masked)
@@ -445,18 +467,14 @@ function renderGitHubTokenForm(container: HTMLElement): void {
   saveBtn.type = "button"
   saveBtn.setAttribute("data-settings-action", "true")
   saveBtn.textContent = "Save Token"
-  applyStyles(saveBtn, getBadgeStyles())
-  saveBtn.style.cursor = "pointer"
-  saveBtn.style.padding = "6px 12px"
+  applyStyles(saveBtn, styles.button as Record<string, string>)
   btnRow.appendChild(saveBtn)
 
   const clearBtn = document.createElement("button")
   clearBtn.type = "button"
   clearBtn.setAttribute("data-settings-action", "true")
   clearBtn.textContent = "Clear"
-  applyStyles(clearBtn, getBadgeStyles())
-  clearBtn.style.cursor = "pointer"
-  clearBtn.style.padding = "6px 12px"
+  applyStyles(clearBtn, styles.button as Record<string, string>)
   clearBtn.style.opacity = "0.72"
   btnRow.appendChild(clearBtn)
 

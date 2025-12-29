@@ -3,6 +3,7 @@
  */
 
 import React from "react"
+import { Box, Flex, Card, Text, ScrollArea, SegmentedControl } from "@radix-ui/themes"
 import { setThemeOverride } from "../../../utils/theme.ts"
 import {
   getThemePreference,
@@ -10,8 +11,6 @@ import {
   type ThemePreference,
 } from "../../../utils/storage.ts"
 import { listCommands, getCommand } from "../../commands/registry.ts"
-import { getCardStyles, getBadgeStyles, applyPickerStyles } from "../styles.ts"
-import { state } from "../state.ts"
 
 const THEMES: { value: ThemePreference; label: string }[] = [
   { value: "system", label: "System" },
@@ -22,8 +21,6 @@ const THEMES: { value: ThemePreference; label: string }[] = [
 export function SettingsPanel() {
   const [currentTheme, setCurrentTheme] = React.useState<ThemePreference>("system")
   const commandSettingsRef = React.useRef<HTMLDivElement>(null)
-  const cardStyles = getCardStyles()
-  const badgeStyles = getBadgeStyles()
 
   // Load current theme preference
   React.useEffect(() => {
@@ -45,64 +42,41 @@ export function SettingsPanel() {
     }
   }, [])
 
-  const handleThemeChange = async (value: ThemePreference) => {
-    await setThemePreference(value)
-    setThemeOverride(value)
-    setCurrentTheme(value)
-    // Refresh picker styles
-    if (state.pickerEl) {
-      applyPickerStyles(state.pickerEl)
-    }
+  const handleThemeChange = async (value: string) => {
+    const themeValue = value as ThemePreference
+    await setThemePreference(themeValue)
+    setThemeOverride(themeValue)
+    setCurrentTheme(themeValue)
   }
 
   return (
-    <div
-      style={{
-        overflow: "auto",
-        padding: "0 10px 10px 10px",
-        flex: "1 1 auto",
-        minHeight: 0,
-      }}
-    >
-      <div
-        style={{
-          ...(cardStyles as React.CSSProperties),
-          display: "flex",
-          flexDirection: "column",
-          gap: "14px",
-        }}
-      >
-        {/* Theme Section */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div style={{ fontWeight: 600 }}>Theme</div>
-          <div style={{ display: "flex", gap: "6px" }}>
-            {THEMES.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                data-settings-action="true"
-                onClick={(ev) => {
-                  ev.preventDefault()
-                  ev.stopPropagation()
-                  handleThemeChange(value)
-                }}
-                style={{
-                  ...(badgeStyles as React.CSSProperties),
-                  cursor: "pointer",
-                  padding: "6px 12px",
-                  opacity: value === currentTheme ? 1 : undefined,
-                  fontWeight: value === currentTheme ? 600 : undefined,
-                }}
+    <ScrollArea className="flex-1 min-h-0">
+      <Box className="px-2.5 pb-2.5">
+        <Card variant="surface">
+          <Flex direction="column" gap="4">
+            {/* Theme Section */}
+            <Flex direction="column" gap="2">
+              <Text size="2" weight="bold">
+                Theme
+              </Text>
+              <SegmentedControl.Root
+                value={currentTheme}
+                onValueChange={handleThemeChange}
+                size="1"
               >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+                {THEMES.map(({ value, label }) => (
+                  <SegmentedControl.Item key={value} value={value} data-settings-action="true">
+                    {label}
+                  </SegmentedControl.Item>
+                ))}
+              </SegmentedControl.Root>
+            </Flex>
 
-        {/* Command Settings Container */}
-        <div ref={commandSettingsRef} />
-      </div>
-    </div>
+            {/* Command Settings Container */}
+            <Box ref={commandSettingsRef} />
+          </Flex>
+        </Card>
+      </Box>
+    </ScrollArea>
   )
 }

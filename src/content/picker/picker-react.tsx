@@ -9,7 +9,6 @@ import { getCaretCoordinates } from "../../utils/dom.ts"
 import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
-import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
 
 // React root for the picker
@@ -337,6 +336,3 @@ export function showSettings(): void {
   reactState.view = { type: "settings" }
   renderPicker()
 }
-
-// Re-export applyPickerStyles for use in content/index.ts
-export { applyPickerStyles }
