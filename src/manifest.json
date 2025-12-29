@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub Slash Palette",
   "version": "0.0.1",
-  "description": "Slash commands for GitHub markdown fields. Includes /giphy GIF search and insert.",
+  "description": "Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Mermaid diagrams, and more.",
   "permissions": ["storage"],
   "host_permissions": ["https://api.giphy.com/v1/*"],
   "icons": {
