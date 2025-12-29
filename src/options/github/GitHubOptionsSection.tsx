@@ -5,80 +5,19 @@
  */
 
 import React from "react"
+import {
+  Card,
+  Flex,
+  Heading,
+  Text,
+  TextField,
+  Button,
+  Link,
+  Code,
+  Checkbox,
+  Box,
+} from "@radix-ui/themes"
 import { getGitHubToken, setGitHubToken, testGitHubToken } from "./api.ts"
-
-/** Styles for the GitHub options section */
-const sectionStyles = `
-  .github-section {
-    border: 1px solid rgba(0, 0, 0, 0.14);
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-  .github-section .section-title {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  }
-  .github-section .section-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .github-section label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
-  .github-section input[type="text"],
-  .github-section input[type="password"] {
-    width: 100%;
-    max-width: 520px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    font-size: 14px;
-  }
-  .github-section button {
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    background: white;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .github-section button:hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
-  .github-section .row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .github-section .muted {
-    opacity: 0.72;
-    font-size: 13px;
-  }
-  .github-section .status {
-    font-weight: 500;
-    min-height: 20px;
-  }
-  .github-section a {
-    color: inherit;
-  }
-  .github-section .feature-list {
-    margin: 8px 0;
-    padding-left: 20px;
-  }
-  .github-section .feature-list li {
-    margin-bottom: 4px;
-    font-size: 13px;
-    opacity: 0.85;
-  }
-`
 
 export function GitHubOptionsSection() {
   const [token, setToken] = React.useState("")
@@ -121,63 +60,77 @@ export function GitHubOptionsSection() {
   }
 
   return (
-    <>
-      <style>{sectionStyles}</style>
-      <div className="github-section">
-        <div className="section-title">GitHub API</div>
-        <div className="section-content">
-          <div className="muted">
-            A GitHub Personal Access Token enables advanced features:
-            <ul className="feature-list">
-              <li>
-                <code>/link ci</code> - Link to CI jobs and artifacts
-              </li>
-            </ul>
-            Create a{" "}
-            <a
-              href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Personal Access Token
-            </a>{" "}
-            with the <code>public_repo</code> scope (for public repos) or <code>repo</code> scope
-            (for private repos). The token is stored locally in your browser.
-          </div>
+    <Card>
+      <Flex direction="column" gap="4">
+        <Box className="border-b border-gray-6 pb-3">
+          <Heading size="3">GitHub API</Heading>
+        </Box>
 
-          <div>
-            <label htmlFor="github-token">Personal Access Token</label>
-            <input
-              type={showToken ? "text" : "password"}
-              id="github-token"
-              placeholder="Paste your GitHub Personal Access Token"
-              autoComplete="off"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-            />
-          </div>
+        <Text size="2" color="gray">
+          A GitHub Personal Access Token enables advanced features:
+        </Text>
 
-          <div className="row">
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
-              <input
-                type="checkbox"
-                id="github-show-token"
-                checked={showToken}
-                onChange={(e) => setShowToken(e.target.checked)}
-              />
-              Show token
-            </label>
-          </div>
+        <Box className="pl-4">
+          <Text size="2" color="gray" as="p">
+            • <Code>/link ci</Code> - Link to CI jobs and artifacts
+          </Text>
+        </Box>
 
-          <div className="row">
-            <button onClick={handleSave}>Save</button>
-            <button onClick={handleTest}>Test</button>
-            <button onClick={handleClear}>Clear</button>
-          </div>
+        <Text size="2" color="gray">
+          Create a{" "}
+          <Link
+            href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Personal Access Token
+          </Link>{" "}
+          with the <Code>public_repo</Code> scope (for public repos) or <Code>repo</Code> scope (for
+          private repos). The token is stored locally in your browser.
+        </Text>
 
-          <div className="status">{status}</div>
-        </div>
-      </div>
-    </>
+        <Flex direction="column" gap="2">
+          <Text as="label" size="2" weight="medium" htmlFor="github-token">
+            Personal Access Token
+          </Text>
+          <TextField.Root
+            type={showToken ? "text" : "password"}
+            id="github-token"
+            placeholder="Paste your GitHub Personal Access Token"
+            autoComplete="off"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="max-w-lg"
+          />
+        </Flex>
+
+        <Flex align="center" gap="2">
+          <Checkbox
+            id="github-show-token"
+            checked={showToken}
+            onCheckedChange={(checked) => setShowToken(checked === true)}
+          />
+          <Text as="label" size="2" htmlFor="github-show-token">
+            Show token
+          </Text>
+        </Flex>
+
+        <Flex gap="2">
+          <Button onClick={handleSave}>Save</Button>
+          <Button variant="soft" onClick={handleTest}>
+            Test
+          </Button>
+          <Button variant="soft" color="red" onClick={handleClear}>
+            Clear
+          </Button>
+        </Flex>
+
+        {status && (
+          <Text size="2" weight="medium" color={status.includes("✓") ? "green" : undefined}>
+            {status}
+          </Text>
+        )}
+      </Flex>
+    </Card>
   )
 }

@@ -4,6 +4,7 @@ import { join } from "path";
 import { config } from "dotenv";
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-core";
+import { execFile } from "node:child_process";
 
 const isWatch = process.argv.includes("--watch");
 const srcDir = "src";
@@ -121,13 +122,41 @@ async function bundleOptionsScript(envDefines: Record<string, string>) {
   }
 }
 
+async function buildOptionsCss(): Promise<void> {
+  const inputPath = join(srcDir, "options", "options.css");
+  const outputPath = join(distDir, "options.css");
+  const args = [
+    "@tailwindcss/cli",
+    "-i", inputPath,
+    "-o", outputPath,
+  ];
+  
+  if (!isWatch) {
+    args.push("--minify");
+  }
+  
+  return new Promise((resolve, reject) => {
+    execFile("npx", args, { maxBuffer: 10 * 1024 * 1024 }, (error, _stdout, stderr) => {
+      if (error) {
+        console.error("Tailwind CSS build failed:");
+        console.error(stderr);
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
 async function reportBundleSizes() {
   const contentSize = await getFileSize(join(distDir, "content.js"));
   const optionsSize = await getFileSize(join(distDir, "options.js"));
+  const optionsCssSize = await getFileSize(join(distDir, "options.css"));
 
   console.log("\n📦 Bundle sizes:");
   console.log(`  content.js: ${formatSize(contentSize)}`);
   console.log(`  options.js: ${formatSize(optionsSize)}`);
+  console.log(`  options.css: ${formatSize(optionsCssSize)}`);
 }
 
 async function build() {
@@ -146,6 +175,7 @@ async function build() {
   await copyStaticAssets();
   await bundleContentScript(envDefines);
   await bundleOptionsScript(envDefines);
+  await buildOptionsCss();
 
   const duration = (performance.now() - start).toFixed(0);
   console.log(`✓ Built gsp-${version} in ${duration}ms → ${distDir}/`);

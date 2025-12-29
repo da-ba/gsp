@@ -4,6 +4,20 @@
 
 import React from "react"
 import {
+  Card,
+  Flex,
+  Heading,
+  Text,
+  TextField,
+  Button,
+  Link,
+  Code,
+  Checkbox,
+  Box,
+  RadioCards,
+  Separator,
+} from "@radix-ui/themes"
+import {
   getGiphyKey,
   setGiphyKey,
   testGiphyKey,
@@ -13,70 +27,6 @@ import {
   setGiphyCenterImage,
   type GiphyImageFormat,
 } from "./api.ts"
-
-/** Styles for the Giphy options section */
-const sectionStyles = `
-  .giphy-section {
-    border: 1px solid rgba(0, 0, 0, 0.14);
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-  .giphy-section .section-title {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  }
-  .giphy-section .section-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .giphy-section label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
-  .giphy-section input[type="text"],
-  .giphy-section input[type="password"] {
-    width: 100%;
-    max-width: 520px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    font-size: 14px;
-  }
-  .giphy-section button {
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    background: white;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .giphy-section button:hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
-  .giphy-section .row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .giphy-section .muted {
-    opacity: 0.72;
-    font-size: 13px;
-  }
-  .giphy-section .status {
-    font-weight: 500;
-    min-height: 20px;
-  }
-  .giphy-section a {
-    color: inherit;
-  }
-`
 
 export function GiphyOptionsSection() {
   const [apiKey, setApiKey] = React.useState("")
@@ -111,7 +61,7 @@ export function GiphyOptionsSection() {
     if (result.error) {
       setStatus("Test failed: " + result.error)
     } else {
-      setStatus("Key ok")
+      setStatus("Key ok ✓")
     }
   }
 
@@ -133,114 +83,127 @@ export function GiphyOptionsSection() {
   }
 
   return (
-    <>
-      <style>{sectionStyles}</style>
-      <div className="giphy-section">
-        <div className="section-title">/giphy</div>
-        <div className="section-content">
-          <div className="muted">
-            Giphy requires an API key. Get a free key at{" "}
-            <a
-              href="https://developers.giphy.com/dashboard/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              developers.giphy.com
-            </a>
-          </div>
+    <Card>
+      <Flex direction="column" gap="4">
+        <Box className="border-b border-gray-6 pb-3">
+          <Heading size="3">/giphy</Heading>
+        </Box>
 
-          <div>
-            <label htmlFor="giphy-key">API Key</label>
-            <input
-              type={showKey ? "text" : "password"}
-              id="giphy-key"
-              placeholder="Paste your Giphy API key"
-              autoComplete="off"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+        <Text size="2" color="gray">
+          Giphy requires an API key. Get a free key at{" "}
+          <Link
+            href="https://developers.giphy.com/dashboard/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            developers.giphy.com
+          </Link>
+        </Text>
+
+        <Flex direction="column" gap="2">
+          <Text as="label" size="2" weight="medium" htmlFor="giphy-key">
+            API Key
+          </Text>
+          <TextField.Root
+            type={showKey ? "text" : "password"}
+            id="giphy-key"
+            placeholder="Paste your Giphy API key"
+            autoComplete="off"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            className="max-w-lg"
+          />
+        </Flex>
+
+        <Flex align="center" gap="2">
+          <Checkbox
+            id="giphy-show-key"
+            checked={showKey}
+            onCheckedChange={(checked) => setShowKey(checked === true)}
+          />
+          <Text as="label" size="2" htmlFor="giphy-show-key">
+            Show key
+          </Text>
+        </Flex>
+
+        <Flex gap="2">
+          <Button onClick={handleSave}>Save</Button>
+          <Button variant="soft" onClick={handleTest}>
+            Test
+          </Button>
+          <Button variant="soft" color="red" onClick={handleClear}>
+            Clear
+          </Button>
+        </Flex>
+
+        {status && (
+          <Text size="2" weight="medium" color={status.includes("✓") ? "green" : undefined}>
+            {status}
+          </Text>
+        )}
+
+        <Separator size="4" />
+
+        <Flex direction="column" gap="2">
+          <Text size="2" weight="medium">
+            Image Format
+          </Text>
+          <RadioCards.Root
+            value={imageFormat}
+            onValueChange={(value) => handleFormatChange(value as GiphyImageFormat)}
+            columns="1"
+          >
+            <RadioCards.Item value="markdown">
+              <Flex direction="column" gap="1">
+                <Text size="2" weight="medium">
+                  Markdown
+                </Text>
+                <Text size="1" color="gray">
+                  <Code>![](link)</Code> (default)
+                </Text>
+              </Flex>
+            </RadioCards.Item>
+            <RadioCards.Item value="img">
+              <Flex direction="column" gap="1">
+                <Text size="2" weight="medium">
+                  HTML Image
+                </Text>
+                <Text size="1" color="gray">
+                  <Code>{'<img src="link" />'}</Code>
+                </Text>
+              </Flex>
+            </RadioCards.Item>
+            <RadioCards.Item value="img-fixed">
+              <Flex direction="column" gap="1">
+                <Text size="2" weight="medium">
+                  Fixed Width
+                </Text>
+                <Text size="1" color="gray">
+                  <Code>{'<img src="link" width="350" />'}</Code>
+                </Text>
+              </Flex>
+            </RadioCards.Item>
+          </RadioCards.Root>
+        </Flex>
+
+        <Separator size="4" />
+
+        <Flex direction="column" gap="2">
+          <Text size="2" weight="medium">
+            Alignment
+          </Text>
+          <Flex align="center" gap="2">
+            <Checkbox
+              id="giphy-center"
+              checked={centerImage}
+              onCheckedChange={(checked) => handleCenterChange(checked === true)}
             />
-          </div>
-
-          <div className="row">
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
-              <input
-                type="checkbox"
-                id="giphy-show-key"
-                checked={showKey}
-                onChange={(e) => setShowKey(e.target.checked)}
-              />
-              Show key
-            </label>
-          </div>
-
-          <div className="row">
-            <button onClick={handleSave}>Save</button>
-            <button onClick={handleTest}>Test</button>
-            <button onClick={handleClear}>Clear</button>
-          </div>
-
-          <div className="status">{status}</div>
-
-          <div
-            style={{
-              marginTop: "16px",
-              borderTop: "1px solid rgba(0, 0, 0, 0.08)",
-              paddingTop: "16px",
-            }}
-          >
-            <label style={{ marginBottom: "8px" }}>Image Format</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
-                <input
-                  type="radio"
-                  name="giphy-format"
-                  checked={imageFormat === "markdown"}
-                  onChange={() => handleFormatChange("markdown")}
-                />
-                <code>![](link)</code> (default)
-              </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
-                <input
-                  type="radio"
-                  name="giphy-format"
-                  checked={imageFormat === "img"}
-                  onChange={() => handleFormatChange("img")}
-                />
-                <code>{'<img src="link" />'}</code>
-              </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
-                <input
-                  type="radio"
-                  name="giphy-format"
-                  checked={imageFormat === "img-fixed"}
-                  onChange={() => handleFormatChange("img-fixed")}
-                />
-                <code>{'<img src="link" width="350" />'}</code> (fixed width)
-              </label>
-            </div>
-          </div>
-
-          <div
-            style={{
-              marginTop: "16px",
-              borderTop: "1px solid rgba(0, 0, 0, 0.08)",
-              paddingTop: "16px",
-            }}
-          >
-            <label style={{ marginBottom: "8px" }}>Alignment</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 400 }}>
-                <input
-                  type="checkbox"
-                  checked={centerImage}
-                  onChange={(e) => handleCenterChange(e.target.checked)}
-                />
-                Center image (wrap in <code>{'<p align="center">...</p>'}</code>)
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+            <Text as="label" size="2" htmlFor="giphy-center">
+              Center image (wrap in <Code>{'<p align="center">...</p>'}</Code>)
+            </Text>
+          </Flex>
+        </Flex>
+      </Flex>
+    </Card>
   )
 }
