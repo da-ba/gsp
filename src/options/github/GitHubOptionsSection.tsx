@@ -133,15 +133,16 @@ export function GitHubOptionsSection() {
                 <code>/link ci</code> - Link to CI jobs and artifacts
               </li>
             </ul>
-            Create a token at{" "}
+            Create a{" "}
             <a
-              href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=repo,actions:read"
+              href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo"
               target="_blank"
               rel="noopener noreferrer"
             >
-              github.com/settings/tokens
+              Personal Access Token
             </a>{" "}
-            with <code>repo</code> and <code>actions:read</code> scopes.
+            with the <code>public_repo</code> scope (for public repos) or <code>repo</code> scope
+            (for private repos). The token is stored locally in your browser.
           </div>
 
           <div>

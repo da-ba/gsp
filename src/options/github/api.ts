@@ -292,9 +292,9 @@ export async function searchCIResources(
     if (artifactsResult.data) {
       for (const artifact of artifactsResult.data) {
         if (!artifact.expired && (!searchQuery || fuzzyMatch(searchQuery, artifact.name))) {
-          // Construct a browser-friendly URL for the artifact
-          // The archive_download_url requires authentication, so we link to the Actions page instead
-          const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${run.id}/artifacts/${artifact.id}`
+          // Link to the run page where artifacts can be downloaded
+          // Individual artifact pages don't exist in GitHub's UI
+          const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${run.id}`
           suggestions.push({
             type: "artifact",
             name: artifact.name,

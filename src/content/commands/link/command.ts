@@ -24,6 +24,19 @@ import {
   type CILinkSuggestion,
 } from "../../../options/github/api.ts"
 
+/** Display truncation limits for tile text */
+const DISPLAY_LIMITS = {
+  URL_LENGTH: 30,
+  TITLE_LENGTH: 20,
+  CI_NAME_LENGTH: 24,
+  CI_RUN_LENGTH: 20,
+  ERROR_LENGTH: 40,
+} as const
+
+/** Help message for /link command */
+const LINK_HELP_MESSAGE =
+  'Type a URL like: /link example.com or /link example.com "My Title", or use /link ci to search CI jobs'
+
 function escapeForSvg(s: string): string {
   return String(s)
     .replaceAll("&", "&amp;")
@@ -35,8 +48,8 @@ function escapeForSvg(s: string): string {
 
 /** Create a tile for a link preview */
 function makeLinkTile(parsed: LinkParseResult): PickerItem {
-  const displayUrl = parsed.url.replace(/^https?:\/\//, "").slice(0, 30)
-  const displayTitle = (parsed.title || "Untitled").slice(0, 20)
+  const displayUrl = parsed.url.replace(/^https?:\/\//, "").slice(0, DISPLAY_LIMITS.URL_LENGTH)
+  const displayTitle = (parsed.title || "Untitled").slice(0, DISPLAY_LIMITS.TITLE_LENGTH)
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
@@ -147,8 +160,8 @@ function insertCILink(suggestion: CILinkSuggestion): void {
 
 /** Create a tile for a CI job or artifact */
 function makeCITile(suggestion: CILinkSuggestion): PickerItem {
-  const displayName = suggestion.name.slice(0, 24)
-  const displayRun = suggestion.runName.slice(0, 20)
+  const displayName = suggestion.name.slice(0, DISPLAY_LIMITS.CI_NAME_LENGTH)
+  const displayRun = suggestion.runName.slice(0, DISPLAY_LIMITS.CI_RUN_LENGTH)
   const typeLabel = suggestion.type === "job" ? "Job" : "Artifact"
   const iconColor = suggestion.type === "job" ? "#22c55e" : "#f59e0b"
 
@@ -266,7 +279,7 @@ function makeCILoadingTile(): PickerItem {
 
 /** Create a tile for CI error state */
 function makeCIErrorTile(error: string): PickerItem {
-  const displayError = error.slice(0, 40)
+  const displayError = error.slice(0, DISPLAY_LIMITS.ERROR_LENGTH)
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
@@ -480,8 +493,7 @@ const linkCommand: CommandSpec = {
     }
   },
 
-  noResultsMessage:
-    'Type a URL like: /link example.com or /link example.com "My Title", or use /link ci to search CI jobs',
+  noResultsMessage: LINK_HELP_MESSAGE,
 }
 
 // Register the command
