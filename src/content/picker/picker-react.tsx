@@ -55,9 +55,12 @@ function renderPicker(): void {
       onSelect: (item: PickerItem) => {
         const field = state.activeField
         currentOnSelect(item)
-        hidePicker()
-        if (field) {
-          setTimeout(() => field.focus(), 0)
+        // Don't hide picker if settings view is currently being shown
+        if (!state.showingSettings) {
+          hidePicker()
+          if (field) {
+            setTimeout(() => field.focus(), 0)
+          }
         }
       },
       onHover: (index: number) => {
@@ -323,6 +326,16 @@ export function moveSelectionGrid(dx: number, dy: number): void {
   state.selectedIndex = next
   renderPicker()
   scrollSelectedIntoView()
+}
+
+/**
+ * Show the settings panel programmatically
+ */
+export function showSettings(): void {
+  ensurePicker()
+  state.showingSettings = true
+  reactState.view = { type: "settings" }
+  renderPicker()
 }
 
 // Re-export applyPickerStyles for use in content/index.ts

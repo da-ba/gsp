@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Mermaid diagrams, and more.",
   "permissions": ["storage"],
-  "host_permissions": ["https://api.giphy.com/v1/*"],
+  "host_permissions": ["https://api.giphy.com/v1/*", "https://api.github.com/*"],
   "icons": {
     "16": "icon16.png",
     "32": "icon32.png",

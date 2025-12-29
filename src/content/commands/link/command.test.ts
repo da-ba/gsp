@@ -3,9 +3,18 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { linkCommand, makeLinkTile, makeEmptyLinkTile } from "./command.ts"
+import {
+  linkCommand,
+  makeLinkTile,
+  makeEmptyLinkTile,
+  makeCITile,
+  makeCISetupTile,
+  makeCIErrorTile,
+  makeCINoResultsTile,
+} from "./command.ts"
 import type { LinkParseResult } from "./api.ts"
 import type { PickerItem } from "../../types.ts"
+import type { CILinkSuggestion } from "../../../options/github/api.ts"
 
 // Mock the picker module
 vi.mock("../../picker/index.ts", () => ({
@@ -19,6 +28,13 @@ vi.mock("../../picker/index.ts", () => ({
   getCardStyles: vi.fn().mockReturnValue({}),
   getInputStyles: vi.fn().mockReturnValue({}),
   getBadgeStyles: vi.fn().mockReturnValue({}),
+}))
+
+// Mock the GitHub API module
+vi.mock("../../../options/github/api.ts", () => ({
+  getGitHubToken: vi.fn().mockResolvedValue(""),
+  getRepoContext: vi.fn().mockReturnValue(null),
+  searchCIResources: vi.fn().mockResolvedValue({ data: [] }),
 }))
 
 describe("link command", () => {
@@ -162,6 +178,108 @@ describe("link command", () => {
     it("should have a helpful no results message", () => {
       expect(linkCommand.noResultsMessage).toBeDefined()
       expect(linkCommand.noResultsMessage).toContain("/link")
+    })
+
+    it("should mention ci option in no results message", () => {
+      expect(linkCommand.noResultsMessage).toContain("ci")
+    })
+  })
+})
+
+describe("CI link tiles", () => {
+  describe("makeCITile", () => {
+    it("should create a job tile", () => {
+      const suggestion: CILinkSuggestion = {
+        type: "job",
+        name: "build",
+        url: "https://github.com/owner/repo/actions/runs/123/jobs/456",
+        runName: "CI",
+        runId: 123,
+      }
+      const tile = makeCITile(suggestion)
+      expect(tile.id).toContain("ci-job")
+      expect(tile.previewUrl).toContain("data:image/svg+xml")
+      expect(tile.data).toEqual({ type: "ci", suggestion })
+    })
+
+    it("should create an artifact tile", () => {
+      const suggestion: CILinkSuggestion = {
+        type: "artifact",
+        name: "test-report",
+        url: "https://github.com/owner/repo/actions/runs/123/artifacts/789",
+        runName: "CI",
+        runId: 123,
+      }
+      const tile = makeCITile(suggestion)
+      expect(tile.id).toContain("ci-artifact")
+      expect(tile.previewUrl).toContain("data:image/svg+xml")
+      expect(tile.data).toEqual({ type: "ci", suggestion })
+    })
+
+    it("should include job name in SVG", () => {
+      const suggestion: CILinkSuggestion = {
+        type: "job",
+        name: "e2e-tests",
+        url: "https://github.com/owner/repo/actions/runs/123/jobs/456",
+        runName: "CI Pipeline",
+        runId: 123,
+      }
+      const tile = makeCITile(suggestion)
+      const decodedSvg = decodeURIComponent(tile.previewUrl)
+      expect(decodedSvg).toContain("e2e-tests")
+    })
+  })
+
+  describe("makeCISetupTile", () => {
+    it("should create a setup tile", () => {
+      const tile = makeCISetupTile()
+      expect(tile.id).toBe("ci-setup")
+      expect(tile.previewUrl).toContain("data:image/svg+xml")
+      expect(tile.data).toEqual({ type: "setup" })
+    })
+
+    it("should include setup message", () => {
+      const tile = makeCISetupTile()
+      const decodedSvg = decodeURIComponent(tile.previewUrl)
+      expect(decodedSvg).toContain("GitHub token required")
+    })
+  })
+
+  describe("makeCIErrorTile", () => {
+    it("should create an error tile", () => {
+      const tile = makeCIErrorTile("Test error message")
+      expect(tile.id).toBe("ci-error")
+      expect(tile.previewUrl).toContain("data:image/svg+xml")
+      expect(tile.data).toEqual({ type: "error" })
+    })
+
+    it("should include error message in SVG", () => {
+      const tile = makeCIErrorTile("Something went wrong")
+      const decodedSvg = decodeURIComponent(tile.previewUrl)
+      expect(decodedSvg).toContain("Something went wrong")
+    })
+
+    it("should truncate long error messages", () => {
+      const longError = "This is a very long error message that exceeds forty characters"
+      const tile = makeCIErrorTile(longError)
+      const decodedSvg = decodeURIComponent(tile.previewUrl)
+      // Should be truncated to 40 chars
+      expect(decodedSvg).not.toContain("forty characters")
+    })
+  })
+
+  describe("makeCINoResultsTile", () => {
+    it("should create a no results tile", () => {
+      const tile = makeCINoResultsTile()
+      expect(tile.id).toBe("ci-noresults")
+      expect(tile.previewUrl).toContain("data:image/svg+xml")
+      expect(tile.data).toEqual({ type: "noresults" })
+    })
+
+    it("should include no results message", () => {
+      const tile = makeCINoResultsTile()
+      const decodedSvg = decodeURIComponent(tile.previewUrl)
+      expect(decodedSvg).toContain("No matching CI resources")
     })
   })
 })

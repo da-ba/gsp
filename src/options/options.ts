@@ -8,6 +8,8 @@ import { createRoot } from "react-dom/client"
 // Import command modules to trigger options section registration
 // This must be done before importing OptionsApp to ensure registrations are complete
 import "../content/commands/giphy/index.ts"
+// Import shared GitHub options module
+import "./github/index.ts"
 
 import { OptionsApp } from "./components/index.ts"
 

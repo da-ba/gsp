@@ -2937,6 +2937,148 @@ test.describe("Link Command", () => {
 
     await browser.close();
   });
+
+  test("/link ci command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link ci");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows CI-related content or setup message
+    const pickerContent = await picker.textContent();
+    // Either shows CI content or token setup message
+    expect(
+      pickerContent?.includes("CI") || 
+      pickerContent?.includes("token") || 
+      pickerContent?.includes("GitHub")
+    ).toBe(true);
+
+    await browser.close();
+  });
+
+  test("/link ci without token shows setup tile", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Clear any stored token
+    await page.evaluate(() => {
+      localStorage.removeItem("githubApiToken");
+    });
+
+    await textarea.fill("/link ci");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show CI Links title and a tile (setup tile when no token)
+    const pickerContent = await picker.textContent();
+    expect(pickerContent?.includes("CI Links")).toBe(true);
+    
+    // Should have at least one tile button with image
+    const tileButtons = picker.locator("button[data-item-index]");
+    const tileCount = await tileButtons.count();
+    expect(tileCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/link ci with search term shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link ci build");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Picker should be visible with CI content
+    const isVisible = await picker.isVisible();
+    expect(isVisible).toBe(true);
+
+    await browser.close();
+  });
+
+  test("/link ci picker closes on Escape key", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link ci");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("/link ci shows tile with image", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("/link ci");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Should show at least one image (SVG tile for setup or CI items)
+    const gridImages = picker.locator("img");
+    const imageCount = await gridImages.count();
+    expect(imageCount).toBeGreaterThan(0);
+
+    await browser.close();
+  });
+
+  test("/link ci clicking setup tile opens settings panel", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Clear any stored token to ensure setup tile is shown
+    await page.evaluate(() => {
+      localStorage.removeItem("githubApiToken");
+    });
+
+    await textarea.fill("/link ci");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Find the setup tile (should be the first/only tile when no token)
+    const setupTile = picker.locator("button[data-item-index='0']");
+    const tileExists = await setupTile.count();
+
+    if (tileExists > 0) {
+      // Click the setup tile
+      await setupTile.click();
+      await page.waitForTimeout(300);
+
+      // Settings panel should now be visible
+      const pickerContent = await picker.textContent();
+      // Settings panel should show GitHub token configuration
+      expect(
+        pickerContent?.includes("GitHub") ||
+        pickerContent?.includes("Token") ||
+        pickerContent?.includes("Save") ||
+        pickerContent?.includes("Settings")
+      ).toBe(true);
+    }
+
+    await browser.close();
+  });
 });
 
 test.describe("Mention Command", () => {
