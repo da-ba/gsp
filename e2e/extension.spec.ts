@@ -2975,13 +2975,14 @@ test.describe("Link Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // Should show setup message about GitHub token
+    // Should show CI Links title and a tile (setup tile when no token)
     const pickerContent = await picker.textContent();
-    expect(
-      pickerContent?.includes("token") || 
-      pickerContent?.includes("configure") ||
-      pickerContent?.includes("Click")
-    ).toBe(true);
+    expect(pickerContent?.includes("CI Links")).toBe(true);
+    
+    // Should have at least one tile button with image
+    const tileButtons = picker.locator("button[data-item-index]");
+    const tileCount = await tileButtons.count();
+    expect(tileCount).toBeGreaterThan(0);
 
     await browser.close();
   });

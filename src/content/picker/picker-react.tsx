@@ -55,9 +55,12 @@ function renderPicker(): void {
       onSelect: (item: PickerItem) => {
         const field = state.activeField
         currentOnSelect(item)
-        hidePicker()
-        if (field) {
-          setTimeout(() => field.focus(), 0)
+        // Don't hide picker if settings view was shown by the onSelect handler
+        if (!state.showingSettings) {
+          hidePicker()
+          if (field) {
+            setTimeout(() => field.focus(), 0)
+          }
         }
       },
       onHover: (index: number) => {
