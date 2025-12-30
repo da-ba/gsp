@@ -27,12 +27,12 @@ import {
 import type { PickerItem } from "../../types.ts"
 import { GiphyPickerSettings } from "./GiphyPickerSettings.tsx"
 import { GiphySetupPanel } from "./GiphySetupPanel.tsx"
-
-// Cache keys for Giphy-specific data
-const CACHE_TRENDING_TERMS = "giphy:trendingTerms"
-const CACHE_TRENDING_GIFS = "giphy:trendingGifs"
-const CACHE_IMAGE_FORMAT = "giphy:imageFormat"
-const CACHE_CENTER_IMAGE = "giphy:centerImage"
+import {
+  CACHE_TRENDING_TERMS,
+  CACHE_TRENDING_GIFS,
+  CACHE_IMAGE_FORMAT,
+  CACHE_CENTER_IMAGE,
+} from "./constants.ts"
 
 /** Convert GifItem to PickerItem */
 function toPickerItem(gif: GifItem): PickerItem {

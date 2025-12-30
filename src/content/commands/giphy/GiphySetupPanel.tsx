@@ -5,17 +5,7 @@
 import React from "react"
 import { Card, Flex, Text, TextField, Button, Link } from "@radix-ui/themes"
 import { setGiphyKey } from "./api.ts"
-import { clearCommandCache } from "../../picker/index.ts"
-
-// Cache keys for Giphy-specific data
-const CACHE_TRENDING_TERMS = "giphy:trendingTerms"
-const CACHE_TRENDING_GIFS = "giphy:trendingGifs"
-
-/** Clear Giphy caches */
-function clearGiphyCaches(): void {
-  clearCommandCache(CACHE_TRENDING_TERMS)
-  clearCommandCache(CACHE_TRENDING_GIFS)
-}
+import { clearGiphyCaches } from "./constants.ts"
 
 export type GiphySetupPanelProps = {
   onComplete: () => void
