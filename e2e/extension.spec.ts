@@ -340,7 +340,7 @@ test.describe("Options Page - Giphy Image Settings", () => {
     const imageFormatLabel = page.locator("text=Image Format");
     await expect(imageFormatLabel).toBeVisible({ timeout: 3000 });
 
-    // Verify all three format options are present
+    // Verify all three format options are present (Radix RadioCards)
     const markdownOption = page.locator("text=![](link)");
     const imgOption = page.locator('text=<img src="link" />').first();
     const imgFixedOption = page.locator('text=<img src="link" width="350" />');
@@ -349,9 +349,9 @@ test.describe("Options Page - Giphy Image Settings", () => {
     await expect(imgOption).toBeVisible();
     await expect(imgFixedOption).toBeVisible();
 
-    // Verify markdown is selected by default
-    const markdownRadio = page.locator('input[type="radio"][name="giphy-format"]').first();
-    await expect(markdownRadio).toBeChecked();
+    // Verify markdown is selected by default (Radix uses data-state="checked")
+    const markdownRadioCard = page.locator('[data-radix-collection-item]:has-text("![](link)")');
+    await expect(markdownRadioCard).toHaveAttribute("data-state", "checked");
 
     await browser.close();
   });
@@ -375,9 +375,9 @@ test.describe("Options Page - Giphy Image Settings", () => {
     const centerCheckboxLabel = page.locator("text=Center image");
     await expect(centerCheckboxLabel).toBeVisible();
 
-    // Verify checkbox is unchecked by default
-    const centerCheckbox = page.locator('input[type="checkbox"]').nth(1); // Second checkbox (after "Show key")
-    await expect(centerCheckbox).not.toBeChecked();
+    // Verify checkbox is unchecked by default (Radix uses button with data-state)
+    const centerCheckbox = page.locator('button[role="checkbox"]#giphy-center');
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -393,26 +393,28 @@ test.describe("Options Page - Giphy Image Settings", () => {
     // Wait for React to render
     await page.waitForTimeout(500);
 
-    // Get all format radio buttons
-    const radios = page.locator('input[type="radio"][name="giphy-format"]');
+    // Get all format radio cards (Radix RadioCards)
+    const markdownCard = page.locator('[data-radix-collection-item]:has-text("![](link)")');
+    const imgCard = page.locator('[data-radix-collection-item]:has-text("<img src=\\"link\\" />")');
+    const imgFixedCard = page.locator('[data-radix-collection-item]:has-text("<img src=\\"link\\" width=\\"350\\" />")');
 
     // Click on second option (img format)
-    await radios.nth(1).click();
+    await imgCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(1)).toBeChecked();
-    await expect(radios.nth(0)).not.toBeChecked();
+    await expect(imgCard).toHaveAttribute("data-state", "checked");
+    await expect(markdownCard).toHaveAttribute("data-state", "unchecked");
 
     // Click on third option (img-fixed format)
-    await radios.nth(2).click();
+    await imgFixedCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(2)).toBeChecked();
-    await expect(radios.nth(1)).not.toBeChecked();
+    await expect(imgFixedCard).toHaveAttribute("data-state", "checked");
+    await expect(imgCard).toHaveAttribute("data-state", "unchecked");
 
     // Click back on first option (markdown format)
-    await radios.nth(0).click();
+    await markdownCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(0)).toBeChecked();
-    await expect(radios.nth(2)).not.toBeChecked();
+    await expect(markdownCard).toHaveAttribute("data-state", "checked");
+    await expect(imgFixedCard).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -428,21 +430,21 @@ test.describe("Options Page - Giphy Image Settings", () => {
     // Wait for React to render
     await page.waitForTimeout(500);
 
-    // Find center checkbox by looking for the checkbox next to "Center image" text
-    const centerCheckbox = page.locator('label:has-text("Center image") input[type="checkbox"]');
+    // Find center checkbox by ID (Radix uses button with role="checkbox")
+    const centerCheckbox = page.locator('button[role="checkbox"]#giphy-center');
 
     // Initial state should be unchecked
-    await expect(centerCheckbox).not.toBeChecked();
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     // Toggle on
     await centerCheckbox.click();
     await page.waitForTimeout(100);
-    await expect(centerCheckbox).toBeChecked();
+    await expect(centerCheckbox).toHaveAttribute("data-state", "checked");
 
     // Toggle off
     await centerCheckbox.click();
     await page.waitForTimeout(100);
-    await expect(centerCheckbox).not.toBeChecked();
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -458,11 +460,14 @@ test.describe("Options Page - Giphy Image Settings", () => {
     // Wait for React to render
     await page.waitForTimeout(500);
 
-    const radios = page.locator('input[type="radio"][name="giphy-format"]');
-    const centerCheckbox = page.locator('label:has-text("Center image") input[type="checkbox"]');
+    // Get format radio cards (Radix RadioCards)
+    const markdownCard = page.locator('[data-radix-collection-item]:has-text("![](link)")');
+    const imgCard = page.locator('[data-radix-collection-item]:has-text("<img src=\\"link\\" />")');
+    const imgFixedCard = page.locator('[data-radix-collection-item]:has-text("<img src=\\"link\\" width=\\"350\\" />")');
+    const centerCheckbox = page.locator('button[role="checkbox"]#giphy-center');
 
     // Select img-fixed format
-    await radios.nth(2).click();
+    await imgFixedCard.click();
     await page.waitForTimeout(100);
 
     // Enable centering
@@ -470,20 +475,20 @@ test.describe("Options Page - Giphy Image Settings", () => {
     await page.waitForTimeout(100);
 
     // Verify both are set
-    await expect(radios.nth(2)).toBeChecked();
-    await expect(centerCheckbox).toBeChecked();
+    await expect(imgFixedCard).toHaveAttribute("data-state", "checked");
+    await expect(centerCheckbox).toHaveAttribute("data-state", "checked");
 
     // Change format, centering should remain
-    await radios.nth(1).click();
+    await imgCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(1)).toBeChecked();
-    await expect(centerCheckbox).toBeChecked();
+    await expect(imgCard).toHaveAttribute("data-state", "checked");
+    await expect(centerCheckbox).toHaveAttribute("data-state", "checked");
 
     // Toggle centering off, format should remain
     await centerCheckbox.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(1)).toBeChecked();
-    await expect(centerCheckbox).not.toBeChecked();
+    await expect(imgCard).toHaveAttribute("data-state", "checked");
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
