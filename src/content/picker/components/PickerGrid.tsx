@@ -3,7 +3,6 @@
  */
 
 import React from "react"
-import { Box, Text, ScrollArea, Grid } from "@radix-ui/themes"
 import { GridItem } from "./GridItem.tsx"
 import { SuggestChips } from "./SuggestChips.tsx"
 import type { PickerItem } from "../../types.ts"
@@ -30,33 +29,53 @@ export function PickerGrid({
   onSuggestPick,
 }: PickerGridProps) {
   return (
-    <ScrollArea className="flex-1 min-h-0">
-      <Box className="px-2.5 pb-2.5">
-        {suggestItems.length > 0 && onSuggestPick && (
-          <SuggestChips items={suggestItems} title={suggestTitle} onPick={onSuggestPick} />
-        )}
+    <div
+      style={{
+        overflow: "auto",
+        padding: "0 10px 10px 10px",
+        flex: "1 1 auto",
+        minHeight: 0,
+      }}
+    >
+      {suggestItems.length > 0 && onSuggestPick && (
+        <SuggestChips items={suggestItems} title={suggestTitle} onPick={onSuggestPick} />
+      )}
 
-        {/* Show suggestTitle as section header when there are no suggest chips */}
-        {suggestItems.length === 0 && suggestTitle && (
-          <Text size="1" className="opacity-70 mb-1 block">
-            {suggestTitle}
-          </Text>
-        )}
+      {/* Show suggestTitle as section header when there are no suggest chips */}
+      {suggestItems.length === 0 && suggestTitle && (
+        <div
+          style={{
+            width: "100%",
+            opacity: 0.72,
+            fontSize: "12px",
+            marginBottom: "4px",
+          }}
+        >
+          {suggestTitle}
+        </div>
+      )}
 
-        <Grid columns="3" gap="2">
-          {items.map((item, idx) => (
-            <GridItem
-              key={item.id}
-              item={item}
-              index={idx}
-              selected={idx === selectedIndex}
-              imgUrlFn={imgUrlFn}
-              onSelect={onSelect}
-              onHover={onHover}
-            />
-          ))}
-        </Grid>
-      </Box>
-    </ScrollArea>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "8px",
+          maxHeight: "100%",
+          overflowY: "auto",
+        }}
+      >
+        {items.map((item, idx) => (
+          <GridItem
+            key={item.id}
+            item={item}
+            index={idx}
+            selected={idx === selectedIndex}
+            imgUrlFn={imgUrlFn}
+            onSelect={onSelect}
+            onHover={onHover}
+          />
+        ))}
+      </div>
+    </div>
   )
 }

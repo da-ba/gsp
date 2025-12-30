@@ -3,7 +3,6 @@
  */
 
 import React from "react"
-import { Theme, Box, Flex, Card } from "@radix-ui/themes"
 import { PickerHeader } from "./PickerHeader.tsx"
 import { PickerHints } from "./PickerHints.tsx"
 import { PickerFooter } from "./PickerFooter.tsx"
@@ -11,21 +10,16 @@ import { PickerGrid } from "./PickerGrid.tsx"
 import { LoadingSkeleton } from "./LoadingSkeleton.tsx"
 import { Message } from "./Message.tsx"
 import { SettingsPanel } from "./SettingsPanel.tsx"
-import { isDarkMode } from "../../../utils/theme.ts"
+import { applyPickerStyles } from "../styles.ts"
 import type { PickerItem } from "../../types.ts"
 import type { Position } from "../types.ts"
-import type { SetupComponentProps } from "../../commands/registry.ts"
-
-/** Picker dimensions */
-const PICKER_WIDTH = 400
-const PICKER_HEIGHT = 380
 
 export type PickerView =
   | { type: "loading" }
   | { type: "message"; message: string }
   | { type: "grid"; items: PickerItem[]; suggestItems?: string[]; suggestTitle?: string }
   | { type: "settings" }
-  | { type: "setup"; SetupComponent: React.ComponentType<SetupComponentProps> }
+  | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void }
 
 export type PickerProps = {
   visible: boolean
@@ -57,7 +51,22 @@ export function Picker({
   position,
 }: PickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const dark = isDarkMode()
+  const setupBodyRef = React.useRef<HTMLDivElement>(null)
+
+  // Apply picker styles on mount and theme changes
+  React.useEffect(() => {
+    if (containerRef.current) {
+      applyPickerStyles(containerRef.current)
+    }
+  }, [visible])
+
+  // Handle setup panel rendering
+  React.useEffect(() => {
+    if (view.type === "setup" && setupBodyRef.current) {
+      setupBodyRef.current.innerHTML = ""
+      view.renderFn(setupBodyRef.current, onSetupComplete)
+    }
+  }, [view, onSetupComplete])
 
   // Animate on show
   React.useEffect(() => {
@@ -99,14 +108,18 @@ export function Picker({
         )
       case "settings":
         return <SettingsPanel />
-      case "setup": {
-        const SetupComponent = view.SetupComponent
+      case "setup":
         return (
-          <Box className="overflow-auto flex-1 min-h-0 p-2.5">
-            <SetupComponent onComplete={onSetupComplete} />
-          </Box>
+          <div
+            ref={setupBodyRef}
+            style={{
+              overflow: "auto",
+              padding: "0 10px 10px 10px",
+              flex: "1 1 auto",
+              minHeight: 0,
+            }}
+          />
         )
-      }
       default:
         return null
     }
@@ -114,36 +127,25 @@ export function Picker({
 
   return (
     <div
+      ref={containerRef}
+      id="slashPalettePicker"
       style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "380px",
+        maxHeight: "380px",
+        width: "400px",
+        maxWidth: "400px",
+        boxSizing: "border-box",
         position: "fixed",
         left: `${position.left}px`,
         top: `${position.top}px`,
-        zIndex: 999999,
-        width: `${PICKER_WIDTH}px`,
-        height: `${PICKER_HEIGHT}px`,
       }}
     >
-      <Theme
-        appearance={dark ? "dark" : "light"}
-        accentColor="blue"
-        grayColor="slate"
-        radius="medium"
-        scaling="100%"
-        style={{ height: "100%" }}
-      >
-        <Card
-          ref={containerRef}
-          id="slashPalettePicker"
-          className="w-full h-full backdrop-blur-xl shadow-2xl"
-        >
-          <Flex direction="column" className="h-full">
-            <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
-            <PickerHints />
-            {renderBody()}
-            <PickerFooter />
-          </Flex>
-        </Card>
-      </Theme>
+      <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
+      <PickerHints />
+      {renderBody()}
+      <PickerFooter />
     </div>
   )
 }

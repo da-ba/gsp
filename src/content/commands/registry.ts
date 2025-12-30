@@ -2,23 +2,12 @@
  * Command registry and types
  */
 
-import type React from "react"
 import type { PickerItem } from "../types.ts"
-
-export type SetupComponentProps = {
-  onComplete: () => void
-}
 
 export type PreflightResult = {
   showSetup: boolean
   message?: string
   /**
-   * React component for setup UI.
-   * Preferred over renderSetup for modern Radix UI integration.
-   */
-  SetupComponent?: React.ComponentType<SetupComponentProps>
-  /**
-   * @deprecated Use SetupComponent instead for Radix UI integration.
    * If showSetup is true, command can provide a custom setup renderer.
    * Receives the picker body element and a callback to invoke after setup completes.
    */
@@ -53,13 +42,7 @@ export type CommandSpec = {
   /** Command-specific "no results" message (optional) */
   noResultsMessage?: string
   /**
-   * React component for command-specific settings.
-   * Preferred over renderSettings for modern Radix UI integration.
-   */
-  SettingsComponent?: React.ComponentType
-  /**
-   * @deprecated Use SettingsComponent instead for Radix UI integration.
-   * Render command-specific settings section using imperative DOM manipulation.
+   * Render command-specific settings section.
    * Receives a container element to append settings UI to.
    */
   renderSettings?: (container: HTMLElement) => void

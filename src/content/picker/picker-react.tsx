@@ -9,8 +9,8 @@ import { getCaretCoordinates } from "../../utils/dom.ts"
 import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
+import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
-import type { SetupComponentProps } from "../commands/registry.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -305,12 +305,12 @@ export function setSlashQueryInField(cmd: string, term: string): void {
 }
 
 export function renderSetupPanel(
-  SetupComponent: React.ComponentType<SetupComponentProps>,
+  renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void,
   onComplete: () => void
 ): void {
   clearBody()
   currentOnSetupComplete = onComplete
-  reactState.view = { type: "setup", SetupComponent }
+  reactState.view = { type: "setup", renderFn }
   renderPicker()
 }
 
@@ -337,3 +337,6 @@ export function showSettings(): void {
   reactState.view = { type: "settings" }
   renderPicker()
 }
+
+// Re-export applyPickerStyles for use in content/index.ts
+export { applyPickerStyles }

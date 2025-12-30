@@ -19,6 +19,7 @@ import {
   renderSetupPanel,
   refreshSelectionStyles,
   moveSelectionGrid,
+  applyPickerStyles,
 } from "./picker/index.ts"
 
 // Import commands to register them
@@ -77,8 +78,8 @@ async function handleCommandInput(
 
   // Check if setup is needed
   const pre = await cmd.preflight()
-  if (pre?.showSetup && pre.SetupComponent) {
-    renderSetupPanel(pre.SetupComponent, () => {
+  if (pre?.showSetup && pre.renderSetup) {
+    renderSetupPanel(pre.renderSetup, () => {
       // Retry after setup completes (command is responsible for clearing its own cache)
       state.lastQuery = ""
       handleCommandInput(field, cmdName, query || "")
@@ -338,9 +339,10 @@ function boot(): void {
     }
   })
 
-  // Handle theme changes - Radix Theme handles dark/light automatically
+  // Handle theme changes
   onThemeChange(() => {
     if (!isPickerVisible()) return
+    if (state.pickerEl) applyPickerStyles(state.pickerEl)
     refreshSelectionStyles()
   })
 }

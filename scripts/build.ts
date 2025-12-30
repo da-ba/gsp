@@ -4,7 +4,6 @@ import { join } from "path";
 import { config } from "dotenv";
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-core";
-import { execFile } from "node:child_process";
 
 const isWatch = process.argv.includes("--watch");
 const srcDir = "src";
@@ -122,51 +121,13 @@ async function bundleOptionsScript(envDefines: Record<string, string>) {
   }
 }
 
-async function buildCss(inputFile: string, outputFile: string): Promise<void> {
-  const inputPath = join(srcDir, inputFile);
-  const outputPath = join(distDir, outputFile);
-  const args = [
-    "@tailwindcss/cli",
-    "-i", inputPath,
-    "-o", outputPath,
-  ];
-  
-  if (!isWatch) {
-    args.push("--minify");
-  }
-  
-  return new Promise((resolve, reject) => {
-    execFile("npx", args, { maxBuffer: 10 * 1024 * 1024 }, (error, _stdout, stderr) => {
-      if (error) {
-        console.error(`Tailwind CSS build failed for ${inputFile}:`);
-        console.error(stderr);
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-async function buildOptionsCss(): Promise<void> {
-  return buildCss("options/options.css", "options.css");
-}
-
-async function buildContentCss(): Promise<void> {
-  return buildCss("content/content.css", "content.css");
-}
-
 async function reportBundleSizes() {
   const contentSize = await getFileSize(join(distDir, "content.js"));
-  const contentCssSize = await getFileSize(join(distDir, "content.css"));
   const optionsSize = await getFileSize(join(distDir, "options.js"));
-  const optionsCssSize = await getFileSize(join(distDir, "options.css"));
 
   console.log("\n📦 Bundle sizes:");
   console.log(`  content.js: ${formatSize(contentSize)}`);
-  console.log(`  content.css: ${formatSize(contentCssSize)}`);
   console.log(`  options.js: ${formatSize(optionsSize)}`);
-  console.log(`  options.css: ${formatSize(optionsCssSize)}`);
 }
 
 async function build() {
@@ -185,8 +146,6 @@ async function build() {
   await copyStaticAssets();
   await bundleContentScript(envDefines);
   await bundleOptionsScript(envDefines);
-  await buildContentCss();
-  await buildOptionsCss();
 
   const duration = (performance.now() - start).toFixed(0);
   console.log(`✓ Built gsp-${version} in ${duration}ms → ${distDir}/`);

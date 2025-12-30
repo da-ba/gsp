@@ -3,7 +3,7 @@
  */
 
 import React from "react"
-import { Flex, Text, Badge } from "@radix-ui/themes"
+import { getBadgeStyles } from "../styles.ts"
 
 export type SuggestChipsProps = {
   items: string[]
@@ -12,32 +12,54 @@ export type SuggestChipsProps = {
 }
 
 export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
+  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null)
+  const badgeStyles = getBadgeStyles()
+
   if (!items.length) return null
 
   return (
-    <Flex wrap="wrap" gap="1" className="mb-2.5">
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "6px",
+        marginBottom: "10px",
+      }}
+    >
       {title && (
-        <Text size="1" className="opacity-70 w-full mb-1">
+        <div
+          style={{
+            width: "100%",
+            opacity: 0.72,
+            fontSize: "12px",
+            marginBottom: "4px",
+          }}
+        >
           {title}
-        </Text>
+        </div>
       )}
-      {items.slice(0, 8).map((term) => (
-        <Badge
+      {items.slice(0, 8).map((term, idx) => (
+        <button
           key={term}
-          variant="soft"
-          radius="full"
-          size="1"
+          type="button"
           data-suggest-chip="true"
-          onClick={(ev: React.MouseEvent) => {
+          onClick={(ev) => {
             ev.preventDefault()
             ev.stopPropagation()
             onPick(term)
           }}
-          className="cursor-pointer hover:scale-[1.03] transition-transform"
+          onMouseEnter={() => setHoveredIndex(idx)}
+          onMouseLeave={() => setHoveredIndex(null)}
+          style={{
+            ...(badgeStyles as React.CSSProperties),
+            cursor: "pointer",
+            padding: "6px 10px",
+            transform: hoveredIndex === idx ? "scale(1.03)" : "scale(1)",
+          }}
         >
           {term}
-        </Badge>
+        </button>
       ))}
-    </Flex>
+    </div>
   )
 }
