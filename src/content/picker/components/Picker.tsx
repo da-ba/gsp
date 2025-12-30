@@ -115,15 +115,17 @@ export function Picker({
       grayColor="slate"
       radius="medium"
       scaling="100%"
+      style={{
+        position: "fixed",
+        left: `${position.left}px`,
+        top: `${position.top}px`,
+        zIndex: 999999,
+      }}
     >
       <Card
         ref={containerRef}
         id="slashPalettePicker"
-        className="fixed z-[999999] w-[400px] h-[380px] max-h-[380px] backdrop-blur-xl shadow-2xl"
-        style={{
-          left: `${position.left}px`,
-          top: `${position.top}px`,
-        }}
+        className="w-[400px] h-[380px] max-h-[380px] backdrop-blur-xl shadow-2xl"
       >
         <Flex direction="column" className="h-full">
           <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
