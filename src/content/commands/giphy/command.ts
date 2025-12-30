@@ -26,6 +26,7 @@ import {
   clearCommandCache,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
+import { GiphyPickerSettings } from "./GiphyPickerSettings.tsx"
 
 // Cache keys for Giphy-specific data
 const CACHE_TRENDING_TERMS = "giphy:trendingTerms"
@@ -357,12 +358,7 @@ const giphyCommand: CommandSpec = {
 
   noResultsMessage: "No results. Check your Giphy key in extension settings.",
 
-  renderSettings: (container: HTMLElement) => {
-    renderGiphyKeyForm(container, {
-      showClear: true,
-      showCurrentKey: true,
-    })
-  },
+  SettingsComponent: GiphyPickerSettings,
 }
 
 // Register the command

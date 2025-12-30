@@ -20,26 +20,10 @@ const THEMES: { value: ThemePreference; label: string }[] = [
 
 export function SettingsPanel() {
   const [currentTheme, setCurrentTheme] = React.useState<ThemePreference>("system")
-  const commandSettingsRef = React.useRef<HTMLDivElement>(null)
 
   // Load current theme preference
   React.useEffect(() => {
     getThemePreference().then(setCurrentTheme)
-  }, [])
-
-  // Render command settings
-  React.useEffect(() => {
-    const container = commandSettingsRef.current
-    if (!container) return
-
-    container.innerHTML = ""
-    const commands = listCommands()
-    for (const cmdName of commands) {
-      const cmd = getCommand(cmdName)
-      if (cmd?.renderSettings) {
-        cmd.renderSettings(container)
-      }
-    }
   }, [])
 
   const handleThemeChange = async (value: string) => {
@@ -48,6 +32,19 @@ export function SettingsPanel() {
     setThemeOverride(themeValue)
     setCurrentTheme(themeValue)
   }
+
+  // Get all command settings components
+  const commandSettings = React.useMemo(() => {
+    const commands = listCommands()
+    const settings: { name: string; Component: React.ComponentType }[] = []
+    for (const cmdName of commands) {
+      const cmd = getCommand(cmdName)
+      if (cmd?.SettingsComponent) {
+        settings.push({ name: cmdName, Component: cmd.SettingsComponent })
+      }
+    }
+    return settings
+  }, [])
 
   return (
     <ScrollArea className="flex-1 min-h-0">
@@ -72,8 +69,10 @@ export function SettingsPanel() {
               </SegmentedControl.Root>
             </Flex>
 
-            {/* Command Settings Container */}
-            <Box ref={commandSettingsRef} />
+            {/* Command Settings Components */}
+            {commandSettings.map(({ name, Component }) => (
+              <Component key={name} />
+            ))}
           </Flex>
         </Card>
       </Box>

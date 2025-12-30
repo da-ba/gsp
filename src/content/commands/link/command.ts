@@ -19,11 +19,11 @@ import type { PickerItem } from "../../types.ts"
 import { parseLinkQuery, formatMarkdownLink, type LinkParseResult } from "./api.ts"
 import {
   getGitHubToken,
-  setGitHubToken,
   getRepoContext,
   searchCIResources,
   type CILinkSuggestion,
 } from "../../../options/github/api.ts"
+import { LinkPickerSettings } from "./LinkPickerSettings.tsx"
 
 /** Display truncation limits for tile text */
 const DISPLAY_LIMITS = {
@@ -385,135 +385,6 @@ function isLinkItemData(data: ItemData): data is LinkItemData {
   return data !== null && typeof data === "object" && "isValid" in data
 }
 
-/** Get theme-aware styles for setup form elements */
-function getFormStyles() {
-  return {
-    input: {
-      width: "100%",
-      boxSizing: "border-box" as const,
-      padding: "8px 12px",
-      borderRadius: "6px",
-      border: "1px solid var(--gray-6)",
-      backgroundColor: "var(--gray-1)",
-      color: "inherit",
-      fontSize: "14px",
-    },
-    button: {
-      padding: "6px 12px",
-      borderRadius: "6px",
-      cursor: "pointer",
-      border: "1px solid var(--gray-6)",
-      backgroundColor: "var(--gray-3)",
-      color: "inherit",
-      fontSize: "13px",
-    },
-  }
-}
-
-/** Helper to apply style object to element */
-function applyStyles(el: HTMLElement, styles: Record<string, string>): void {
-  for (const [key, value] of Object.entries(styles)) {
-    if (value !== undefined && typeof value === "string") {
-      el.style.setProperty(
-        key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()),
-        value
-      )
-    }
-  }
-}
-
-/**
- * Render GitHub Token form for settings panel
- */
-function renderGitHubTokenForm(container: HTMLElement): void {
-  const styles = getFormStyles()
-
-  const section = document.createElement("div")
-  section.style.display = "flex"
-  section.style.flexDirection = "column"
-  section.style.gap = "8px"
-
-  const label = document.createElement("div")
-  label.textContent = "GitHub Token (for /link ci)"
-  label.style.fontWeight = "600"
-  label.style.fontSize = "13px"
-  section.appendChild(label)
-
-  const desc = document.createElement("div")
-  desc.style.fontSize = "12px"
-  desc.style.opacity = "0.72"
-  desc.innerHTML =
-    'Create a <a href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo" target="_blank" style="color:inherit;text-decoration:underline;">Personal Access Token</a> with <code style="font-size:11px;">public_repo</code> or <code style="font-size:11px;">repo</code> scope.'
-  section.appendChild(desc)
-
-  const input = document.createElement("input")
-  input.type = "text"
-  input.placeholder = "Paste GitHub token…"
-  applyStyles(input, styles.input as Record<string, string>)
-  section.appendChild(input)
-
-  // Load current token (masked)
-  getGitHubToken().then((token) => {
-    if (token) {
-      input.value = token.slice(0, 4) + "…" + token.slice(-4)
-    }
-  })
-
-  const btnRow = document.createElement("div")
-  btnRow.style.display = "flex"
-  btnRow.style.gap = "8px"
-
-  const saveBtn = document.createElement("button")
-  saveBtn.type = "button"
-  saveBtn.setAttribute("data-settings-action", "true")
-  saveBtn.textContent = "Save Token"
-  applyStyles(saveBtn, styles.button as Record<string, string>)
-  btnRow.appendChild(saveBtn)
-
-  const clearBtn = document.createElement("button")
-  clearBtn.type = "button"
-  clearBtn.setAttribute("data-settings-action", "true")
-  clearBtn.textContent = "Clear"
-  applyStyles(clearBtn, styles.button as Record<string, string>)
-  clearBtn.style.opacity = "0.72"
-  btnRow.appendChild(clearBtn)
-
-  section.appendChild(btnRow)
-
-  const msg = document.createElement("div")
-  msg.style.fontSize = "12px"
-  msg.style.opacity = "0.72"
-  section.appendChild(msg)
-
-  saveBtn.addEventListener("click", async (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    const val = input.value.trim()
-    if (val.includes("…")) {
-      msg.textContent = "Enter a new token to save"
-      return
-    }
-    if (!val) {
-      msg.textContent = "Please enter a token"
-      return
-    }
-    msg.textContent = "Saving…"
-    await setGitHubToken(val)
-    msg.textContent = "Saved!"
-    input.value = val.slice(0, 4) + "…" + val.slice(-4)
-  })
-
-  clearBtn.addEventListener("click", async (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    await setGitHubToken("")
-    input.value = ""
-    msg.textContent = "Cleared"
-  })
-
-  container.appendChild(section)
-}
-
 const linkCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
@@ -638,9 +509,7 @@ const linkCommand: CommandSpec = {
 
   noResultsMessage: LINK_HELP_MESSAGE,
 
-  renderSettings: (container: HTMLElement) => {
-    renderGitHubTokenForm(container)
-  },
+  SettingsComponent: LinkPickerSettings,
 }
 
 // Register the command

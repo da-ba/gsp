@@ -2,6 +2,7 @@
  * Command registry and types
  */
 
+import type React from "react"
 import type { PickerItem } from "../types.ts"
 
 export type PreflightResult = {
@@ -42,7 +43,13 @@ export type CommandSpec = {
   /** Command-specific "no results" message (optional) */
   noResultsMessage?: string
   /**
-   * Render command-specific settings section.
+   * React component for command-specific settings.
+   * Preferred over renderSettings for modern Radix UI integration.
+   */
+  SettingsComponent?: React.ComponentType
+  /**
+   * @deprecated Use SettingsComponent instead for Radix UI integration.
+   * Render command-specific settings section using imperative DOM manipulation.
    * Receives a container element to append settings UI to.
    */
   renderSettings?: (container: HTMLElement) => void
