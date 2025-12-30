@@ -16,6 +16,10 @@ import type { PickerItem } from "../../types.ts"
 import type { Position } from "../types.ts"
 import type { SetupComponentProps } from "../../commands/registry.ts"
 
+/** Picker dimensions */
+const PICKER_WIDTH = 400
+const PICKER_HEIGHT = 380
+
 export type PickerView =
   | { type: "loading" }
   | { type: "message"; message: string }
@@ -109,31 +113,37 @@ export function Picker({
   }
 
   return (
-    <Theme
-      appearance={dark ? "dark" : "light"}
-      accentColor="blue"
-      grayColor="slate"
-      radius="medium"
-      scaling="100%"
+    <div
       style={{
         position: "fixed",
         left: `${position.left}px`,
         top: `${position.top}px`,
         zIndex: 999999,
+        width: `${PICKER_WIDTH}px`,
+        height: `${PICKER_HEIGHT}px`,
       }}
     >
-      <Card
-        ref={containerRef}
-        id="slashPalettePicker"
-        className="w-[400px] h-[380px] max-h-[380px] backdrop-blur-xl shadow-2xl"
+      <Theme
+        appearance={dark ? "dark" : "light"}
+        accentColor="blue"
+        grayColor="slate"
+        radius="medium"
+        scaling="100%"
+        style={{ height: "100%" }}
       >
-        <Flex direction="column" className="h-full">
-          <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
-          <PickerHints />
-          {renderBody()}
-          <PickerFooter />
-        </Flex>
-      </Card>
-    </Theme>
+        <Card
+          ref={containerRef}
+          id="slashPalettePicker"
+          className="w-full h-full backdrop-blur-xl shadow-2xl"
+        >
+          <Flex direction="column" className="h-full">
+            <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
+            <PickerHints />
+            {renderBody()}
+            <PickerFooter />
+          </Flex>
+        </Card>
+      </Theme>
+    </div>
   )
 }
