@@ -340,7 +340,7 @@ test.describe("Options Page - Giphy Image Settings", () => {
     const imageFormatLabel = page.locator("text=Image Format");
     await expect(imageFormatLabel).toBeVisible({ timeout: 3000 });
 
-    // Verify all three format options are present
+    // Verify all three format options are present (Radix RadioCards)
     const markdownOption = page.locator("text=![](link)");
     const imgOption = page.locator('text=<img src="link" />').first();
     const imgFixedOption = page.locator('text=<img src="link" width="350" />');
@@ -349,9 +349,9 @@ test.describe("Options Page - Giphy Image Settings", () => {
     await expect(imgOption).toBeVisible();
     await expect(imgFixedOption).toBeVisible();
 
-    // Verify markdown is selected by default
-    const markdownRadio = page.locator('input[type="radio"][name="giphy-format"]').first();
-    await expect(markdownRadio).toBeChecked();
+    // Verify markdown is selected by default (Radix uses data-state="checked")
+    const markdownRadioCard = page.locator('[data-radix-collection-item][value="markdown"]');
+    await expect(markdownRadioCard).toHaveAttribute("data-state", "checked");
 
     await browser.close();
   });
@@ -375,9 +375,9 @@ test.describe("Options Page - Giphy Image Settings", () => {
     const centerCheckboxLabel = page.locator("text=Center image");
     await expect(centerCheckboxLabel).toBeVisible();
 
-    // Verify checkbox is unchecked by default
-    const centerCheckbox = page.locator('input[type="checkbox"]').nth(1); // Second checkbox (after "Show key")
-    await expect(centerCheckbox).not.toBeChecked();
+    // Verify checkbox is unchecked by default (Radix Checkbox uses button with data-state)
+    const centerCheckbox = page.locator('#giphy-center');
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -393,26 +393,28 @@ test.describe("Options Page - Giphy Image Settings", () => {
     // Wait for React to render
     await page.waitForTimeout(500);
 
-    // Get all format radio buttons
-    const radios = page.locator('input[type="radio"][name="giphy-format"]');
+    // Get all format radio cards (Radix RadioCards)
+    const markdownCard = page.locator('[data-radix-collection-item][value="markdown"]');
+    const imgCard = page.locator('[data-radix-collection-item][value="img"]');
+    const imgFixedCard = page.locator('[data-radix-collection-item][value="img-fixed"]');
 
     // Click on second option (img format)
-    await radios.nth(1).click();
+    await imgCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(1)).toBeChecked();
-    await expect(radios.nth(0)).not.toBeChecked();
+    await expect(imgCard).toHaveAttribute("data-state", "checked");
+    await expect(markdownCard).toHaveAttribute("data-state", "unchecked");
 
     // Click on third option (img-fixed format)
-    await radios.nth(2).click();
+    await imgFixedCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(2)).toBeChecked();
-    await expect(radios.nth(1)).not.toBeChecked();
+    await expect(imgFixedCard).toHaveAttribute("data-state", "checked");
+    await expect(imgCard).toHaveAttribute("data-state", "unchecked");
 
     // Click back on first option (markdown format)
-    await radios.nth(0).click();
+    await markdownCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(0)).toBeChecked();
-    await expect(radios.nth(2)).not.toBeChecked();
+    await expect(markdownCard).toHaveAttribute("data-state", "checked");
+    await expect(imgFixedCard).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -428,21 +430,21 @@ test.describe("Options Page - Giphy Image Settings", () => {
     // Wait for React to render
     await page.waitForTimeout(500);
 
-    // Find center checkbox by looking for the checkbox next to "Center image" text
-    const centerCheckbox = page.locator('label:has-text("Center image") input[type="checkbox"]');
+    // Find center checkbox by ID (Radix Checkbox)
+    const centerCheckbox = page.locator('#giphy-center');
 
     // Initial state should be unchecked
-    await expect(centerCheckbox).not.toBeChecked();
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     // Toggle on
     await centerCheckbox.click();
     await page.waitForTimeout(100);
-    await expect(centerCheckbox).toBeChecked();
+    await expect(centerCheckbox).toHaveAttribute("data-state", "checked");
 
     // Toggle off
     await centerCheckbox.click();
     await page.waitForTimeout(100);
-    await expect(centerCheckbox).not.toBeChecked();
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -458,11 +460,13 @@ test.describe("Options Page - Giphy Image Settings", () => {
     // Wait for React to render
     await page.waitForTimeout(500);
 
-    const radios = page.locator('input[type="radio"][name="giphy-format"]');
-    const centerCheckbox = page.locator('label:has-text("Center image") input[type="checkbox"]');
+    // Get format radio cards (Radix RadioCards)
+    const imgCard = page.locator('[data-radix-collection-item][value="img"]');
+    const imgFixedCard = page.locator('[data-radix-collection-item][value="img-fixed"]');
+    const centerCheckbox = page.locator('#giphy-center');
 
     // Select img-fixed format
-    await radios.nth(2).click();
+    await imgFixedCard.click();
     await page.waitForTimeout(100);
 
     // Enable centering
@@ -470,20 +474,20 @@ test.describe("Options Page - Giphy Image Settings", () => {
     await page.waitForTimeout(100);
 
     // Verify both are set
-    await expect(radios.nth(2)).toBeChecked();
-    await expect(centerCheckbox).toBeChecked();
+    await expect(imgFixedCard).toHaveAttribute("data-state", "checked");
+    await expect(centerCheckbox).toHaveAttribute("data-state", "checked");
 
     // Change format, centering should remain
-    await radios.nth(1).click();
+    await imgCard.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(1)).toBeChecked();
-    await expect(centerCheckbox).toBeChecked();
+    await expect(imgCard).toHaveAttribute("data-state", "checked");
+    await expect(centerCheckbox).toHaveAttribute("data-state", "checked");
 
     // Toggle centering off, format should remain
     await centerCheckbox.click();
     await page.waitForTimeout(100);
-    await expect(radios.nth(1)).toBeChecked();
-    await expect(centerCheckbox).not.toBeChecked();
+    await expect(imgCard).toHaveAttribute("data-state", "checked");
+    await expect(centerCheckbox).toHaveAttribute("data-state", "unchecked");
 
     await browser.close();
   });
@@ -1438,10 +1442,10 @@ test.describe("Emoji Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // First item should be selected by default
+    // First item should be selected by default (Tailwind uses scale-[1.03] for selection)
     const firstButton = picker.locator('button[data-item-index="0"]');
-    const initialClass = await firstButton.getAttribute("style");
-    expect(initialClass).toContain("box-shadow");
+    const initialClass = await firstButton.getAttribute("class");
+    expect(initialClass).toContain("scale-[1.03]");
 
     // Press right arrow to move selection
     await page.keyboard.press("ArrowRight");
@@ -1449,8 +1453,8 @@ test.describe("Emoji Command", () => {
 
     // Second item should now be selected
     const secondButton = picker.locator('button[data-item-index="1"]');
-    const secondClass = await secondButton.getAttribute("style");
-    expect(secondClass).toContain("box-shadow");
+    const secondClass = await secondButton.getAttribute("class");
+    expect(secondClass).toContain("scale-[1.03]");
 
     await browser.close();
   });
@@ -1856,10 +1860,10 @@ test.describe("Mermaid Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // First item should be selected by default
+    // First item should be selected by default (Tailwind uses scale-[1.03] for selection)
     const firstButton = picker.locator('button[data-item-index="0"]');
-    const initialStyle = await firstButton.getAttribute("style");
-    expect(initialStyle).toContain("box-shadow");
+    const initialClass = await firstButton.getAttribute("class");
+    expect(initialClass).toContain("scale-[1.03]");
 
     // Press right arrow to move selection
     await page.keyboard.press("ArrowRight");
@@ -1867,8 +1871,8 @@ test.describe("Mermaid Command", () => {
 
     // Second item should now be selected
     const secondButton = picker.locator('button[data-item-index="1"]');
-    const secondStyle = await secondButton.getAttribute("style");
-    expect(secondStyle).toContain("box-shadow");
+    const secondClass = await secondButton.getAttribute("class");
+    expect(secondClass).toContain("scale-[1.03]");
 
     await browser.close();
   });
@@ -2196,10 +2200,10 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // First item should be selected by default
+    // First item should be selected by default (Tailwind uses scale-[1.03] for selection)
     const firstButton = picker.locator('button[data-item-index="0"]');
-    const initialClass = await firstButton.getAttribute("style");
-    expect(initialClass).toContain("box-shadow");
+    const initialClass = await firstButton.getAttribute("class");
+    expect(initialClass).toContain("scale-[1.03]");
 
     // Press right arrow to move selection
     await page.keyboard.press("ArrowRight");
@@ -2207,8 +2211,8 @@ test.describe("Now Command - Date/Time Formatting", () => {
 
     // Second item should now be selected
     const secondButton = picker.locator('button[data-item-index="1"]');
-    const secondClass = await secondButton.getAttribute("style");
-    expect(secondClass).toContain("box-shadow");
+    const secondClass = await secondButton.getAttribute("class");
+    expect(secondClass).toContain("scale-[1.03]");
 
     await browser.close();
   });
@@ -2578,10 +2582,10 @@ test.describe("Kbd Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // First item should be selected by default
+    // First item should be selected by default (Tailwind uses scale-[1.03] for selection)
     const firstButton = picker.locator('button[data-item-index="0"]');
-    const initialStyle = await firstButton.getAttribute("style");
-    expect(initialStyle).toContain("box-shadow");
+    const initialClass = await firstButton.getAttribute("class");
+    expect(initialClass).toContain("scale-[1.03]");
 
     // Press right arrow to move selection
     await page.keyboard.press("ArrowRight");
@@ -2589,8 +2593,8 @@ test.describe("Kbd Command", () => {
 
     // Second item should now be selected
     const secondButton = picker.locator('button[data-item-index="1"]');
-    const secondStyle = await secondButton.getAttribute("style");
-    expect(secondStyle).toContain("box-shadow");
+    const secondClass = await secondButton.getAttribute("class");
+    expect(secondClass).toContain("scale-[1.03]");
 
     await browser.close();
   });
@@ -3313,13 +3317,13 @@ test.describe("Mention Command", () => {
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // First item should be selected by default
+    // First item should be selected by default (Tailwind uses scale-[1.03] for selection)
     const firstButton = picker.locator('button[data-item-index="0"]');
     const firstButtonExists = await firstButton.count();
 
     if (firstButtonExists > 0) {
-      const initialStyle = await firstButton.getAttribute("style");
-      expect(initialStyle).toContain("box-shadow");
+      const initialClass = await firstButton.getAttribute("class");
+      expect(initialClass).toContain("scale-[1.03]");
 
       // Press right arrow to move selection
       await page.keyboard.press("ArrowRight");
@@ -3330,8 +3334,8 @@ test.describe("Mention Command", () => {
       const secondButtonExists = await secondButton.count();
 
       if (secondButtonExists > 0) {
-        const secondStyle = await secondButton.getAttribute("style");
-        expect(secondStyle).toContain("box-shadow");
+        const secondClass = await secondButton.getAttribute("class");
+        expect(secondClass).toContain("scale-[1.03]");
       }
     }
 
