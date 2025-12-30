@@ -77,8 +77,8 @@ async function handleCommandInput(
 
   // Check if setup is needed
   const pre = await cmd.preflight()
-  if (pre?.showSetup && pre.renderSetup) {
-    renderSetupPanel(pre.renderSetup, () => {
+  if (pre?.showSetup && pre.SetupComponent) {
+    renderSetupPanel(pre.SetupComponent, () => {
       // Retry after setup completes (command is responsible for clearing its own cache)
       state.lastQuery = ""
       handleCommandInput(field, cmdName, query || "")

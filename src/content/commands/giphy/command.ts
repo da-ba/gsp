@@ -10,7 +10,6 @@ import {
   getTrendingTerms,
   getAutocompleteTags,
   getGiphyKey,
-  setGiphyKey,
   getGiphyImageFormat,
   getGiphyCenterImage,
   formatGifInsert,
@@ -27,18 +26,13 @@ import {
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { GiphyPickerSettings } from "./GiphyPickerSettings.tsx"
+import { GiphySetupPanel } from "./GiphySetupPanel.tsx"
 
 // Cache keys for Giphy-specific data
 const CACHE_TRENDING_TERMS = "giphy:trendingTerms"
 const CACHE_TRENDING_GIFS = "giphy:trendingGifs"
 const CACHE_IMAGE_FORMAT = "giphy:imageFormat"
 const CACHE_CENTER_IMAGE = "giphy:centerImage"
-
-/** Clear Giphy caches */
-function clearGiphyCaches(): void {
-  clearCommandCache(CACHE_TRENDING_TERMS)
-  clearCommandCache(CACHE_TRENDING_GIFS)
-}
 
 /** Convert GifItem to PickerItem */
 function toPickerItem(gif: GifItem): PickerItem {
@@ -101,178 +95,6 @@ async function insertGifMarkdown(url: string): Promise<void> {
   field.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
-/** Get theme-aware styles for setup form elements */
-function getFormStyles() {
-  return {
-    card: {
-      padding: "12px",
-      borderRadius: "8px",
-      border: "1px solid var(--gray-6)",
-      backgroundColor: "var(--gray-2)",
-    },
-    input: {
-      width: "100%",
-      boxSizing: "border-box" as const,
-      padding: "8px 12px",
-      borderRadius: "6px",
-      border: "1px solid var(--gray-6)",
-      backgroundColor: "var(--gray-1)",
-      color: "inherit",
-      fontSize: "14px",
-    },
-    button: {
-      padding: "6px 12px",
-      borderRadius: "6px",
-      cursor: "pointer",
-      border: "1px solid var(--gray-6)",
-      backgroundColor: "var(--gray-3)",
-      color: "inherit",
-      fontSize: "13px",
-    },
-  }
-}
-
-/** Helper to apply style object to element */
-function applyStyles(el: HTMLElement, styles: Record<string, string>): void {
-  for (const [key, value] of Object.entries(styles)) {
-    if (value !== undefined && typeof value === "string") {
-      el.style.setProperty(
-        key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()),
-        value
-      )
-    }
-  }
-}
-
-export type GiphyKeyFormOptions = {
-  /** Show Clear button (for settings panel) */
-  showClear?: boolean
-  /** Load and show masked current key */
-  showCurrentKey?: boolean
-  /** Callback after save completes */
-  onSave?: () => void
-}
-
-/**
- * Render Giphy API key form (shared between setup panel and settings)
- */
-function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions = {}): void {
-  const { showClear = false, showCurrentKey = false, onSave } = options
-  const styles = getFormStyles()
-
-  const section = document.createElement("div")
-  section.style.display = "flex"
-  section.style.flexDirection = "column"
-  section.style.gap = "8px"
-
-  const label = document.createElement("div")
-  label.textContent = "Giphy API Key"
-  label.style.fontWeight = "600"
-  label.style.fontSize = "13px"
-  section.appendChild(label)
-
-  const desc = document.createElement("div")
-  desc.style.fontSize = "12px"
-  desc.style.opacity = "0.72"
-  desc.innerHTML =
-    'Get a free key at <a href="https://developers.giphy.com/dashboard/" target="_blank" style="color:inherit;text-decoration:underline;">developers.giphy.com</a>'
-  section.appendChild(desc)
-
-  const input = document.createElement("input")
-  input.type = "text"
-  input.placeholder = "Paste API key…"
-  applyStyles(input, styles.input as Record<string, string>)
-  section.appendChild(input)
-
-  // Load current key if requested
-  if (showCurrentKey) {
-    getGiphyKey().then((key) => {
-      if (key) {
-        input.value = key.slice(0, 4) + "…" + key.slice(-4)
-      }
-    })
-  }
-
-  const btnRow = document.createElement("div")
-  btnRow.style.display = "flex"
-  btnRow.style.gap = "8px"
-
-  const saveBtn = document.createElement("button")
-  saveBtn.type = "button"
-  saveBtn.setAttribute("data-settings-action", "true")
-  saveBtn.textContent = "Save Key"
-  applyStyles(saveBtn, styles.button as Record<string, string>)
-  btnRow.appendChild(saveBtn)
-
-  if (showClear) {
-    const clearBtn = document.createElement("button")
-    clearBtn.type = "button"
-    clearBtn.setAttribute("data-settings-action", "true")
-    clearBtn.textContent = "Clear"
-    applyStyles(clearBtn, styles.button as Record<string, string>)
-    clearBtn.style.opacity = "0.72"
-    btnRow.appendChild(clearBtn)
-
-    clearBtn.addEventListener("click", async (ev) => {
-      ev.preventDefault()
-      ev.stopPropagation()
-      await setGiphyKey("")
-      clearGiphyCaches()
-      input.value = ""
-      msg.textContent = "Cleared"
-    })
-  }
-
-  section.appendChild(btnRow)
-
-  const msg = document.createElement("div")
-  msg.style.fontSize = "12px"
-  msg.style.opacity = "0.72"
-  section.appendChild(msg)
-
-  saveBtn.addEventListener("click", async (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    const val = input.value.trim()
-    if (val.includes("…")) {
-      msg.textContent = "Enter a new key to save"
-      return
-    }
-    if (!val) {
-      msg.textContent = "Please enter a key"
-      return
-    }
-    msg.textContent = "Saving…"
-    await setGiphyKey(val)
-    clearGiphyCaches()
-    msg.textContent = "Saved!"
-    input.value = val.slice(0, 4) + "…" + val.slice(-4)
-    onSave?.()
-  })
-
-  container.appendChild(section)
-}
-
-/**
- * Render the Giphy API key setup panel (preflight).
- */
-function renderGiphySetupPanel(bodyEl: HTMLElement, onComplete: () => void): void {
-  const styles = getFormStyles()
-  const wrap = document.createElement("div")
-  applyStyles(wrap, styles.card as Record<string, string>)
-  wrap.style.display = "flex"
-  wrap.style.flexDirection = "column"
-  wrap.style.gap = "10px"
-
-  renderGiphyKeyForm(wrap, {
-    showClear: false,
-    showCurrentKey: false,
-    onSave: onComplete,
-  })
-
-  bodyEl.appendChild(wrap)
-}
-
 const giphyCommand: CommandSpec = {
   preflight: async () => {
     const key = await getGiphyKey()
@@ -280,7 +102,7 @@ const giphyCommand: CommandSpec = {
       return {
         showSetup: true,
         message: "Paste your Giphy API key to enable /giphy",
-        renderSetup: renderGiphySetupPanel,
+        SetupComponent: GiphySetupPanel,
       }
     }
     return { showSetup: false }

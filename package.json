@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "@tailwindcss/cli": "^4.1.11",
+    "@tailwindcss/cli": "^4.1.18",
     "@types/bun": "^1.3.5",
     "@types/chrome": "^0.1.32",
     "@types/react": "^19.2.7",
@@ -33,7 +33,7 @@
     "prettier": "^3.7.4",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.1",
     "vitest": "^4.0.16",

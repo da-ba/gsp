@@ -10,6 +10,7 @@ import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
+import type { SetupComponentProps } from "../commands/registry.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -304,12 +305,12 @@ export function setSlashQueryInField(cmd: string, term: string): void {
 }
 
 export function renderSetupPanel(
-  renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void,
+  SetupComponent: React.ComponentType<SetupComponentProps>,
   onComplete: () => void
 ): void {
   clearBody()
   currentOnSetupComplete = onComplete
-  reactState.view = { type: "setup", renderFn }
+  reactState.view = { type: "setup", SetupComponent }
   renderPicker()
 }
 

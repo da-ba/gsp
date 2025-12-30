@@ -66,7 +66,11 @@ export function GiphyPickerSettings() {
       </Text>
       <Text size="1" color="gray">
         Get a free key at{" "}
-        <Link href="https://developers.giphy.com/dashboard/" target="_blank" rel="noopener noreferrer">
+        <Link
+          href="https://developers.giphy.com/dashboard/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           developers.giphy.com
         </Link>
       </Text>

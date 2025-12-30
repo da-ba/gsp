@@ -14,13 +14,14 @@ import { SettingsPanel } from "./SettingsPanel.tsx"
 import { isDarkMode } from "../../../utils/theme.ts"
 import type { PickerItem } from "../../types.ts"
 import type { Position } from "../types.ts"
+import type { SetupComponentProps } from "../../commands/registry.ts"
 
 export type PickerView =
   | { type: "loading" }
   | { type: "message"; message: string }
   | { type: "grid"; items: PickerItem[]; suggestItems?: string[]; suggestTitle?: string }
   | { type: "settings" }
-  | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void }
+  | { type: "setup"; SetupComponent: React.ComponentType<SetupComponentProps> }
 
 export type PickerProps = {
   visible: boolean
@@ -52,16 +53,7 @@ export function Picker({
   position,
 }: PickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const setupBodyRef = React.useRef<HTMLDivElement>(null)
   const dark = isDarkMode()
-
-  // Handle setup panel rendering
-  React.useEffect(() => {
-    if (view.type === "setup" && setupBodyRef.current) {
-      setupBodyRef.current.innerHTML = ""
-      view.renderFn(setupBodyRef.current, onSetupComplete)
-    }
-  }, [view, onSetupComplete])
 
   // Animate on show
   React.useEffect(() => {
@@ -103,8 +95,14 @@ export function Picker({
         )
       case "settings":
         return <SettingsPanel />
-      case "setup":
-        return <Box ref={setupBodyRef} className="overflow-auto flex-1 min-h-0 p-2.5" />
+      case "setup": {
+        const SetupComponent = view.SetupComponent
+        return (
+          <Box className="overflow-auto flex-1 min-h-0 p-2.5">
+            <SetupComponent onComplete={onSetupComplete} />
+          </Box>
+        )
+      }
       default:
         return null
     }

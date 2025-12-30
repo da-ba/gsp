@@ -5,10 +5,20 @@
 import type React from "react"
 import type { PickerItem } from "../types.ts"
 
+export type SetupComponentProps = {
+  onComplete: () => void
+}
+
 export type PreflightResult = {
   showSetup: boolean
   message?: string
   /**
+   * React component for setup UI.
+   * Preferred over renderSetup for modern Radix UI integration.
+   */
+  SetupComponent?: React.ComponentType<SetupComponentProps>
+  /**
+   * @deprecated Use SetupComponent instead for Radix UI integration.
    * If showSetup is true, command can provide a custom setup renderer.
    * Receives the picker body element and a callback to invoke after setup completes.
    */
