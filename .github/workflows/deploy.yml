@@ -61,8 +61,8 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build extension
-        env:
-          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
+        # Build WITHOUT Giphy API key for public demo deployment
+        # Users can add their own key via the extension options
         run: bun run build
 
       - name: Get version
