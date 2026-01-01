@@ -9,6 +9,10 @@ Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Me
 
 [GitHub Slash Palette](https://chromewebstore.google.com/detail/kkcajoojbaidfdnjecjnbeaheepknkpf?utm_source=item-share-cb)
 
+## Live Demo
+
+Try the extension without installing it: **[Live Demo](https://da-ba.github.io/gsp/)**
+
 ---
 
 ## Features
