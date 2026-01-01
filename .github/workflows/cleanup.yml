@@ -1,0 +1,53 @@
+name: Cleanup PR Preview
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "pages-cleanup-pr-${{ github.event.pull_request.number }}"
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
+
+      - name: Check if PR deployment exists
+        id: check
+        run: |
+          if [ -d "gh-pages/pr-${{ github.event.pull_request.number }}" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Remove PR deployment
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          rm -rf "gh-pages/pr-${{ github.event.pull_request.number }}"
+          echo "Removed deployment for PR #${{ github.event.pull_request.number }}"
+
+      - name: Regenerate index page
+        if: steps.check.outputs.exists == 'true'
+        run: ./scripts/generate-index.sh gh-pages demo/index-template.html
+
+      - name: Deploy to GitHub Pages
+        if: steps.check.outputs.exists == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          keep_files: true
