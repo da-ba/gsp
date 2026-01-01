@@ -1,32 +1,39 @@
 name: Deploy Demo
 
 on:
-  # Deploy on successful CI completion
+  # Deploy main on successful CI completion
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
     branches: [main]
 
+  # Deploy PRs
+  pull_request:
+    types: [opened, synchronize, reopened]
+
   # Allow manual trigger
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  pull-requests: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent deployment per deployment target
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "pages-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}"
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    # Only run if CI completed successfully (or manual trigger)
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Run if CI completed successfully, PR event, or manual trigger
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      github.event_name == 'pull_request' ||
+      github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -34,6 +41,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
+
+      - name: Initialize gh-pages if needed
+        run: |
+          if [ ! -d "gh-pages" ]; then
+            mkdir -p gh-pages
+          fi
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -47,22 +69,41 @@ jobs:
         id: version
         run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
-      - name: Prepare demo site
+      - name: Determine deployment path
+        id: deploy-path
         run: |
-          mkdir -p _site
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "path=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "build=PR#${{ github.event.pull_request.number }}@${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+          else
+            echo "path=main" >> $GITHUB_OUTPUT
+            echo "build=main@${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Prepare deployment
+        run: |
+          DEPLOY_PATH="${{ steps.deploy-path.outputs.path }}"
+          
+          # Remove old deployment for this path
+          rm -rf "gh-pages/${DEPLOY_PATH}"
+          mkdir -p "gh-pages/${DEPLOY_PATH}"
           
           # Copy demo page
-          cp demo/index.html _site/
+          cp demo/index.html "gh-pages/${DEPLOY_PATH}/"
           
           # Copy built content script
-          cp dist/content.js _site/
+          cp dist/content.js "gh-pages/${DEPLOY_PATH}/"
           
           # Create meta.json with build info
           echo "{
             \"version\": \"${{ steps.version.outputs.version }}\",
-            \"build\": \"main@${GITHUB_SHA:0:7}\",
-            \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-          }" > _site/meta.json
+            \"build\": \"${{ steps.deploy-path.outputs.build }}\",
+            \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+            \"path\": \"${DEPLOY_PATH}\"
+          }" > "gh-pages/${DEPLOY_PATH}/meta.json"
+
+      - name: Generate index page
+        run: ./scripts/generate-index.sh gh-pages demo/index-template.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -70,8 +111,54 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "_site"
+          path: "gh-pages"
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Comment on PR with preview link
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const repo = context.repo;
+            const version = '${{ steps.version.outputs.version }}';
+            const deployPath = '${{ steps.deploy-path.outputs.path }}';
+            
+            const body = `## 🎨 Demo Preview Deployed
+
+            A live preview of this PR is available at:
+            
+            **🔗 [https://${repo.owner}.github.io/${repo.repo}/${deployPath}/](https://${repo.owner}.github.io/${repo.repo}/${deployPath}/)**
+
+            **Version:** \`${version}\` | **Build:** \`PR#${prNumber}@${context.sha.slice(0, 7)}\`
+
+            ---
+            <sub>🤖 This preview is automatically updated on each push. View all deployments at the [index page](https://${repo.owner}.github.io/${repo.repo}/).</sub>`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              ...repo,
+              issue_number: prNumber,
+            });
+            
+            const existingComment = comments.find(c => 
+              c.user.type === 'Bot' && 
+              c.body.includes('Demo Preview Deployed')
+            );
+            
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                ...repo,
+                comment_id: existingComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
