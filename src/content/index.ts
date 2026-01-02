@@ -213,7 +213,8 @@ function getActiveCommandState(
   storedCommandStart: number,
   storedCommand: string
 ): Pick<SlashCommandResult, "cmd" | "query"> | null {
-  // Check if the slash is still at the stored position
+  // Check bounds and if the slash is still at the stored position
+  if (storedCommandStart < 0 || storedCommandStart >= line.length) return null
   if (line[storedCommandStart] !== "/") return null
 
   // Extract the text from the command start to end of line
