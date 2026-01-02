@@ -10,8 +10,6 @@ import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderList, setSlashQueryInField, state } from "../../picker/index.ts"
 import type { ListItemData } from "../../picker/components/PickerList.tsx"
 
-let lastForwardedQuery = ""
-
 /** Command descriptions for the list view */
 const COMMAND_DESCRIPTIONS: Record<string, string> = {
   giphy: "Search and insert GIFs",
@@ -61,7 +59,6 @@ const gspCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    lastForwardedQuery = ""
     const cmds = getAllCommandNames()
     const items = cmds.map(makeCommandItem)
     return {
@@ -71,7 +68,6 @@ const gspCommand: CommandSpec = {
   },
 
   getResults: async (query: string) => {
-    lastForwardedQuery = query || ""
     const q = (query || "").trim().toLowerCase()
     const cmds = getAllCommandNames().filter((c) => (q ? c.includes(q) : true))
     const items = cmds.map(makeCommandItem)
@@ -86,8 +82,8 @@ const gspCommand: CommandSpec = {
       items,
       getCommandItemData,
       (it) => {
-        const term = (lastForwardedQuery || "").trim()
-        setSlashQueryInField(it.data as string, term)
+        // Don't pass the filter query - just insert the selected command
+        setSlashQueryInField(it.data as string, "")
       },
       {
         title: suggestTitle,
@@ -100,8 +96,8 @@ const gspCommand: CommandSpec = {
       state.currentItems || [],
       getCommandItemData,
       (it) => {
-        const term = (lastForwardedQuery || "").trim()
-        setSlashQueryInField(it.data as string, term)
+        // Don't pass the filter query - just insert the selected command
+        setSlashQueryInField(it.data as string, "")
       },
       {
         title: "Commands",
@@ -111,8 +107,8 @@ const gspCommand: CommandSpec = {
 
   onSelect: (it: PickerItem) => {
     if (!it) return
-    const term = (lastForwardedQuery || "").trim()
-    setSlashQueryInField(it.data as string, term)
+    // Don't pass the filter query - just insert the selected command
+    setSlashQueryInField(it.data as string, "")
   },
 }
 
