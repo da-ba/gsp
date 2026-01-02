@@ -82,21 +82,31 @@ const gspCommand: CommandSpec = {
   },
 
   renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderList(items, getCommandItemData, (it) => {
-      const term = (lastForwardedQuery || "").trim()
-      setSlashQueryInField(it.data as string, term)
-    }, {
-      title: suggestTitle,
-    })
+    renderList(
+      items,
+      getCommandItemData,
+      (it) => {
+        const term = (lastForwardedQuery || "").trim()
+        setSlashQueryInField(it.data as string, term)
+      },
+      {
+        title: suggestTitle,
+      }
+    )
   },
 
   renderCurrent: () => {
-    renderList(state.currentItems || [], getCommandItemData, (it) => {
-      const term = (lastForwardedQuery || "").trim()
-      setSlashQueryInField(it.data as string, term)
-    }, {
-      title: "Commands",
-    })
+    renderList(
+      state.currentItems || [],
+      getCommandItemData,
+      (it) => {
+        const term = (lastForwardedQuery || "").trim()
+        setSlashQueryInField(it.data as string, term)
+      },
+      {
+        title: "Commands",
+      }
+    )
   },
 
   onSelect: (it: PickerItem) => {
