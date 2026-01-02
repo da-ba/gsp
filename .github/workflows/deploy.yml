@@ -68,8 +68,10 @@ jobs:
         id: deploy-path
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # Use the PR head SHA, not the merge commit SHA
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
             echo "path=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-            echo "build=PR#${{ github.event.pull_request.number }}@${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+            echo "build=PR#${{ github.event.pull_request.number }}@${HEAD_SHA:0:7}" >> $GITHUB_OUTPUT
           else
             echo "path=main" >> $GITHUB_OUTPUT
             echo "build=main@${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
@@ -123,7 +125,7 @@ jobs:
             
             **🔗 [https://${repo.owner}.github.io/${repo.repo}/${deployPath}/](https://${repo.owner}.github.io/${repo.repo}/${deployPath}/)**
 
-            **Version:** \`${version}\` | **Build:** \`PR#${prNumber}@${context.sha.slice(0, 7)}\`
+            **Version:** \`${version}\` | **Build:** \`PR#${prNumber}@${context.payload.pull_request.head.sha.slice(0, 7)}\`
 
             ---
             <sub>🤖 This preview is automatically updated on each push. View all deployments at the [index page](https://${repo.owner}.github.io/${repo.repo}/).</sub>`;
