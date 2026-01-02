@@ -19,6 +19,7 @@ import {
   renderSetupPanel,
   refreshSelectionStyles,
   moveSelectionGrid,
+  moveSelectionList,
   applyPickerStyles,
 } from "./picker/index.ts"
 
@@ -32,6 +33,9 @@ import "./commands/mention/index.ts"
 import "./commands/now/index.ts"
 import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
+
+/** Commands that use list view (all others use grid) */
+const LIST_VIEW_COMMANDS = new Set(["gsp"])
 
 /**
  * Update suggestions for the active command
@@ -157,6 +161,9 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
   const cmd = getCommand(cmdName)
   if (!cmd) return
 
+  // Check if we're using list view
+  const useListView = LIST_VIEW_COMMANDS.has(cmdName)
+
   if (ev.key === "Escape") {
     ev.preventDefault()
     ev.stopPropagation()
@@ -180,29 +187,47 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
 
   if (!state.currentItems.length) return
 
-  if (ev.key === "ArrowRight") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(1, 0)
-    return
-  }
-  if (ev.key === "ArrowLeft") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(neg(1), 0)
-    return
-  }
-  if (ev.key === "ArrowDown") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(0, 1)
-    return
-  }
-  if (ev.key === "ArrowUp") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(0, neg(1))
-    return
+  // Navigation - use list view for list commands, grid for others
+  if (useListView) {
+    // List view: only up/down navigation
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionList(1)
+      return
+    }
+    if (ev.key === "ArrowUp") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionList(neg(1))
+      return
+    }
+  } else {
+    // Grid view: 2D navigation
+    if (ev.key === "ArrowRight") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(1, 0)
+      return
+    }
+    if (ev.key === "ArrowLeft") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(neg(1), 0)
+      return
+    }
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(0, 1)
+      return
+    }
+    if (ev.key === "ArrowUp") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(0, neg(1))
+      return
+    }
   }
 }
 
