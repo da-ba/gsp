@@ -7,6 +7,7 @@ import { PickerHeader } from "./PickerHeader.tsx"
 import { PickerHints } from "./PickerHints.tsx"
 import { PickerFooter } from "./PickerFooter.tsx"
 import { PickerGrid } from "./PickerGrid.tsx"
+import { PickerList, type ListItemData } from "./PickerList.tsx"
 import { LoadingSkeleton } from "./LoadingSkeleton.tsx"
 import { Message } from "./Message.tsx"
 import { SettingsPanel } from "./SettingsPanel.tsx"
@@ -18,6 +19,16 @@ export type PickerView =
   | { type: "loading" }
   | { type: "message"; message: string }
   | { type: "grid"; items: PickerItem[]; suggestItems?: string[]; suggestTitle?: string }
+  | {
+      type: "list"
+      items: PickerItem[]
+      getItemData: (item: PickerItem) => ListItemData
+      title?: string
+      showInput?: boolean
+      inputValue?: string
+      inputPlaceholder?: string
+      commandName?: string
+    }
   | { type: "settings" }
   | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void }
 
@@ -33,6 +44,8 @@ export type PickerProps = {
   onSuggestPick: (term: string) => void
   onSettingsClick: () => void
   onSetupComplete: () => void
+  onInputChange?: (value: string) => void
+  onInputSubmit?: () => void
   position: Position
 }
 
@@ -48,6 +61,8 @@ export function Picker({
   onSuggestPick,
   onSettingsClick,
   onSetupComplete,
+  onInputChange,
+  onInputSubmit,
   position,
 }: PickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -104,6 +119,23 @@ export function Picker({
             suggestItems={view.suggestItems}
             suggestTitle={view.suggestTitle}
             onSuggestPick={onSuggestPick}
+          />
+        )
+      case "list":
+        return (
+          <PickerList
+            items={view.items}
+            selectedIndex={selectedIndex}
+            onSelect={onSelect}
+            onHover={onHover}
+            getItemData={view.getItemData}
+            title={view.title}
+            showInput={view.showInput}
+            inputValue={view.inputValue}
+            onInputChange={onInputChange}
+            onInputSubmit={onInputSubmit}
+            inputPlaceholder={view.inputPlaceholder}
+            commandName={view.commandName}
           />
         )
       case "settings":
