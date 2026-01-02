@@ -27,7 +27,7 @@ export function PickerFooter() {
           color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
         }}
       >
-        Tip: type /gsp to list commands
+        Tip: type / to list commands
       </span>
     </div>
   )
