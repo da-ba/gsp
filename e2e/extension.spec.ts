@@ -440,13 +440,12 @@ test.describe("Flexible Command Parsing", () => {
     await page.keyboard.press("Enter")
     await page.waitForTimeout(300)
 
-    // The command replaces from lineStart (beginning of line) to cursor position
-    // So the prefix is NOT preserved - the entire line content is replaced with the emoji
+    // The command replaces only the /emoji part, preserving text before it
     const textareaValue = await textarea.inputValue()
-    // Should have inserted some emoji (the command worked)
-    expect(textareaValue.length).toBeGreaterThan(0)
-    // Should NOT start with prefix anymore since the entire line is replaced
-    expect(textareaValue.startsWith("prefix")).toBe(false)
+    // Should preserve the prefix text
+    expect(textareaValue.startsWith("prefix ")).toBe(true)
+    // Should have inserted some emoji after the prefix
+    expect(textareaValue.length).toBeGreaterThan("prefix ".length)
 
     await context.close()
   })

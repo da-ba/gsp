@@ -131,14 +131,14 @@ function insertLink(parsed: LinkParseResult): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   const markdown = formatMarkdownLink(parsed.url, parsed.title)
   const replacement = markdown + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))
@@ -152,14 +152,14 @@ function insertCILink(suggestion: CILinkSuggestion): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   const markdown = formatMarkdownLink(suggestion.url, suggestion.name)
   const replacement = markdown + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))

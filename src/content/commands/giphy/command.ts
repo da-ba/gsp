@@ -90,14 +90,14 @@ async function insertGifMarkdown(url: string): Promise<void> {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   const { format, center } = await getCachedImageSettings()
   const replacement = formatGifInsert(url, format, center)
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))

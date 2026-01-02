@@ -242,19 +242,19 @@ function insertFontMarkdown(option: FontOption): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   // Get any text that was typed after the command
-  const currentLine = value.slice(lineStart, pos)
+  const currentLine = value.slice(commandStart, pos)
   const cmdMatch = currentLine.match(/^\/font\s*(.*)/i)
   const userText = cmdMatch?.[1]?.trim() || "text"
 
   // Apply the template
   const replacement = option.template.replace(/{text}/g, userText)
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))

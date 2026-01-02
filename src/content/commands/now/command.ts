@@ -280,14 +280,14 @@ function insertDateString(option: DateOption): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   // Generate the date string using current time
   const replacement = option.formatter(new Date())
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))

@@ -279,14 +279,14 @@ function insertKbdMarkdown(shortcut: KeyboardShortcut): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   // Generate the kbd HTML
   const replacement = inputToKbdHtml(shortcut.input) + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))
@@ -300,14 +300,14 @@ function insertCustomKbd(input: string): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   // Generate the kbd HTML from user input
   const replacement = inputToKbdHtml(input) + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
+  const newValue = replaceRange(value, commandStart, pos, replacement)
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))
