@@ -133,9 +133,26 @@
       .version-info strong {
         color: #58a6ff;
       }
+
+      .nav-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: #58a6ff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .nav-link:hover {
+        text-decoration: underline;
+      }
+
+      .nav-link::before {
+        content: "← ";
+      }
     </style>
   </head>
   <body>
+    <a href="../" class="nav-link">All Deployments</a>
     <h1>GitHub Slash Palette Demo</h1>
     <p class="subtitle">
       Try out the slash commands below. Type a command in the text area to see it in action.

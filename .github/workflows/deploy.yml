@@ -19,6 +19,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  deployments: write
 
 # Allow only one concurrent deployment per deployment target
 concurrency:
@@ -109,6 +110,69 @@ jobs:
           publish_dir: ./gh-pages
           keep_files: true
 
+      - name: Create GitHub Deployment (PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = context.repo;
+            const deployPath = '${{ steps.deploy-path.outputs.path }}';
+            const environmentUrl = `https://${repo.owner}.github.io/${repo.repo}/${deployPath}/`;
+            const environment = `pr-${{ github.event.pull_request.number }}`;
+            
+            // Create deployment
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              ...repo,
+              ref: context.payload.pull_request.head.sha,
+              environment,
+              auto_merge: false,
+              required_contexts: [],
+              transient_environment: true,
+              production_environment: false,
+              description: `PR #${{ github.event.pull_request.number }} preview deployment`,
+            });
+            
+            // Mark deployment as successful with the environment URL
+            await github.rest.repos.createDeploymentStatus({
+              ...repo,
+              deployment_id: deployment.id,
+              state: 'success',
+              environment_url: environmentUrl,
+              log_url: `https://github.com/${repo.owner}/${repo.repo}/actions/runs/${{ github.run_id }}`,
+              description: 'Deployment successful',
+            });
+
+      - name: Create GitHub Deployment (main)
+        if: github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = context.repo;
+            const deployPath = '${{ steps.deploy-path.outputs.path }}';
+            const environmentUrl = `https://${repo.owner}.github.io/${repo.repo}/${deployPath}/`;
+            
+            // Create deployment
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              ...repo,
+              ref: context.sha,
+              environment: 'production',
+              auto_merge: false,
+              required_contexts: [],
+              transient_environment: false,
+              production_environment: true,
+              description: 'Main branch deployment',
+            });
+            
+            // Mark deployment as successful with the environment URL
+            await github.rest.repos.createDeploymentStatus({
+              ...repo,
+              deployment_id: deployment.id,
+              state: 'success',
+              environment_url: environmentUrl,
+              log_url: `https://github.com/${repo.owner}/${repo.repo}/actions/runs/${{ github.run_id }}`,
+              description: 'Deployment successful',
+            });
+
       - name: Comment on PR with preview link
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -130,7 +194,7 @@ jobs:
             ---
             <sub>🤖 This preview is automatically updated on each push. View all deployments at the [index page](https://${repo.owner}.github.io/${repo.repo}/).</sub>`;
 
-            // Find existing comment
+            // Find and delete existing comment
             const { data: comments } = await github.rest.issues.listComments({
               ...repo,
               issue_number: prNumber,
@@ -142,15 +206,15 @@ jobs:
             );
             
             if (existingComment) {
-              await github.rest.issues.updateComment({
+              await github.rest.issues.deleteComment({
                 ...repo,
                 comment_id: existingComment.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                ...repo,
-                issue_number: prNumber,
-                body,
               });
             }
+            
+            // Create new comment at the bottom
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number: prNumber,
+              body,
+            });
