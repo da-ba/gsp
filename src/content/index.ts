@@ -149,7 +149,12 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
   const parsed = parseSlashCommand(info.line)
   if (!parsed) return
 
-  const cmd = getCommand(parsed.cmd)
+  // Determine the active command - either the parsed command or "gsp" for command selector
+  let cmdName = parsed.cmd
+  if (cmdName === "" || !getCommand(cmdName)) {
+    cmdName = "gsp"
+  }
+  const cmd = getCommand(cmdName)
   if (!cmd) return
 
   if (ev.key === "Escape") {
@@ -167,7 +172,8 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
       ev.stopImmediatePropagation()
       const it = state.currentItems[state.selectedIndex] || state.currentItems[0]
       if (it) cmd.onSelect(it)
-      hidePicker()
+      // Note: Don't call hidePicker() here - let the command decide
+      // The gsp command replaces the text and continues, other commands hide
     }
     return
   }
@@ -212,15 +218,23 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
     return
   }
 
-  const cmd = getCommand(parsed.cmd)
-  if (!cmd) {
-    if (state.activeField === field) hidePicker()
-    return
-  }
-
   state.activeField = field
   state.activeLineStart = info.lineStart
   state.activeCursorPos = info.pos
+
+  // If just "/" is typed (empty cmd), show command selector using gsp command
+  if (parsed.cmd === "") {
+    await handleCommandInput(field, "gsp", "")
+    return
+  }
+
+  const cmd = getCommand(parsed.cmd)
+  if (!cmd) {
+    // Command not found yet - could be partial typing like "/gi"
+    // Show command selector filtered by what's typed so far
+    await handleCommandInput(field, "gsp", parsed.cmd)
+    return
+  }
 
   await handleCommandInput(field, parsed.cmd, parsed.query || "")
 }
@@ -250,18 +264,7 @@ function attachToField(field: HTMLTextAreaElement): void {
   })
   field.addEventListener("keydown", (ev) => onFieldKeyDown(ev, field))
 
-  field.addEventListener("blur", () => {
-    setTimeout(() => {
-      if (state.mouseDownInPicker) return
-      if (
-        state.pickerEl &&
-        document.activeElement &&
-        state.pickerEl.contains(document.activeElement)
-      )
-        return
-      if (document.activeElement !== field) hidePicker()
-    }, 120)
-  })
+  // Picker now only closes on Escape or selection - no blur-based closing
 }
 
 /**
@@ -290,20 +293,7 @@ function boot(): void {
 
   mo.observe(document.documentElement, { childList: true, subtree: true })
 
-  // Close picker when clicking outside
-  document.addEventListener(
-    "mousedown",
-    (ev) => {
-      if (!isPickerVisible()) return
-      const picker = state.pickerEl
-      if (!picker) return
-      if (picker.contains(ev.target as Node)) return
-      const field = state.activeField
-      if (field && field.contains(ev.target as Node)) return
-      hidePicker()
-    },
-    true
-  )
+  // Picker now only closes on Escape or selection - no click-outside closing
 
   // Always allow Escape to close the picker (even if focus moved into the picker).
   // Use window capture so we run before GitHub popover handlers.
