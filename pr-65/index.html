@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Slash Palette Demo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #0d1117;
+        color: #c9d1d9;
+        line-height: 1.6;
+      }
+
+      h1 {
+        color: #58a6ff;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #8b949e;
+        margin-bottom: 24px;
+        font-size: 16px;
+      }
+
+      .badge-container {
+        margin-bottom: 24px;
+      }
+
+      .badge-container img {
+        margin-right: 8px;
+      }
+
+      .comment-box {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 16px;
+        margin-top: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #c9d1d9;
+        resize: vertical;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #58a6ff;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+      }
+
+      .hint {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #8b949e;
+      }
+
+      code {
+        background: #21262d;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-size: 0.9em;
+      }
+
+      .commands {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .command-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .command-card h3 {
+        margin: 0 0 4px 0;
+        color: #58a6ff;
+        font-size: 14px;
+      }
+
+      .command-card p {
+        margin: 0;
+        font-size: 12px;
+        color: #8b949e;
+      }
+
+      .footer {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid #30363d;
+        font-size: 12px;
+        color: #8b949e;
+      }
+
+      .footer a {
+        color: #58a6ff;
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+
+      .version-info {
+        background: #21262d;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+        font-size: 12px;
+      }
+
+      .version-info strong {
+        color: #58a6ff;
+      }
+
+      .nav-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: #58a6ff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .nav-link:hover {
+        text-decoration: underline;
+      }
+
+      .nav-link::before {
+        content: "← ";
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../" class="nav-link">All Deployments</a>
+    <h1>GitHub Slash Palette Demo</h1>
+    <p class="subtitle">
+      Try out the slash commands below. Type a command in the text area to see it in action.
+    </p>
+
+    <div class="badge-container">
+      <a href="https://github.com/da-ba/gsp">
+        <img
+          src="https://img.shields.io/github/check-runs/da-ba/gsp/main?label=main"
+          alt="Build Status"
+        />
+      </a>
+      <a href="https://chromewebstore.google.com/detail/kkcajoojbaidfdnjecjnbeaheepknkpf">
+        <img
+          src="https://img.shields.io/chrome-web-store/v/kkcajoojbaidfdnjecjnbeaheepknkpf?logo=chromewebstore"
+          alt="Chrome Web Store Version"
+        />
+      </a>
+    </div>
+
+    <div class="version-info">
+      <strong>Demo Version:</strong> <span id="version">Loading...</span> |
+      <strong>Build:</strong> <span id="build-info">Loading...</span>
+    </div>
+
+    <div class="comment-box">
+      <textarea
+        id="test-textarea"
+        name="comment[body]"
+        placeholder="Type a slash command here to try it out...
+
+Examples:
+  /gsp          - Show all available commands
+  /giphy cats   - Search for cat GIFs
+  /emoji smile  - Search for smile emojis
+  /font bold    - Format text as bold
+  /mermaid flow - Insert a flowchart template
+  /now iso      - Insert current timestamp
+  /kbd copy     - Insert keyboard shortcut for copy"
+      ></textarea>
+      <p class="hint">
+        Type <code>/gsp</code> to see all available commands, or try any command from the list
+        below.
+      </p>
+    </div>
+
+    <h2 style="color: #c9d1d9; margin-top: 32px;">Available Commands</h2>
+
+    <div class="commands">
+      <div class="command-card">
+        <h3>/gsp</h3>
+        <p>Show the command palette with all available commands</p>
+      </div>
+      <div class="command-card">
+        <h3>/giphy [search]</h3>
+        <p>Search and insert GIFs from Giphy</p>
+      </div>
+      <div class="command-card">
+        <h3>/emoji [search]</h3>
+        <p>Search and insert emojis</p>
+      </div>
+      <div class="command-card">
+        <h3>/font [style]</h3>
+        <p>Apply text styles, colors, and sizes</p>
+      </div>
+      <div class="command-card">
+        <h3>/mermaid [type]</h3>
+        <p>Insert Mermaid diagram templates</p>
+      </div>
+      <div class="command-card">
+        <h3>/now [format]</h3>
+        <p>Insert formatted timestamps</p>
+      </div>
+      <div class="command-card">
+        <h3>/kbd [shortcut]</h3>
+        <p>Format keyboard shortcuts</p>
+      </div>
+      <div class="command-card">
+        <h3>/link [url]</h3>
+        <p>Insert markdown links with titles</p>
+      </div>
+      <div class="command-card">
+        <h3>/mention [user]</h3>
+        <p>Mention GitHub users</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>
+        <strong>Note:</strong> This is a live demo of the GitHub Slash Palette extension. The full
+        extension works on GitHub.com and includes additional features like CI link integration.
+      </p>
+      <p>
+        <a href="https://github.com/da-ba/gsp">View on GitHub</a> |
+        <a href="https://chromewebstore.google.com/detail/kkcajoojbaidfdnjecjnbeaheepknkpf"
+          >Install from Chrome Web Store</a
+        >
+      </p>
+    </div>
+
+    <script>
+      // Load version info from meta.json if available
+      fetch("./meta.json")
+        .then((r) => r.json())
+        .then((meta) => {
+          document.getElementById("version").textContent = meta.version || "Unknown";
+          document.getElementById("build-info").textContent = meta.build || "Unknown";
+        })
+        .catch(() => {
+          document.getElementById("version").textContent = "Development";
+          document.getElementById("build-info").textContent = "Local";
+        });
+    </script>
+    <!-- Content script will be injected here by the build process -->
+    <script src="./content.js"></script>
+  </body>
+</html>
