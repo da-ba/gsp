@@ -104,6 +104,9 @@ const gspCommand: CommandSpec = {
     const term = (lastForwardedQuery || "").trim()
     setSlashQueryInField(it.data as string, term)
   },
+
+  // Keep picker open after selecting a command to allow parameter input
+  keepOpenOnSelect: true,
 }
 
 // Register the command

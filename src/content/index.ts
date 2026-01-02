@@ -171,7 +171,10 @@ function onFieldKeyDown(ev: KeyboardEvent, _field: HTMLTextAreaElement): void {
       ev.stopImmediatePropagation()
       const it = state.currentItems[state.selectedIndex] || state.currentItems[0]
       if (it) cmd.onSelect(it)
-      hidePicker()
+      // Only hide picker if command doesn't want to keep it open
+      if (!cmd.keepOpenOnSelect) {
+        hidePicker()
+      }
     }
     return
   }

@@ -46,6 +46,11 @@ export type CommandSpec = {
    * Receives a container element to append settings UI to.
    */
   renderSettings?: (container: HTMLElement) => void
+  /**
+   * If true, the picker will remain open after selection.
+   * Useful for meta-commands like /gsp that switch to other commands.
+   */
+  keepOpenOnSelect?: boolean
 }
 
 const commandRegistry: Record<string, CommandSpec> = {}

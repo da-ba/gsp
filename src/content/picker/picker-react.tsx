@@ -291,14 +291,15 @@ export function setSlashQueryInField(cmd: string, term: string): void {
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
+  // Use commandStart position to preserve text before the command
+  const commandStart = add(state.activeLineStart, state.activeCommandStart)
 
   const replacement = "/" + cmd + " " + term
-  const newValue = value.slice(0, lineStart) + replacement + value.slice(pos)
+  const newValue = value.slice(0, commandStart) + replacement + value.slice(pos)
 
   field.value = newValue
 
-  const newPos = add(lineStart, replacement.length)
+  const newPos = add(commandStart, replacement.length)
   field.focus()
   field.setSelectionRange(newPos, newPos)
   field.dispatchEvent(new Event("input", { bubbles: true }))
