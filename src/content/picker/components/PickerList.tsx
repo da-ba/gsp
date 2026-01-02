@@ -182,6 +182,8 @@ export function PickerList({
                     opacity: 0.5,
                     fontSize: "12px",
                   }}
+                  aria-label="Press Enter to select"
+                  title="Press Enter to select"
                 >
                   ↵
                 </span>
