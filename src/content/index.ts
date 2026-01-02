@@ -179,8 +179,10 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
       ev.stopImmediatePropagation()
       const it = state.currentItems[state.selectedIndex] || state.currentItems[0]
       if (it) cmd.onSelect(it)
-      // Note: Don't call hidePicker() here - let the command decide
-      // The gsp command replaces the text and continues, other commands hide
+      // For most commands, onSelect inserts content and picker should hide.
+      // For gsp command, onSelect changes the textarea text which triggers
+      // handleFieldInput to show the selected command's picker.
+      // The picker hiding happens via the input event cycle.
     }
     return
   }

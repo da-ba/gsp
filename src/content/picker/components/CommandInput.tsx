@@ -40,14 +40,8 @@ export function CommandInput({
       ev.preventDefault()
       onSubmit()
     }
-    // Let arrow keys bubble up for navigation
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(ev.key)) {
-      // Don't prevent default for arrow keys in input - allow cursor movement
-      // But we'll let parent handle navigation in certain cases
-      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
-        ev.stopPropagation()
-      }
-    }
+    // Arrow keys in input should move cursor within the text, not navigate the list
+    // So we don't prevent default or stop propagation for arrows
   }
 
   return (
