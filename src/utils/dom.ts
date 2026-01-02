@@ -44,7 +44,7 @@ export function getCursorInfo(textarea: HTMLTextAreaElement): CursorInfo {
 export type SlashCommandResult = {
   cmd: string
   query: string
-  /** Position in the original line where the slash command starts */
+  /** The position in the original line where the slash command starts */
   commandStart: number
 }
 
@@ -62,7 +62,7 @@ export function parseSlashCommand(line: string): SlashCommandResult | null {
   for (let i = line.length - 1; i >= 0; i--) {
     if (line[i] === "/") {
       // Valid command start: either at beginning or preceded by whitespace
-      if (i === 0 || /\s/.test(line[i - 1] || "")) {
+      if (i === 0 || /\s/.test(line.charAt(i - 1))) {
         lastSlashIdx = i
         break
       }

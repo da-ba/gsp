@@ -2,7 +2,12 @@
  * GitHub Slash Palette - Content Script Entry Point
  */
 
-import { isGitHubMarkdownField, getCursorInfo, parseSlashCommand } from "../utils/dom.ts"
+import {
+  isGitHubMarkdownField,
+  getCursorInfo,
+  parseSlashCommand,
+  type SlashCommandResult,
+} from "../utils/dom.ts"
 import { onThemeChange, setThemeOverride } from "../utils/theme.ts"
 import { getThemePreference } from "../utils/storage.ts"
 import { neg } from "../utils/math.ts"
@@ -207,7 +212,7 @@ function getActiveCommandState(
   line: string,
   storedCommandStart: number,
   storedCommand: string
-): { cmd: string; query: string } | null {
+): Pick<SlashCommandResult, "cmd" | "query"> | null {
   // Check if the slash is still at the stored position
   if (line[storedCommandStart] !== "/") return null
 
