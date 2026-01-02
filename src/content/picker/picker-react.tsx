@@ -88,6 +88,13 @@ function renderPicker(): void {
       onInputSubmit: () => {
         currentOnInputSubmit()
       },
+      onClose: () => {
+        const field = state.activeField
+        hidePicker()
+        if (field) {
+          setTimeout(() => field.focus(), 0)
+        }
+      },
       position: reactState.position,
     })
   )

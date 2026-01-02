@@ -4,12 +4,12 @@
 
 import React from "react"
 import { isDarkMode } from "../../../utils/theme.ts"
-import { getBadgeStyles } from "../styles.ts"
 
 export type PickerHeaderProps = {
   title: string
   subtitle: string
   onSettingsClick: () => void
+  onClose: () => void
 }
 
 const SettingsIcon = () => (
@@ -19,10 +19,28 @@ const SettingsIcon = () => (
   </svg>
 )
 
-export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+  </svg>
+)
+
+export function PickerHeader({ title, subtitle, onSettingsClick, onClose }: PickerHeaderProps) {
+  const [settingsHovered, setSettingsHovered] = React.useState(false)
+  const [closeHovered, setCloseHovered] = React.useState(false)
   const dark = isDarkMode()
-  const badgeStyles = getBadgeStyles()
+
+  const iconButtonStyle = (isHovered: boolean): React.CSSProperties => ({
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px",
+    opacity: isHovered ? 1 : 0.62,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+  })
 
   return (
     <div
@@ -49,28 +67,28 @@ export function PickerHeader({ title, subtitle, onSettingsClick }: PickerHeaderP
         <div style={{ fontSize: "12px", opacity: 0.72 }}>{subtitle}</div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <div style={badgeStyles as React.CSSProperties}>Esc close</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         <button
           type="button"
           data-settings-btn="true"
           title="Settings"
           onClick={onSettingsClick}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px",
-            opacity: isHovered ? 1 : 0.62,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
-          }}
+          onMouseEnter={() => setSettingsHovered(true)}
+          onMouseLeave={() => setSettingsHovered(false)}
+          style={iconButtonStyle(settingsHovered)}
         >
           <SettingsIcon />
+        </button>
+        <button
+          type="button"
+          data-close-btn="true"
+          title="Close (Esc)"
+          onClick={onClose}
+          onMouseEnter={() => setCloseHovered(true)}
+          onMouseLeave={() => setCloseHovered(false)}
+          style={iconButtonStyle(closeHovered)}
+        >
+          <CloseIcon />
         </button>
       </div>
     </div>

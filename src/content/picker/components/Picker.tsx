@@ -46,6 +46,7 @@ export type PickerProps = {
   onSetupComplete: () => void
   onInputChange?: (value: string) => void
   onInputSubmit?: () => void
+  onClose: () => void
   position: Position
 }
 
@@ -63,6 +64,7 @@ export function Picker({
   onSetupComplete,
   onInputChange,
   onInputSubmit,
+  onClose,
   position,
 }: PickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -174,7 +176,12 @@ export function Picker({
         top: `${position.top}px`,
       }}
     >
-      <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
+      <PickerHeader
+        title={title}
+        subtitle={subtitle}
+        onSettingsClick={onSettingsClick}
+        onClose={onClose}
+      />
       <PickerHints />
       {renderBody()}
       <PickerFooter />
