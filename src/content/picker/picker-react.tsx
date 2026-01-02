@@ -11,6 +11,7 @@ import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
+import { getCommand } from "../commands/registry.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -55,8 +56,10 @@ function renderPicker(): void {
       onSelect: (item: PickerItem) => {
         const field = state.activeField
         currentOnSelect(item)
-        // Don't hide picker if settings view is currently being shown
-        if (!state.showingSettings) {
+        // Don't hide picker if settings view is shown or command wants to keep it open
+        const cmd = getCommand(state.activeCommand)
+        const keepOpen = state.showingSettings || cmd?.keepOpenOnSelect
+        if (!keepOpen) {
           hidePicker()
           if (field) {
             setTimeout(() => field.focus(), 0)
