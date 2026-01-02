@@ -25,7 +25,7 @@ import {
 
 // Import commands to register them
 import "./commands/giphy/index.ts"
-import "./commands/gsp/index.ts"
+import "./commands/gsp/index.ts" // Internal command for command selector (not user-facing)
 import "./commands/font/index.ts"
 import "./commands/emoji/index.ts"
 import "./commands/mermaid/index.ts"
@@ -35,7 +35,7 @@ import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
 
 /** Commands that use list view (all others use grid) */
-const LIST_VIEW_COMMANDS = new Set(["gsp"])
+const LIST_VIEW_COMMANDS = new Set(["gsp"]) // gsp is internal command selector
 
 /**
  * Update suggestions for the active command
@@ -249,9 +249,9 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   state.activeLineStart = info.lineStart
   state.activeCursorPos = info.pos
 
-  // If just "/" is typed (empty cmd), show command selector using gsp command
+  // If just "/" is typed (empty cmd), show command selector
   if (parsed.cmd === "") {
-    await handleCommandInput(field, "gsp", "")
+    await handleCommandInput(field, "gsp", "") // gsp is internal command selector
     return
   }
 
@@ -259,7 +259,7 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   if (!cmd) {
     // Command not found yet - could be partial typing like "/gi"
     // Show command selector filtered by what's typed so far
-    await handleCommandInput(field, "gsp", parsed.cmd)
+    await handleCommandInput(field, "gsp", parsed.cmd) // gsp is internal command selector
     return
   }
 
