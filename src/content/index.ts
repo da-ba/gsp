@@ -142,16 +142,10 @@ async function handleCommandInput(
 /**
  * Handle keyboard events in the field
  */
-function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
+function onFieldKeyDown(ev: KeyboardEvent, _field: HTMLTextAreaElement): void {
   if (!isPickerVisible()) return
 
-  const info = getCursorInfo(field)
-  const parsed = parseSlashCommand(info.line)
-  if (!parsed) return
-
-  const cmd = getCommand(parsed.cmd)
-  if (!cmd) return
-
+  // Escape should always close the picker
   if (ev.key === "Escape") {
     ev.preventDefault()
     ev.stopPropagation()
@@ -159,6 +153,11 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
     hidePicker()
     return
   }
+
+  // For other keys, check if we still have a valid command based on stored state
+  const cmdName = state.activeCommand
+  const cmd = getCommand(cmdName)
+  if (!cmd) return
 
   if (ev.key === "Enter") {
     if (state.currentItems?.length) {
@@ -201,10 +200,55 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
 }
 
 /**
+ * Check if the command at the stored position is still valid.
+ * Returns the command and query if valid, null otherwise.
+ */
+function getActiveCommandState(
+  line: string,
+  storedCommandStart: number,
+  storedCommand: string
+): { cmd: string; query: string } | null {
+  // Check if the slash is still at the stored position
+  if (line[storedCommandStart] !== "/") return null
+
+  // Extract the text from the command start to end of line
+  const textFromCommand = line.slice(storedCommandStart)
+  const parsed = parseSlashCommand(textFromCommand)
+  if (!parsed) return null
+
+  // Check if the command name still matches the stored command
+  if (parsed.cmd !== storedCommand) return null
+
+  return { cmd: parsed.cmd, query: parsed.query }
+}
+
+/**
  * Handle field input changes
  */
 async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   const info = getCursorInfo(field)
+
+  // If picker is already visible for this field, check if the command is still valid
+  if (isPickerVisible() && state.activeField === field && state.activeCommand) {
+    const activeState = getActiveCommandState(
+      info.line,
+      state.activeCommandStart,
+      state.activeCommand
+    )
+
+    if (activeState) {
+      // Command is still valid, update with new query
+      state.activeCursorPos = info.pos
+      await handleCommandInput(field, activeState.cmd, activeState.query)
+      return
+    } else {
+      // Command was deleted or changed - close picker
+      hidePicker()
+      // Fall through to check for new command
+    }
+  }
+
+  // Parse for a new command
   const parsed = parseSlashCommand(info.line)
 
   if (!parsed) {
@@ -218,9 +262,11 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
     return
   }
 
+  // New command detected - store state and show picker
   state.activeField = field
   state.activeLineStart = info.lineStart
   state.activeCursorPos = info.pos
+  state.activeCommandStart = parsed.commandStart
 
   await handleCommandInput(field, parsed.cmd, parsed.query || "")
 }

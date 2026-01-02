@@ -15,6 +15,8 @@ export type PickerState = {
   activeLineStart: number
   activeCursorPos: number
   activeCommand: string
+  /** Position within the line where the command starts (the "/" character) */
+  activeCommandStart: number
   lastQuery: string
   debounceId: ReturnType<typeof setTimeout> | null
   inFlight: boolean
@@ -43,6 +45,7 @@ export function createPickerState(): PickerState {
     activeLineStart: 0,
     activeCursorPos: 0,
     activeCommand: "",
+    activeCommandStart: 0,
     lastQuery: "",
     debounceId: null,
     inFlight: false,
@@ -68,6 +71,7 @@ export function resetPickerState(): void {
   state.suggestItems = []
   state.lastSuggestQuery = ""
   state.activeCommand = ""
+  state.activeCommandStart = 0
   state.showingSettings = false
 }
 

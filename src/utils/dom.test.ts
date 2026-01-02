@@ -71,22 +71,22 @@ describe("DOM utilities", () => {
   describe("parseSlashCommand", () => {
     it("parses simple command", () => {
       const result = parseSlashCommand("/giphy")
-      expect(result).toEqual({ cmd: "giphy", query: "" })
+      expect(result).toEqual({ cmd: "giphy", query: "", commandStart: 0 })
     })
 
     it("parses command with query", () => {
       const result = parseSlashCommand("/giphy cats")
-      expect(result).toEqual({ cmd: "giphy", query: "cats" })
+      expect(result).toEqual({ cmd: "giphy", query: "cats", commandStart: 0 })
     })
 
     it("parses command with multi-word query", () => {
       const result = parseSlashCommand("/giphy funny cats")
-      expect(result).toEqual({ cmd: "giphy", query: "funny cats" })
+      expect(result).toEqual({ cmd: "giphy", query: "funny cats", commandStart: 0 })
     })
 
-    it("trims whitespace", () => {
+    it("parses command after leading whitespace", () => {
       const result = parseSlashCommand("  /giphy  cats  ")
-      expect(result).toEqual({ cmd: "giphy", query: "cats" })
+      expect(result).toEqual({ cmd: "giphy", query: "cats", commandStart: 2 })
     })
 
     it("returns null for non-slash text", () => {
@@ -97,7 +97,35 @@ describe("DOM utilities", () => {
 
     it("converts command to lowercase", () => {
       const result = parseSlashCommand("/GIPHY cats")
-      expect(result).toEqual({ cmd: "giphy", query: "cats" })
+      expect(result).toEqual({ cmd: "giphy", query: "cats", commandStart: 0 })
+    })
+
+    it("parses command in middle of sentence", () => {
+      const result = parseSlashCommand("here is /giphy cats for you")
+      expect(result).toEqual({ cmd: "giphy", query: "cats for you", commandStart: 8 })
+    })
+
+    it("finds the last command when multiple exist", () => {
+      const result = parseSlashCommand("/emoji smile /giphy cat")
+      expect(result).toEqual({ cmd: "giphy", query: "cat", commandStart: 13 })
+    })
+
+    it("ignores slash not preceded by whitespace", () => {
+      const result = parseSlashCommand("http://example.com /giphy test")
+      expect(result).toEqual({ cmd: "giphy", query: "test", commandStart: 19 })
+    })
+
+    it("parses command at start with preceding text on same line", () => {
+      const result = parseSlashCommand("text before /emoji")
+      expect(result).toEqual({ cmd: "emoji", query: "", commandStart: 12 })
+    })
+
+    it("returns null for just a slash", () => {
+      expect(parseSlashCommand("/")).toBeNull()
+    })
+
+    it("returns null for slash followed only by whitespace", () => {
+      expect(parseSlashCommand("/   ")).toBeNull()
     })
   })
 

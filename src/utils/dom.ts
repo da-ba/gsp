@@ -39,17 +39,46 @@ export function getCursorInfo(textarea: HTMLTextAreaElement): CursorInfo {
 }
 
 /**
- * Parse slash command from line text
+ * Result type for parseSlashCommand
  */
-export function parseSlashCommand(line: string): { cmd: string; query: string } | null {
-  const trimmed = (line || "").trim()
-  if (!trimmed.startsWith("/")) return null
-  const rest = trimmed.slice(1)
-  const parts = rest.split(/\s+/).filter(Boolean)
+export type SlashCommandResult = {
+  cmd: string
+  query: string
+  /** Position in the original line where the slash command starts */
+  commandStart: number
+}
+
+/**
+ * Parse slash command from line text.
+ * Finds the last occurrence of a /command pattern in the line.
+ * This allows commands to be triggered mid-sentence.
+ */
+export function parseSlashCommand(line: string): SlashCommandResult | null {
+  if (!line) return null
+
+  // Find the last occurrence of a slash that could start a command
+  // We look for "/" preceded by start of string or whitespace
+  let lastSlashIdx = -1
+  for (let i = line.length - 1; i >= 0; i--) {
+    if (line[i] === "/") {
+      // Valid command start: either at beginning or preceded by whitespace
+      if (i === 0 || /\s/.test(line[i - 1] || "")) {
+        lastSlashIdx = i
+        break
+      }
+    }
+  }
+
+  if (lastSlashIdx < 0) return null
+
+  // Extract the command portion (from slash to end of line)
+  const commandPortion = line.slice(lastSlashIdx + 1)
+  const parts = commandPortion.split(/\s+/).filter(Boolean)
   if (!parts.length) return null
+
   const cmd = String(parts[0] || "").toLowerCase()
   const q = parts.slice(1).join(" ").trim()
-  return { cmd, query: q }
+  return { cmd, query: q, commandStart: lastSlashIdx }
 }
 
 /**
