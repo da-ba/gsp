@@ -57,6 +57,57 @@ src/
 4. Export the command from an `index.ts` barrel file
 5. Add the command export to `src/content/commands/index.ts`
 6. Add documentation under `docs/commands/<command>/README.md`
+7. **If applicable**, add options implementation (API tokens, command settings)
+8. **Always** add E2E tests for the new command in `e2e/extension.spec.ts`
+
+### Adding Command Options
+
+If your command requires configuration (API tokens, settings):
+
+1. Create an options section component (e.g., `<Command>OptionsSection.tsx`)
+2. Register it using `registerOptionsSection()` from `options-registry.ts`
+3. Store settings via `getStorageValue`/`setStorageValue` from `utils/storage.ts`
+
+Example options component (in `src/content/commands/<command>/`):
+
+```typescript
+import { registerOptionsSection } from "../options-registry.ts"
+import { getStorageValue, setStorageValue } from "../../../utils/storage.ts"
+
+export function MyCommandOptionsSection() {
+  // React component with settings UI
+}
+
+registerOptionsSection("mycommand", MyCommandOptionsSection)
+```
+
+### Adding E2E Tests
+
+E2E tests are **required** for all new commands and command extensions:
+
+1. Add tests to `e2e/extension.spec.ts`
+2. Follow the existing test patterns (test.describe blocks per command)
+3. Test key functionality: picker visibility, search/filtering, selection, insertion
+
+Example E2E test structure:
+
+```typescript
+test.describe("MyCommand Command", () => {
+  // Setup helpers...
+
+  test("/mycommand shows picker", async () => {
+    // Test picker appears
+  })
+
+  test("/mycommand filtering works", async () => {
+    // Test search/filter functionality
+  })
+
+  test("selecting item inserts correct content", async () => {
+    // Test selection and insertion
+  })
+})
+```
 
 ### CommandSpec Interface
 
