@@ -57,9 +57,13 @@ function renderPicker(): void {
       imgUrlFn: currentImgUrlFn,
       onSelect: (item: PickerItem) => {
         const field = state.activeField
+        // Capture activeCommand before onSelect as it may change via input event
+        const wasCommandSelector = state.activeCommand === "gsp"
         currentOnSelect(item)
-        // Don't hide picker if settings view is currently being shown
-        if (!state.showingSettings) {
+        // Don't hide picker if:
+        // - settings view is currently being shown
+        // - gsp command was active (command selector replaces text and triggers new command)
+        if (!state.showingSettings && !wasCommandSelector) {
           hidePicker()
           if (field) {
             setTimeout(() => field.focus(), 0)
