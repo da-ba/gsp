@@ -71,19 +71,24 @@ jobs:
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             # Use the PR head SHA, not the merge commit SHA
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            echo "path=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-            echo "build=PR#${{ github.event.pull_request.number }}@${HEAD_SHA:0:7}" >> $GITHUB_OUTPUT
+            SHORT_SHA="${HEAD_SHA:0:7}"
+            echo "path=pr-${{ github.event.pull_request.number }}/${SHORT_SHA}" >> $GITHUB_OUTPUT
+            echo "base_path=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "build=PR#${{ github.event.pull_request.number }}@${SHORT_SHA}" >> $GITHUB_OUTPUT
           else
-            echo "path=main" >> $GITHUB_OUTPUT
-            echo "build=main@${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
+            SHORT_SHA="${GITHUB_SHA:0:7}"
+            echo "path=main/${SHORT_SHA}" >> $GITHUB_OUTPUT
+            echo "base_path=main" >> $GITHUB_OUTPUT
+            echo "build=main@${SHORT_SHA}" >> $GITHUB_OUTPUT
           fi
 
       - name: Prepare deployment
         run: |
           DEPLOY_PATH="${{ steps.deploy-path.outputs.path }}"
+          BASE_PATH="${{ steps.deploy-path.outputs.base_path }}"
           
-          # Remove old deployment for this path
-          rm -rf "gh-pages/${DEPLOY_PATH}"
+          # Remove old deployments for this base path (e.g., all old SHAs for this PR or main)
+          rm -rf "gh-pages/${BASE_PATH}"
           mkdir -p "gh-pages/${DEPLOY_PATH}"
           
           # Copy demo page
