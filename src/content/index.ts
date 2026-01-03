@@ -170,10 +170,10 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
   const parsed = parseSlashCommand(info.line)
   if (!parsed) return
 
-  // Determine the active command - either the parsed command or "gsp" for command selector
+  // Determine the active command - either the parsed command or _selector for command selector
   let cmdName = parsed.cmd
   if (cmdName === "" || !getCommand(cmdName)) {
-    cmdName = "gsp"
+    cmdName = COMMAND_SELECTOR_NAME
   }
   const cmd = getCommand(cmdName)
   if (!cmd) return
@@ -197,7 +197,7 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
       const it = state.currentItems[state.selectedIndex] || state.currentItems[0]
       if (it) cmd.onSelect(it)
       // For most commands, onSelect inserts content and picker should hide.
-      // For gsp command, onSelect changes the textarea text which triggers
+      // For command selector, onSelect changes the textarea text which triggers
       // handleFieldInput to show the selected command's picker.
       // The picker hiding happens via the input event cycle.
     }
