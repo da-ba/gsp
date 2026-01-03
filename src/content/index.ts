@@ -25,7 +25,7 @@ import {
 
 // Import commands to register them
 import "./commands/giphy/index.ts"
-import "./commands/gsp/index.ts" // Internal command for command selector (not user-facing)
+import "./commands/selector/index.ts" // Internal command selector (triggered by "/")
 import "./commands/font/index.ts"
 import "./commands/emoji/index.ts"
 import "./commands/mermaid/index.ts"
@@ -33,9 +33,10 @@ import "./commands/mention/index.ts"
 import "./commands/now/index.ts"
 import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
+import { COMMAND_SELECTOR_NAME } from "./commands/selector/command.ts"
 
 /** Commands that use list view (all others use grid) */
-const LIST_VIEW_COMMANDS = new Set(["gsp"]) // gsp is internal command selector
+const LIST_VIEW_COMMANDS = new Set([COMMAND_SELECTOR_NAME])
 
 /**
  * Update suggestions for the active command
@@ -75,7 +76,13 @@ async function handleCommandInput(
   if (!cmd) return
 
   state.activeCommand = cmdName
-  setHeader("GitHub Slash Palette", "/" + cmdName + (query ? " " + query : ""))
+
+  // Set header subtitle - for command selector show "/" or "/ <filter>", for other commands show "/<cmd> <query>"
+  const isSelector = cmdName === COMMAND_SELECTOR_NAME
+  const subtitle = isSelector
+    ? "/" + (query ? " " + query : "")
+    : "/" + cmdName + (query ? " " + query : "")
+  setHeader("GitHub Slash Palette", subtitle)
 
   showPicker(field)
   positionPickerAtCaret(field)
@@ -251,7 +258,7 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
 
   // If just "/" is typed (empty cmd), show command selector
   if (parsed.cmd === "") {
-    await handleCommandInput(field, "gsp", "") // gsp is internal command selector
+    await handleCommandInput(field, COMMAND_SELECTOR_NAME, "")
     return
   }
 
@@ -259,10 +266,11 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   if (!cmd) {
     // Command not found yet - could be partial typing like "/gi"
     // Show command selector filtered by what's typed so far
-    await handleCommandInput(field, "gsp", parsed.cmd) // gsp is internal command selector
+    await handleCommandInput(field, COMMAND_SELECTOR_NAME, parsed.cmd)
     return
   }
 
+  // Valid command found - switch to that command's picker
   await handleCommandInput(field, parsed.cmd, parsed.query || "")
 }
 

@@ -12,6 +12,7 @@ import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
 import type { ListItemData } from "./components/PickerList.tsx"
+import { COMMAND_SELECTOR_NAME } from "../commands/selector/command.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -58,11 +59,11 @@ function renderPicker(): void {
       onSelect: (item: PickerItem) => {
         const field = state.activeField
         // Capture activeCommand before onSelect as it may change via input event
-        const wasCommandSelector = state.activeCommand === "gsp"
+        const wasCommandSelector = state.activeCommand === COMMAND_SELECTOR_NAME
         currentOnSelect(item)
         // Don't hide picker if:
         // - settings view is currently being shown
-        // - gsp command was active (command selector replaces text and triggers new command)
+        // - command selector was active (replaces text and triggers new command)
         if (!state.showingSettings && !wasCommandSelector) {
           hidePicker()
           if (field) {

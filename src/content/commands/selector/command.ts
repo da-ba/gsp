@@ -1,14 +1,18 @@
 /**
- * /gsp slash command implementation
+ * Internal command selector implementation
  *
  * Provides an overview of all registered commands and lets the user
  * pick one to insert at the current cursor position.
+ * This is an internal command triggered by typing "/" - not user-facing.
  */
 
 import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderList, setSlashQueryInField, state } from "../../picker/index.ts"
 import type { ListItemData } from "../../picker/components/PickerList.tsx"
+
+/** Internal command name for the command selector */
+export const COMMAND_SELECTOR_NAME = "_selector"
 
 /** Command descriptions for the list view */
 const COMMAND_DESCRIPTIONS: Record<string, string> = {
@@ -52,10 +56,11 @@ function getCommandItemData(item: PickerItem): ListItemData {
 }
 
 function getAllCommandNames(): string[] {
-  return listCommands().filter((c) => c && c !== "gsp")
+  // Filter out internal commands (prefixed with _)
+  return listCommands().filter((c) => c && !c.startsWith("_"))
 }
 
-const gspCommand: CommandSpec = {
+const commandSelectorCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
@@ -112,7 +117,7 @@ const gspCommand: CommandSpec = {
   },
 }
 
-// Register the command
-registerCommand("gsp", gspCommand)
+// Register the internal command
+registerCommand(COMMAND_SELECTOR_NAME, commandSelectorCommand)
 
-export { gspCommand }
+export { commandSelectorCommand }
