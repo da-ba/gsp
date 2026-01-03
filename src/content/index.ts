@@ -89,11 +89,9 @@ async function handleCommandInput(
 
   state.activeCommand = cmdName
 
-  // Set header subtitle - for command selector show "/" or "/ <filter>", for other commands show "/<cmd> <query>"
+  // Set header subtitle - for command selector show "/" or "/<filter>", for other commands show "/<cmd> <query>"
   const isSelector = cmdName === COMMAND_SELECTOR_NAME
-  const subtitle = isSelector
-    ? "/" + (query ? " " + query : "")
-    : "/" + cmdName + (query ? " " + query : "")
+  const subtitle = isSelector ? "/" + (query || "") : "/" + cmdName + (query ? " " + query : "")
   setHeader("GitHub Slash Palette", subtitle)
 
   showPicker(field)
