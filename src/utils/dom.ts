@@ -40,13 +40,17 @@ export function getCursorInfo(textarea: HTMLTextAreaElement): CursorInfo {
 
 /**
  * Parse slash command from line text
+ * Returns null if no slash at start
+ * Returns { cmd: "", query: "" } if just "/" is typed (for command selector)
+ * Returns { cmd: "cmdname", query: "..." } if command is specified
  */
 export function parseSlashCommand(line: string): { cmd: string; query: string } | null {
   const trimmed = (line || "").trim()
   if (!trimmed.startsWith("/")) return null
   const rest = trimmed.slice(1)
   const parts = rest.split(/\s+/).filter(Boolean)
-  if (!parts.length) return null
+  // If just "/" is typed, return empty cmd to show command selector
+  if (!parts.length) return { cmd: "", query: "" }
   const cmd = String(parts[0] || "").toLowerCase()
   const q = parts.slice(1).join(" ").trim()
   return { cmd, query: q }

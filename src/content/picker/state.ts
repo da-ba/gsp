@@ -29,6 +29,10 @@ export type PickerState = {
   commandCache: Record<string, unknown>
   /** Whether the settings panel is currently shown */
   showingSettings: boolean
+  /** Whether input mode is active (capturing input in picker) */
+  inputModeActive: boolean
+  /** Current value in the input field */
+  inputValue: string
 }
 
 export function createPickerState(): PickerState {
@@ -55,6 +59,8 @@ export function createPickerState(): PickerState {
     suggestDebounceId: null,
     commandCache: {},
     showingSettings: false,
+    inputModeActive: false,
+    inputValue: "",
   }
 }
 
@@ -69,6 +75,8 @@ export function resetPickerState(): void {
   state.lastSuggestQuery = ""
   state.activeCommand = ""
   state.showingSettings = false
+  state.inputModeActive = false
+  state.inputValue = ""
 }
 
 /**

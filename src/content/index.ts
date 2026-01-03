@@ -19,12 +19,13 @@ import {
   renderSetupPanel,
   refreshSelectionStyles,
   moveSelectionGrid,
+  moveSelectionList,
   applyPickerStyles,
 } from "./picker/index.ts"
 
 // Import commands to register them
 import "./commands/giphy/index.ts"
-import "./commands/gsp/index.ts"
+import "./commands/selector/index.ts" // Internal command selector (triggered by "/")
 import "./commands/font/index.ts"
 import "./commands/emoji/index.ts"
 import "./commands/mermaid/index.ts"
@@ -32,6 +33,10 @@ import "./commands/mention/index.ts"
 import "./commands/now/index.ts"
 import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
+import { COMMAND_SELECTOR_NAME } from "./commands/selector/command.ts"
+
+/** Commands that use list view (all others use grid) */
+const LIST_VIEW_COMMANDS = new Set([COMMAND_SELECTOR_NAME])
 
 /**
  * Update suggestions for the active command
@@ -70,8 +75,24 @@ async function handleCommandInput(
   const cmd = getCommand(cmdName)
   if (!cmd) return
 
+  // Clear any pending debounce from previous command to prevent stale results
+  if (state.debounceId) {
+    clearTimeout(state.debounceId)
+    state.debounceId = null
+  }
+
+  // Reset lastQuery when switching commands to ensure fresh results
+  const switchingCommands = state.activeCommand !== cmdName
+  if (switchingCommands) {
+    state.lastQuery = ""
+  }
+
   state.activeCommand = cmdName
-  setHeader("GitHub Slash Palette", "/" + cmdName + (query ? " " + query : ""))
+
+  // Set header subtitle - for command selector show "/" or "/<filter>", for other commands show "/<cmd> <query>"
+  const isSelector = cmdName === COMMAND_SELECTOR_NAME
+  const subtitle = isSelector ? "/" + (query || "") : "/" + cmdName + (query ? " " + query : "")
+  setHeader("GitHub Slash Palette", subtitle)
 
   showPicker(field)
   positionPickerAtCaret(field)
@@ -149,8 +170,16 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
   const parsed = parseSlashCommand(info.line)
   if (!parsed) return
 
-  const cmd = getCommand(parsed.cmd)
+  // Determine the active command - either the parsed command or _selector for command selector
+  let cmdName = parsed.cmd
+  if (cmdName === "" || !getCommand(cmdName)) {
+    cmdName = COMMAND_SELECTOR_NAME
+  }
+  const cmd = getCommand(cmdName)
   if (!cmd) return
+
+  // Check if we're using list view
+  const useListView = LIST_VIEW_COMMANDS.has(cmdName)
 
   if (ev.key === "Escape") {
     ev.preventDefault()
@@ -167,36 +196,57 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
       ev.stopImmediatePropagation()
       const it = state.currentItems[state.selectedIndex] || state.currentItems[0]
       if (it) cmd.onSelect(it)
-      hidePicker()
+      // For most commands, onSelect inserts content and picker should hide.
+      // For command selector, onSelect changes the textarea text which triggers
+      // handleFieldInput to show the selected command's picker.
+      // The picker hiding happens via the input event cycle.
     }
     return
   }
 
   if (!state.currentItems.length) return
 
-  if (ev.key === "ArrowRight") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(1, 0)
-    return
-  }
-  if (ev.key === "ArrowLeft") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(neg(1), 0)
-    return
-  }
-  if (ev.key === "ArrowDown") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(0, 1)
-    return
-  }
-  if (ev.key === "ArrowUp") {
-    ev.preventDefault()
-    ev.stopPropagation()
-    moveSelectionGrid(0, neg(1))
-    return
+  // Navigation - use list view for list commands, grid for others
+  if (useListView) {
+    // List view: only up/down navigation
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionList(1)
+      return
+    }
+    if (ev.key === "ArrowUp") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionList(neg(1))
+      return
+    }
+  } else {
+    // Grid view: 2D navigation
+    if (ev.key === "ArrowRight") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(1, 0)
+      return
+    }
+    if (ev.key === "ArrowLeft") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(neg(1), 0)
+      return
+    }
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(0, 1)
+      return
+    }
+    if (ev.key === "ArrowUp") {
+      ev.preventDefault()
+      ev.stopPropagation()
+      moveSelectionGrid(0, neg(1))
+      return
+    }
   }
 }
 
@@ -212,16 +262,25 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
     return
   }
 
-  const cmd = getCommand(parsed.cmd)
-  if (!cmd) {
-    if (state.activeField === field) hidePicker()
-    return
-  }
-
   state.activeField = field
   state.activeLineStart = info.lineStart
   state.activeCursorPos = info.pos
 
+  // If just "/" is typed (empty cmd), show command selector
+  if (parsed.cmd === "") {
+    await handleCommandInput(field, COMMAND_SELECTOR_NAME, "")
+    return
+  }
+
+  const cmd = getCommand(parsed.cmd)
+  if (!cmd) {
+    // Command not found yet - could be partial typing like "/gi"
+    // Show command selector filtered by what's typed so far
+    await handleCommandInput(field, COMMAND_SELECTOR_NAME, parsed.cmd)
+    return
+  }
+
+  // Valid command found - switch to that command's picker
   await handleCommandInput(field, parsed.cmd, parsed.query || "")
 }
 
@@ -250,18 +309,7 @@ function attachToField(field: HTMLTextAreaElement): void {
   })
   field.addEventListener("keydown", (ev) => onFieldKeyDown(ev, field))
 
-  field.addEventListener("blur", () => {
-    setTimeout(() => {
-      if (state.mouseDownInPicker) return
-      if (
-        state.pickerEl &&
-        document.activeElement &&
-        state.pickerEl.contains(document.activeElement)
-      )
-        return
-      if (document.activeElement !== field) hidePicker()
-    }, 120)
-  })
+  // Picker now only closes on Escape or selection - no blur-based closing
 }
 
 /**
@@ -290,20 +338,7 @@ function boot(): void {
 
   mo.observe(document.documentElement, { childList: true, subtree: true })
 
-  // Close picker when clicking outside
-  document.addEventListener(
-    "mousedown",
-    (ev) => {
-      if (!isPickerVisible()) return
-      const picker = state.pickerEl
-      if (!picker) return
-      if (picker.contains(ev.target as Node)) return
-      const field = state.activeField
-      if (field && field.contains(ev.target as Node)) return
-      hidePicker()
-    },
-    true
-  )
+  // Picker now only closes on Escape or selection - no click-outside closing
 
   // Always allow Escape to close the picker (even if focus moved into the picker).
   // Use window capture so we run before GitHub popover handlers.

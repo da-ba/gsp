@@ -71,7 +71,7 @@ bun run build
 
 1. Go to GitHub
 2. Open an issue or PR comment field
-3. Type `/giphy cats` (or `/gsp` for command list)
+3. Type `/` to see all commands, or `/giphy cats` to search GIFs
 4. Use arrow keys to navigate
 5. Press Enter to insert
 6. Press Esc to close
@@ -120,12 +120,12 @@ src/
 │   │   ├── emoji/      # Emoji picker command
 │   │   ├── font/       # Font styling command
 │   │   ├── giphy/      # GIF search command
-│   │   ├── gsp/        # Command palette command
 │   │   ├── kbd/        # Keyboard shortcut command
 │   │   ├── link/       # Link insertion command (includes CI links)
 │   │   ├── mention/    # Mention autocomplete command
 │   │   ├── mermaid/    # Diagram templates command
 │   │   ├── now/        # Timestamp command
+│   │   ├── selector/   # Internal command selector (triggered by /)
 │   │   ├── index.ts    # Command exports
 │   │   └── registry.ts # Command registry
 │   ├── picker/         # Picker UI (supports .tsx files)
@@ -148,7 +148,6 @@ docs/                   # Documentation
 │   │   ├── emoji/      # /emoji docs
 │   │   ├── font/       # /font docs
 │   │   ├── giphy/      # /giphy docs
-│   │   ├── gsp/        # /gsp docs
 │   │   ├── kbd/        # /kbd docs
 │   │   ├── link/       # /link docs
 │   │   ├── mention/    # /mention docs

@@ -11,6 +11,8 @@ import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
+import type { ListItemData } from "./components/PickerList.tsx"
+import { COMMAND_SELECTOR_NAME } from "../commands/selector/command.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -37,6 +39,8 @@ let currentImgUrlFn: (item: PickerItem) => string = (item) => item.previewUrl
 let currentOnSelect: (item: PickerItem) => void = () => {}
 let currentOnSuggestPick: (term: string) => void = () => {}
 let currentOnSetupComplete: () => void = () => {}
+let currentOnInputChange: (value: string) => void = () => {}
+let currentOnInputSubmit: () => void = () => {}
 
 /**
  * Re-render the React picker with current state
@@ -54,9 +58,13 @@ function renderPicker(): void {
       imgUrlFn: currentImgUrlFn,
       onSelect: (item: PickerItem) => {
         const field = state.activeField
+        // Capture activeCommand before onSelect as it may change via input event
+        const wasCommandSelector = state.activeCommand === COMMAND_SELECTOR_NAME
         currentOnSelect(item)
-        // Don't hide picker if settings view is currently being shown
-        if (!state.showingSettings) {
+        // Don't hide picker if:
+        // - settings view is currently being shown
+        // - command selector was active (replaces text and triggers new command)
+        if (!state.showingSettings && !wasCommandSelector) {
           hidePicker()
           if (field) {
             setTimeout(() => field.focus(), 0)
@@ -74,6 +82,20 @@ function renderPicker(): void {
         renderPicker()
       },
       onSetupComplete: currentOnSetupComplete,
+      onInputChange: (value: string) => {
+        state.inputValue = value
+        currentOnInputChange(value)
+      },
+      onInputSubmit: () => {
+        currentOnInputSubmit()
+      },
+      onClose: () => {
+        const field = state.activeField
+        hidePicker()
+        if (field) {
+          setTimeout(() => field.focus(), 0)
+        }
+      },
       position: reactState.position,
     })
   )
@@ -326,6 +348,78 @@ export function moveSelectionGrid(dx: number, dy: number): void {
   state.selectedIndex = next
   renderPicker()
   scrollSelectedIntoView()
+}
+
+/**
+ * Move selection in list view (up/down only)
+ */
+export function moveSelectionList(dy: number): void {
+  const maxIdx = Math.max(0, sub(state.currentItems.length, 1))
+  let next = add(state.selectedIndex, dy)
+  next = clamp(next, 0, maxIdx)
+  state.selectedIndex = next
+  renderPicker()
+  scrollSelectedIntoView()
+}
+
+/**
+ * Render a list view (for commands that don't need visual previews)
+ */
+export function renderList(
+  items: PickerItem[],
+  getItemData: (item: PickerItem) => ListItemData,
+  onPickItem: (item: PickerItem) => void,
+  options?: {
+    title?: string
+    showInput?: boolean
+    inputPlaceholder?: string
+    commandName?: string
+    onInputChange?: (value: string) => void
+    onInputSubmit?: () => void
+  }
+): void {
+  clearBody()
+
+  state.currentItems = items
+  state.selectedIndex = clamp(state.selectedIndex, 0, Math.max(0, sub(items.length, 1)))
+
+  currentOnSelect = onPickItem
+  currentOnInputChange = options?.onInputChange || (() => {})
+  currentOnInputSubmit = options?.onInputSubmit || (() => {})
+
+  reactState.view = {
+    type: "list",
+    items,
+    getItemData,
+    title: options?.title,
+    showInput: options?.showInput,
+    inputValue: state.inputValue,
+    inputPlaceholder: options?.inputPlaceholder,
+    commandName: options?.commandName,
+  }
+  renderPicker()
+}
+
+/**
+ * Set the current input value (for input field in list view)
+ */
+export function setInputValue(value: string): void {
+  state.inputValue = value
+  // Update the view if it's a list view with input
+  if (reactState.view.type === "list" && reactState.view.showInput) {
+    reactState.view = {
+      ...reactState.view,
+      inputValue: value,
+    }
+    renderPicker()
+  }
+}
+
+/**
+ * Get the current input value
+ */
+export function getInputValue(): string {
+  return state.inputValue
 }
 
 /**
