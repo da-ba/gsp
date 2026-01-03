@@ -75,6 +75,18 @@ async function handleCommandInput(
   const cmd = getCommand(cmdName)
   if (!cmd) return
 
+  // Clear any pending debounce from previous command to prevent stale results
+  if (state.debounceId) {
+    clearTimeout(state.debounceId)
+    state.debounceId = null
+  }
+
+  // Reset lastQuery when switching commands to ensure fresh results
+  const switchingCommands = state.activeCommand !== cmdName
+  if (switchingCommands) {
+    state.lastQuery = ""
+  }
+
   state.activeCommand = cmdName
 
   // Set header subtitle - for command selector show "/" or "/ <filter>", for other commands show "/<cmd> <query>"
