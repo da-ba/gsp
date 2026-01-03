@@ -18,7 +18,8 @@ if [ -d "${GH_PAGES_DIR}/main" ]; then
       MAIN_META=$(cat "${sha_dir}meta.json" 2>/dev/null || echo '{}')
       MAIN_BUILD=$(echo "$MAIN_META" | jq -r '.build // "unknown"')
       MAIN_TIME=$(echo "$MAIN_META" | jq -r '.timestamp // ""')
-      MAIN_PATH=$(echo "$MAIN_META" | jq -r '.path // "main"')
+      SHA_NAME=$(basename "$sha_dir")
+      MAIN_PATH=$(echo "$MAIN_META" | jq -r --arg default "main/${SHA_NAME}" '.path // $default')
       DEPLOYMENTS="${DEPLOYMENTS}<div class=\"deployment main\"><a href=\"./${MAIN_PATH}/\"><strong>main</strong></a><span class=\"build\">${MAIN_BUILD}</span><span class=\"time\">${MAIN_TIME}</span></div>"
       break
     fi
@@ -35,7 +36,8 @@ for pr_dir in "${GH_PAGES_DIR}"/pr-*/; do
         PR_META=$(cat "${sha_dir}meta.json" 2>/dev/null || echo '{}')
         PR_BUILD=$(echo "$PR_META" | jq -r '.build // "unknown"')
         PR_TIME=$(echo "$PR_META" | jq -r '.timestamp // ""')
-        PR_PATH=$(echo "$PR_META" | jq -r '.path // "pr-'"${PR_NUM}"'"')
+        SHA_NAME=$(basename "$sha_dir")
+        PR_PATH=$(echo "$PR_META" | jq -r --arg default "pr-${PR_NUM}/${SHA_NAME}" '.path // $default')
         DEPLOYMENTS="${DEPLOYMENTS}<div class=\"deployment pr\"><a href=\"./${PR_PATH}/\"><strong>PR #${PR_NUM}</strong></a><span class=\"build\">${PR_BUILD}</span><span class=\"time\">${PR_TIME}</span></div>"
         break
       fi
