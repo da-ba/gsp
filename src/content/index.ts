@@ -34,6 +34,21 @@ import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
 
 /**
+ * Resolve the command name and query from parsed slash command.
+ * If the parsed command name is not a registered command and has no query,
+ * treat it as a filter for the command list (empty command name).
+ */
+function resolveCommand(parsed: { cmd: string; query: string }): { cmdName: string; query: string } {
+  let cmdName = parsed.cmd
+  let query = parsed.query
+  if (cmdName && !getCommand(cmdName) && !query) {
+    query = cmdName
+    cmdName = ""
+  }
+  return { cmdName, query }
+}
+
+/**
  * Update suggestions for the active command
  */
 async function updateSuggestionsForActiveCommand(query: string): Promise<void> {
@@ -149,7 +164,8 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
   const parsed = parseSlashCommand(info.line)
   if (!parsed) return
 
-  const cmd = getCommand(parsed.cmd)
+  const { cmdName } = resolveCommand(parsed)
+  const cmd = getCommand(cmdName)
   if (!cmd) return
 
   if (ev.key === "Escape") {
@@ -212,7 +228,8 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
     return
   }
 
-  const cmd = getCommand(parsed.cmd)
+  const { cmdName, query } = resolveCommand(parsed)
+  const cmd = getCommand(cmdName)
   if (!cmd) {
     if (state.activeField === field) hidePicker()
     return
@@ -222,7 +239,7 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   state.activeLineStart = info.lineStart
   state.activeCursorPos = info.pos
 
-  await handleCommandInput(field, parsed.cmd, parsed.query || "")
+  await handleCommandInput(field, cmdName, query || "")
 }
 
 /**
