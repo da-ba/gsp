@@ -21,9 +21,7 @@ Selecting a command replaces the current line up to the cursor with:
 
 If you used a filter term (e.g. `/ cats`) it will be forwarded:
 
-- Selecting `/giphy` results in `
-  /giphy cats
-  `
+- Selecting `/giphy` results in `/giphy cats`
 
 ## Developer notes
 
