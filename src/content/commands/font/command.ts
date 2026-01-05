@@ -5,10 +5,9 @@
  * using HTML formatting that works in GitHub markdown.
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
+import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
 /** Font option types */
@@ -147,15 +146,6 @@ function getPreviewColor(id: string): string {
   }
 }
 
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
-}
-
 /** Create a tile for a font option */
 function makeFontTile(option: FontOption): PickerItem {
   const categoryColor = getCategoryColor(option.category)
@@ -238,7 +228,6 @@ function getSortedOptions(options: FontOption[]): FontOption[] {
 function insertFontMarkdown(option: FontOption): void {
   const field = state.activeField
   if (!field) return
-  if (field.tagName !== "TEXTAREA") return
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
@@ -251,13 +240,7 @@ function insertFontMarkdown(option: FontOption): void {
 
   // Apply the template
   const replacement = option.template.replace(/{text}/g, userText)
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor(replacement)
 }
 
 /** Get category suggestions */

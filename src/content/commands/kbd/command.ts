@@ -9,10 +9,9 @@
  * - Alternative keys: 1/2/3
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
+import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
 /** Key aliases for different platforms */
@@ -183,15 +182,6 @@ function inputToKbdHtml(input: string): string {
   return formatKbdHtml(keys)
 }
 
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
-}
-
 /** Get color for category badge in SVG */
 function getCategoryColor(category: KeyboardShortcut["category"]): string {
   switch (category) {
@@ -273,44 +263,12 @@ function getSortedShortcuts(shortcuts: KeyboardShortcut[]): KeyboardShortcut[] {
 
 /** Insert formatted keyboard shortcut into the textarea */
 function insertKbdMarkdown(shortcut: KeyboardShortcut): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
-  // Generate the kbd HTML
-  const replacement = inputToKbdHtml(shortcut.input) + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor(inputToKbdHtml(shortcut.input) + " ")
 }
 
 /** Insert custom keyboard shortcut from user input */
 function insertCustomKbd(input: string): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
-  // Generate the kbd HTML from user input
-  const replacement = inputToKbdHtml(input) + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor(inputToKbdHtml(input) + " ")
 }
 
 /** Get category suggestions */

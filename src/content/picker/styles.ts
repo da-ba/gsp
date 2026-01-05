@@ -119,3 +119,18 @@ export function getGridItemSelectedStyles(selected: boolean): Partial<CSSStyleDe
       : "1px solid rgba(0,0,0,0)",
   }
 }
+
+/**
+ * Apply a style object to an HTML element.
+ * Converts camelCase keys to kebab-case CSS properties.
+ */
+export function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): void {
+  for (const [key, value] of Object.entries(styles)) {
+    if (value !== undefined && typeof value === "string") {
+      el.style.setProperty(
+        key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()),
+        value
+      )
+    }
+  }
+}

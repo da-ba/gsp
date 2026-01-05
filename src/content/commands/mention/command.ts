@@ -5,10 +5,15 @@
  * teams, and recent collaborators.
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
+import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, getCommandCache, setCommandCache } from "../../picker/index.ts"
+import {
+  renderGrid,
+  state,
+  getCommandCache,
+  setCommandCache,
+  insertTextAtCursor,
+} from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import {
   getAllParticipants,
@@ -43,15 +48,6 @@ function getTypeColor(type: ParticipantType): string {
     default:
       return "#64748b"
   }
-}
-
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
 }
 
 /** Calculate badge width based on text length */
@@ -114,22 +110,7 @@ function makeMentionTile(item: MentionItem): PickerItem {
 
 /** Insert mention into the textarea */
 function insertMention(username: string): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
-  const replacement = `@${username} `
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  if (!insertTextAtCursor(`@${username} `)) return
 
   // Add to recently used (fire-and-forget, errors are non-critical)
   addRecentMention(username).catch(() => {

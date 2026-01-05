@@ -5,6 +5,7 @@
  * pick one to insert at the current cursor position.
  */
 
+import { escapeForSvg } from "../../../utils/svg.ts"
 import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderGrid, setSlashQueryInField, state } from "../../picker/index.ts"
@@ -36,15 +37,6 @@ function makeCommandTile(name: string): PickerItem {
     previewUrl: dataUrl,
     data: name, // Store command name for onSelect
   }
-}
-
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
 }
 
 function getAllCommandNames(): string[] {
