@@ -71,7 +71,7 @@ bun run build
 
 1. Go to GitHub
 2. Open an issue or PR comment field
-3. Type `/giphy cats` (or `/gsp` for command list)
+3. Type `/giphy cats` (or just `/` for command list)
 4. Use arrow keys to navigate
 5. Press Enter to insert
 6. Press Esc to close
@@ -117,10 +117,10 @@ src/
 ├── assets/             # Static assets (icons, images)
 ├── content/            # Content scripts
 │   ├── commands/       # Slash command implementations
+│   │   ├── commands-list/ # Command palette (/) command
 │   │   ├── emoji/      # Emoji picker command
 │   │   ├── font/       # Font styling command
 │   │   ├── giphy/      # GIF search command
-│   │   ├── gsp/        # Command palette command
 │   │   ├── kbd/        # Keyboard shortcut command
 │   │   ├── link/       # Link insertion command (includes CI links)
 │   │   ├── mention/    # Mention autocomplete command
@@ -145,10 +145,10 @@ dist/                   # Build output (load in Chrome)
 docs/                   # Documentation
 │   ├── commands/       # Per-command docs
 │   │   ├── README.md   # Command list
+│   │   ├── commands-list/ # / docs
 │   │   ├── emoji/      # /emoji docs
 │   │   ├── font/       # /font docs
 │   │   ├── giphy/      # /giphy docs
-│   │   ├── gsp/        # /gsp docs
 │   │   ├── kbd/        # /kbd docs
 │   │   ├── link/       # /link docs
 │   │   ├── mention/    # /mention docs

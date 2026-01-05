@@ -46,7 +46,8 @@ export function parseSlashCommand(line: string): { cmd: string; query: string } 
   if (!trimmed.startsWith("/")) return null
   const rest = trimmed.slice(1)
   const parts = rest.split(/\s+/).filter(Boolean)
-  if (!parts.length) return null
+  // If just "/" with nothing after, return empty cmd to trigger command list
+  if (!parts.length) return { cmd: "", query: "" }
   const cmd = String(parts[0] || "").toLowerCase()
   const q = parts.slice(1).join(" ").trim()
   return { cmd, query: q }

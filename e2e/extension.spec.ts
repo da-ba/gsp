@@ -115,7 +115,7 @@ test.describe("Slash Commands", () => {
     await page.addScriptTag({ content: contentScript });
   }
 
-  test("/gsp command shows picker", async () => {
+  test("/ command shows picker", async () => {
     // Use chromium.launch() instead of launchBrowserWithExtension() because
     // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
@@ -140,8 +140,8 @@ test.describe("Slash Commands", () => {
     // Click on the textarea to focus it
     await textarea.click();
 
-    // Type /gsp command
-    await textarea.fill("/gsp");
+    // Type / command
+    await textarea.fill("/");
 
     // Wait for the picker to appear
     await page.waitForTimeout(500);
@@ -269,8 +269,8 @@ test.describe("Slash Commands", () => {
     const textarea = page.locator("#test-textarea");
     await textarea.click();
 
-    // Type /gsp command to open picker
-    await textarea.fill("/gsp");
+    // Type / command to open picker
+    await textarea.fill("/");
     await page.waitForTimeout(500);
 
     // Verify picker is open

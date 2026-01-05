@@ -1,8 +1,9 @@
 /**
- * /gsp slash command implementation
+ * Slash command implementation for listing all available commands
  *
  * Provides an overview of all registered commands and lets the user
  * pick one to insert at the current cursor position.
+ * Triggered by typing just "/" in a markdown textarea.
  */
 
 import { escapeForSvg } from "../../../utils/svg.ts"
@@ -40,10 +41,11 @@ function makeCommandTile(name: string): PickerItem {
 }
 
 function getAllCommandNames(): string[] {
-  return listCommands().filter((c) => c && c !== "gsp")
+  // Filter out empty string (this command) from the list
+  return listCommands().filter((c) => c && c !== "")
 }
 
-const gspCommand: CommandSpec = {
+const commandsCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
@@ -98,7 +100,7 @@ const gspCommand: CommandSpec = {
   },
 }
 
-// Register the command
-registerCommand("gsp", gspCommand)
+// Register the command with empty string (triggered by just "/")
+registerCommand("", commandsCommand)
 
-export { gspCommand }
+export { commandsCommand }

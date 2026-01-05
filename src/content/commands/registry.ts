@@ -55,7 +55,8 @@ export function registerCommand(name: string, spec: CommandSpec): void {
 }
 
 export function getCommand(name: string): CommandSpec | null {
-  if (!name) return null
+  // Allow empty string for "/" command (command list)
+  if (name !== "" && !name) return null
   return commandRegistry[name] || null
 }
 
