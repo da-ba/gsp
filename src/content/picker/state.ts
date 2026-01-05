@@ -2,6 +2,8 @@
  * Picker state management
  */
 
+import { replaceRange } from "../../utils/dom.ts"
+import { add } from "../../utils/math.ts"
 import type { PickerItem } from "../types.ts"
 
 export type PickerState = {
@@ -90,4 +92,31 @@ export function setCommandCache<T>(key: string, value: T): void {
  */
 export function clearCommandCache(key: string): void {
   delete state.commandCache[key]
+}
+
+/**
+ * Insert text into the active textarea field, replacing the current slash command line.
+ * This is a common operation used by all commands to insert their content.
+ *
+ * @param replacement - The text to insert (replaces from lineStart to current cursor)
+ * @returns true if insertion was successful, false otherwise
+ */
+export function insertTextAtCursor(replacement: string): boolean {
+  const field = state.activeField
+  if (!field) return false
+  if (field.tagName !== "TEXTAREA") return false
+
+  const value = field.value || ""
+  const pos = field.selectionStart || 0
+  const lineStart = state.activeLineStart
+
+  const newValue = replaceRange(value, lineStart, pos, replacement)
+  field.value = newValue
+
+  const newPos = add(lineStart, replacement.length)
+  field.focus()
+  field.setSelectionRange(newPos, newPos)
+  field.dispatchEvent(new Event("input", { bubbles: true }))
+
+  return true
 }

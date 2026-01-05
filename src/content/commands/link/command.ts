@@ -11,8 +11,7 @@
  * - /link ci <query>          - Searches CI jobs/artifacts matching query
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
+import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
 import {
   renderGrid,
@@ -20,6 +19,8 @@ import {
   showSettings,
   getInputStyles,
   getBadgeStyles,
+  applyStyles,
+  insertTextAtCursor,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { parseLinkQuery, formatMarkdownLink, type LinkParseResult } from "./api.ts"
@@ -43,15 +44,6 @@ const DISPLAY_LIMITS = {
 /** Help message for /link command */
 const LINK_HELP_MESSAGE =
   'Type a URL like: /link example.com or /link example.com "My Title", or use /link ci to search CI jobs'
-
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
-}
 
 /** Create a tile for a link preview */
 function makeLinkTile(parsed: LinkParseResult): PickerItem {
@@ -125,44 +117,12 @@ function makeEmptyLinkTile(): PickerItem {
 
 /** Insert markdown link into the textarea */
 function insertLink(parsed: LinkParseResult): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
-  const markdown = formatMarkdownLink(parsed.url, parsed.title)
-  const replacement = markdown + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor(formatMarkdownLink(parsed.url, parsed.title) + " ")
 }
 
 /** Insert a CI link into the textarea */
 function insertCILink(suggestion: CILinkSuggestion): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
-  const markdown = formatMarkdownLink(suggestion.url, suggestion.name)
-  const replacement = markdown + " "
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor(formatMarkdownLink(suggestion.url, suggestion.name) + " ")
 }
 
 /** Create a tile for a CI job or artifact */
@@ -389,18 +349,6 @@ function isSetupItemData(data: ItemData): data is SetupItemData {
 
 function isLinkItemData(data: ItemData): data is LinkItemData {
   return data !== null && typeof data === "object" && "isValid" in data
-}
-
-/** Helper to apply style object to element */
-function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): void {
-  for (const [key, value] of Object.entries(styles)) {
-    if (value !== undefined && typeof value === "string") {
-      el.style.setProperty(
-        key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()),
-        value
-      )
-    }
-  }
 }
 
 /**

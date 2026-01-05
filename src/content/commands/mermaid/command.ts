@@ -5,10 +5,9 @@
  * GitHub natively renders Mermaid diagrams in markdown code blocks.
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
+import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import {
   DIAGRAM_TEMPLATES,
@@ -71,15 +70,6 @@ function getDiagramIcon(category: DiagramCategory): string {
   }
 }
 
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
-}
-
 /** Create a tile for a diagram template */
 function makeDiagramTile(template: DiagramTemplate): PickerItem {
   const categoryColor = getCategoryColor(template.category)
@@ -123,23 +113,8 @@ function makeDiagramTile(template: DiagramTemplate): PickerItem {
 
 /** Insert diagram template into the textarea */
 function insertDiagram(template: DiagramTemplate): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
   // Insert the template with a newline before and after for clean formatting
-  const replacement = "\n" + template.template + "\n"
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor("\n" + template.template + "\n")
 }
 
 const mermaidCommand: CommandSpec = {

@@ -5,10 +5,9 @@
  * into GitHub markdown fields.
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
+import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
 /** Date format types */
@@ -194,15 +193,6 @@ function getFormatCategory(format: DateFormat): string {
   }
 }
 
-function escapeForSvg(s: string): string {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;")
-}
-
 /** SVG layout constants for tile rendering */
 const TILE_PREVIEW_MAX_LENGTH = 28
 const TILE_PREVIEW_TRUNCATE_AT = 25
@@ -274,23 +264,8 @@ function filterOptions(query: string): DateOption[] {
 
 /** Insert formatted date into the textarea */
 function insertDateString(option: DateOption): void {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
   // Generate the date string using current time
-  const replacement = option.formatter(new Date())
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
+  insertTextAtCursor(option.formatter(new Date()))
 }
 
 /** Get format suggestions */

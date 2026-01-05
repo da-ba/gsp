@@ -2,8 +2,6 @@
  * Giphy slash command implementation
  */
 
-import { replaceRange } from "../../../utils/dom.ts"
-import { add } from "../../../utils/math.ts"
 import {
   searchGifs,
   getTrendingGifs,
@@ -27,6 +25,8 @@ import {
   getCardStyles,
   getInputStyles,
   getBadgeStyles,
+  applyStyles,
+  insertTextAtCursor,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
@@ -84,35 +84,8 @@ export function clearImageSettingsCache(): void {
 }
 
 async function insertGifMarkdown(url: string): Promise<void> {
-  const field = state.activeField
-  if (!field) return
-  if (field.tagName !== "TEXTAREA") return
-
-  const value = field.value || ""
-  const pos = field.selectionStart || 0
-  const lineStart = state.activeLineStart
-
   const { format, center } = await getCachedImageSettings()
-  const replacement = formatGifInsert(url, format, center)
-  const newValue = replaceRange(value, lineStart, pos, replacement)
-  field.value = newValue
-
-  const newPos = add(lineStart, replacement.length)
-  field.focus()
-  field.setSelectionRange(newPos, newPos)
-  field.dispatchEvent(new Event("input", { bubbles: true }))
-}
-
-/** Helper to apply style object to element */
-function applyStyles(el: HTMLElement, styles: Partial<CSSStyleDeclaration>): void {
-  for (const [key, value] of Object.entries(styles)) {
-    if (value !== undefined && typeof value === "string") {
-      el.style.setProperty(
-        key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()),
-        value
-      )
-    }
-  }
+  insertTextAtCursor(formatGifInsert(url, format, center))
 }
 
 export type GiphyKeyFormOptions = {
