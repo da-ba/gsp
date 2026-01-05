@@ -99,6 +99,16 @@ describe("DOM utilities", () => {
       const result = parseSlashCommand("/GIPHY cats")
       expect(result).toEqual({ cmd: "giphy", query: "cats" })
     })
+
+    it("returns empty cmd for just slash", () => {
+      const result = parseSlashCommand("/")
+      expect(result).toEqual({ cmd: "", query: "" })
+    })
+
+    it("returns empty cmd for slash with only whitespace", () => {
+      const result = parseSlashCommand("/   ")
+      expect(result).toEqual({ cmd: "", query: "" })
+    })
   })
 
   describe("replaceRange", () => {

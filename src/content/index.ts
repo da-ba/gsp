@@ -24,7 +24,7 @@ import {
 
 // Import commands to register them
 import "./commands/giphy/index.ts"
-import "./commands/gsp/index.ts"
+import "./commands/commands-list/index.ts"
 import "./commands/font/index.ts"
 import "./commands/emoji/index.ts"
 import "./commands/mermaid/index.ts"

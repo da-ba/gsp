@@ -1,11 +1,11 @@
-# /gsp
+# /
 
 Show an overview of all registered slash commands and insert one into the current textarea.
 
 ## Usage
 
-- Type `/gsp` to see all commands.
-- Type `/gsp <filter>` to filter commands by name.
+- Type `/` to see all commands.
+- Type `/ <filter>` to filter commands by name.
 
 Navigation
 
@@ -19,7 +19,7 @@ Selecting a command replaces the current line up to the cursor with:
 
 - `/<command> `
 
-If you used a filter term (e.g. `/gsp cats`) it will be forwarded:
+If you used a filter term (e.g. `/ cats`) it will be forwarded:
 
 - Selecting `/giphy` results in `
   /giphy cats
@@ -27,5 +27,5 @@ If you used a filter term (e.g. `/gsp cats`) it will be forwarded:
 
 ## Developer notes
 
-- Source: `src/content/commands/gsp.ts`
+- Source: `src/content/commands/commands-list/command.ts`
 - Registry: `src/content/commands/registry.ts`
