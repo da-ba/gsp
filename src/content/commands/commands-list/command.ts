@@ -11,8 +11,6 @@ import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderGrid, setSlashQueryInField, state } from "../../picker/index.ts"
 
-let lastForwardedQuery = ""
-
 function makeCommandTile(name: string): PickerItem {
   const label = "/" + name
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -49,7 +47,6 @@ const commandsCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    lastForwardedQuery = ""
     const cmds = getAllCommandNames()
     const items = cmds.map(makeCommandTile)
     return {
@@ -59,7 +56,6 @@ const commandsCommand: CommandSpec = {
   },
 
   getResults: async (query: string) => {
-    lastForwardedQuery = query || ""
     const q = (query || "").trim().toLowerCase()
     const cmds = getAllCommandNames().filter((c) => (q ? c.includes(q) : true))
     const items = cmds.map(makeCommandTile)
@@ -74,8 +70,8 @@ const commandsCommand: CommandSpec = {
       items,
       (it) => it.previewUrl,
       (it) => {
-        const term = (lastForwardedQuery || "").trim()
-        setSlashQueryInField(it.data as string, term)
+        // Don't retain the search term when selecting a command
+        setSlashQueryInField(it.data as string, "")
       },
       suggestTitle
     )
@@ -86,8 +82,8 @@ const commandsCommand: CommandSpec = {
       state.currentItems || [],
       (it) => it.previewUrl,
       (it) => {
-        const term = (lastForwardedQuery || "").trim()
-        setSlashQueryInField(it.data as string, term)
+        // Don't retain the search term when selecting a command
+        setSlashQueryInField(it.data as string, "")
       },
       "Commands"
     )
@@ -95,8 +91,8 @@ const commandsCommand: CommandSpec = {
 
   onSelect: (it: PickerItem) => {
     if (!it) return
-    const term = (lastForwardedQuery || "").trim()
-    setSlashQueryInField(it.data as string, term)
+    // Don't retain the search term when selecting a command
+    setSlashQueryInField(it.data as string, "")
   },
 }
 
