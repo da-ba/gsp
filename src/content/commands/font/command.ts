@@ -224,21 +224,26 @@ function getSortedOptions(options: FontOption[]): FontOption[] {
   })
 }
 
-/** Insert formatted text into the textarea */
-function insertFontMarkdown(option: FontOption): void {
+/**
+ * Extract user text from the current command line.
+ * Returns the text typed after "/font " or "text" as default.
+ */
+function extractUserText(): string {
   const field = state.activeField
-  if (!field) return
+  if (!field) return "text"
 
   const value = field.value || ""
   const pos = field.selectionStart || 0
   const lineStart = state.activeLineStart
 
-  // Get any text that was typed after the command
   const currentLine = value.slice(lineStart, pos)
   const cmdMatch = currentLine.match(/^\/font\s*(.*)/i)
-  const userText = cmdMatch?.[1]?.trim() || "text"
+  return cmdMatch?.[1]?.trim() || "text"
+}
 
-  // Apply the template
+/** Insert formatted text into the textarea */
+function insertFontMarkdown(option: FontOption): void {
+  const userText = extractUserText()
   const replacement = option.template.replace(/{text}/g, userText)
   insertTextAtCursor(replacement)
 }
