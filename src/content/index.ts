@@ -38,7 +38,10 @@ import "./commands/link/index.ts"
  * If the parsed command name is not a registered command and has no query,
  * treat it as a filter for the command list (empty command name).
  */
-function resolveCommand(parsed: { cmd: string; query: string }): { cmdName: string; query: string } {
+function resolveCommand(parsed: { cmd: string; query: string }): {
+  cmdName: string
+  query: string
+} {
   let cmdName = parsed.cmd
   let query = parsed.query
   if (cmdName && !getCommand(cmdName) && !query) {
