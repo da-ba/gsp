@@ -88,10 +88,12 @@ async function handleCommandInput(
   const cmd = getCommand(cmdName)
   if (!cmd) return
 
-  // Reset lastQuery when command changes to ensure fresh results
+  // Reset lastQuery and clear items when command changes to ensure fresh results
   const commandChanged = state.activeCommand !== cmdName
   if (commandChanged) {
     state.lastQuery = ""
+    state.currentItems = []
+    state.selectedIndex = 0
     // Show loading skeleton immediately when command changes
     renderLoadingSkeleton()
   }
