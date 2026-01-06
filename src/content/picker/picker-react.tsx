@@ -54,9 +54,11 @@ function renderPicker(): void {
       imgUrlFn: currentImgUrlFn,
       onSelect: (item: PickerItem) => {
         const field = state.activeField
+        const isCommandsList = state.activeCommand === ""
         currentOnSelect(item)
         // Don't hide picker if settings view is currently being shown
-        if (!state.showingSettings) {
+        // or if selecting from the commands list (let input event switch to selected command's picker)
+        if (!state.showingSettings && !isCommandsList) {
           hidePicker()
           if (field) {
             setTimeout(() => field.focus(), 0)
