@@ -88,6 +88,14 @@ async function handleCommandInput(
   const cmd = getCommand(cmdName)
   if (!cmd) return
 
+  // Reset lastQuery when command changes to ensure fresh results
+  const commandChanged = state.activeCommand !== cmdName
+  if (commandChanged) {
+    state.lastQuery = ""
+    // Show loading skeleton immediately when command changes
+    renderLoadingSkeleton()
+  }
+
   state.activeCommand = cmdName
   setHeader("GitHub Slash Palette", "/" + cmdName + (query ? " " + query : ""))
 
