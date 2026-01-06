@@ -4,6 +4,18 @@
 
 import { isDarkMode, fontSystemUi, fontSansSerif, tokenLinearGradient } from "../../utils/theme.ts"
 
+/** SVG badge layout constants */
+export const BADGE_CHAR_WIDTH = 8
+export const BADGE_PADDING = 16
+
+/**
+ * Calculate badge width based on text length.
+ * Uses fixed character width approximation for system fonts.
+ */
+export function calculateBadgeWidth(text: string): number {
+  return text.length * BADGE_CHAR_WIDTH + BADGE_PADDING
+}
+
 export type StyleConfig = {
   dark: boolean
 }

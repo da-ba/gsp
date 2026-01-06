@@ -7,7 +7,7 @@
 
 import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import {
   DIAGRAM_TEMPLATES,
@@ -87,7 +87,7 @@ function makeDiagramTile(template: DiagramTemplate): PickerItem {
   <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
   
   <!-- Category badge -->
-  <rect x="20" y="20" width="${DIAGRAM_CATEGORY_LABELS[template.category].length * 8 + 16}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
+  <rect x="20" y="20" width="${calculateBadgeWidth(DIAGRAM_CATEGORY_LABELS[template.category])}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
   <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${categoryColor}">${escapeForSvg(DIAGRAM_CATEGORY_LABELS[template.category])}</text>
   
   <!-- Diagram icon -->

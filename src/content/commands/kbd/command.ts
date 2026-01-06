@@ -11,7 +11,7 @@
 
 import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
 /** Key aliases for different platforms */
@@ -216,7 +216,7 @@ function makeKbdTile(shortcut: KeyboardShortcut): PickerItem {
   <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
   
   <!-- Category badge -->
-  <rect x="20" y="20" width="${CATEGORY_LABELS[shortcut.category].length * 8 + 16}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
+  <rect x="20" y="20" width="${calculateBadgeWidth(CATEGORY_LABELS[shortcut.category])}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
   <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${categoryColor}">${escapeForSvg(CATEGORY_LABELS[shortcut.category])}</text>
   
   <!-- Key display -->
@@ -264,11 +264,6 @@ function getSortedShortcuts(shortcuts: KeyboardShortcut[]): KeyboardShortcut[] {
 /** Insert formatted keyboard shortcut into the textarea */
 function insertKbdMarkdown(shortcut: KeyboardShortcut): void {
   insertTextAtCursor(inputToKbdHtml(shortcut.input) + " ")
-}
-
-/** Insert custom keyboard shortcut from user input */
-function insertCustomKbd(input: string): void {
-  insertTextAtCursor(inputToKbdHtml(input) + " ")
 }
 
 /** Get category suggestions */
@@ -348,12 +343,7 @@ const kbdCommand: CommandSpec = {
 
   onSelect: (it: PickerItem) => {
     if (!it) return
-    const shortcut = it.data as KeyboardShortcut
-    if (shortcut.id === "custom-input") {
-      insertCustomKbd(shortcut.input)
-    } else {
-      insertKbdMarkdown(shortcut)
-    }
+    insertKbdMarkdown(it.data as KeyboardShortcut)
   },
 
   noResultsMessage: "No matching shortcuts. Type your own like: ctrl+p, cmd+shift+s",

@@ -16,6 +16,7 @@ vi.mock("../../picker/index.ts", () => ({
     currentItems: [],
     selectedIndex: 0,
   },
+  calculateBadgeWidth: (text: string) => text.length * 8 + 16,
 }))
 
 describe("mermaid command", () => {
