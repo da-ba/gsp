@@ -189,6 +189,11 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
 
   if (ev.key === "Enter") {
     if (state.currentItems?.length) {
+      // Only process Enter if the active command matches what we resolved
+      // This prevents using stale items from a previous command
+      if (state.activeCommand !== cmdName) {
+        return
+      }
       ev.preventDefault()
       ev.stopPropagation()
       ev.stopImmediatePropagation()
