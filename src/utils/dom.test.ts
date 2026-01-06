@@ -109,6 +109,18 @@ describe("DOM utilities", () => {
       const result = parseSlashCommand("/   ")
       expect(result).toEqual({ cmd: "", query: "" })
     })
+
+    it("parses partial command name (not registered)", () => {
+      // When user types "/mermai" (partial of "/mermaid")
+      const result = parseSlashCommand("/mermai")
+      expect(result).toEqual({ cmd: "mermai", query: "" })
+    })
+
+    it("parses partial command name with trailing space", () => {
+      // When user types "/mermai " (partial of "/mermaid ")
+      const result = parseSlashCommand("/mermai ")
+      expect(result).toEqual({ cmd: "mermai", query: "" })
+    })
   })
 
   describe("replaceRange", () => {
