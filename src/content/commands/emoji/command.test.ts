@@ -18,6 +18,7 @@ vi.mock("../../picker/index.ts", () => ({
   },
   getCommandCache: vi.fn().mockReturnValue(null),
   setCommandCache: vi.fn(),
+  calculateBadgeWidth: (text: string) => text.length * 8 + 16,
 }))
 
 // Mock storage

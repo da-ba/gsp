@@ -7,7 +7,7 @@
 
 import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor } from "../../picker/index.ts"
+import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
 /** Date format types */
@@ -196,8 +196,6 @@ function getFormatCategory(format: DateFormat): string {
 /** SVG layout constants for tile rendering */
 const TILE_PREVIEW_MAX_LENGTH = 28
 const TILE_PREVIEW_TRUNCATE_AT = 25
-const BADGE_CHAR_WIDTH = 8
-const BADGE_PADDING = 16
 
 /** Create a tile for a date option */
 function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
@@ -211,7 +209,7 @@ function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
       ? previewValue.slice(0, TILE_PREVIEW_TRUNCATE_AT) + "..."
       : previewValue
 
-  const badgeWidth = categoryLabel.length * BADGE_CHAR_WIDTH + BADGE_PADDING
+  const badgeWidth = calculateBadgeWidth(categoryLabel)
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">

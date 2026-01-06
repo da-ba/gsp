@@ -12,6 +12,7 @@ import {
   getCommandCache,
   setCommandCache,
   insertTextAtCursor,
+  calculateBadgeWidth,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import {
@@ -51,13 +52,6 @@ function getCategoryColor(category: EmojiCategory): string {
     default:
       return "#64748b"
   }
-}
-
-/** Calculate badge width based on text length (character width ~5px + padding 12px) */
-function calculateBadgeWidth(text: string): number {
-  const charWidth = 5
-  const padding = 12
-  return text.length * charWidth + padding
 }
 
 /** Create a tile for an emoji */
