@@ -37,7 +37,12 @@ export type CommandSpec = {
   getResults: (query: string) => Promise<ResultsResult>
   getSuggestions?: (query: string) => Promise<SuggestionsResult>
   renderItems: (items: PickerItem[], suggestTitle: string) => void
-  renderCurrent: () => void
+  /**
+   * Re-render current items (e.g., after suggestions update).
+   * Optional - defaults to calling renderItems with state.currentItems.
+   * @deprecated Commands should generally not need to override this.
+   */
+  renderCurrent?: () => void
   onSelect: (item: PickerItem) => void
   /** Command-specific "no results" message (optional) */
   noResultsMessage?: string

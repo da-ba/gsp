@@ -72,7 +72,12 @@ async function updateSuggestionsForActiveCommand(query: string): Promise<void> {
       state.suggestItems = []
     }
     if (isPickerVisible() && state.currentItems?.length) {
-      cmd.renderCurrent()
+      // Re-render current items with updated suggestions
+      if (cmd.renderCurrent) {
+        cmd.renderCurrent()
+      } else {
+        cmd.renderItems(state.currentItems, "")
+      }
     }
   }, 180)
 }

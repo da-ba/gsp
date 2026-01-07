@@ -9,10 +9,10 @@
  * - Alternative keys: 1/2/3
  */
 
-import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
+import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
+import { createCategoryTile } from "../../../utils/tile-builder.ts"
 
 /** Key aliases for different platforms */
 const KEY_ALIASES: Record<string, string> = {
@@ -182,55 +182,29 @@ function inputToKbdHtml(input: string): string {
   return formatKbdHtml(keys)
 }
 
-/** Get color for category badge in SVG */
-function getCategoryColor(category: KeyboardShortcut["category"]): string {
-  switch (category) {
-    case "editing":
-      return "#3b82f6"
-    case "navigation":
-      return "#22c55e"
-    case "system":
-      return "#f59e0b"
-    case "custom":
-      return "#8b5cf6"
-    default:
-      return "#64748b"
-  }
+/** Category colors for badges */
+const CATEGORY_COLORS: Record<KeyboardShortcut["category"], string> = {
+  editing: "#3b82f6",
+  navigation: "#22c55e",
+  system: "#f59e0b",
+  custom: "#8b5cf6",
 }
 
 /** Create a tile for a keyboard shortcut */
 function makeKbdTile(shortcut: KeyboardShortcut): PickerItem {
-  const categoryColor = getCategoryColor(shortcut.category)
   const keys = parseKeys(shortcut.input)
   const displayKeys = keys.join(" + ")
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
-  <defs>
-    <linearGradient id="bg-${shortcut.id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f8fafc" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="176" rx="18" fill="url(#bg-${shortcut.id})"/>
-  <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
-  
-  <!-- Category badge -->
-  <rect x="20" y="20" width="${calculateBadgeWidth(CATEGORY_LABELS[shortcut.category])}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
-  <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${categoryColor}">${escapeForSvg(CATEGORY_LABELS[shortcut.category])}</text>
-  
-  <!-- Key display -->
-  <text x="120" y="90" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="20" font-weight="600" fill="#0f172a" fill-opacity="0.85">${escapeForSvg(displayKeys)}</text>
-  
-  <!-- Label -->
-  <text x="120" y="145" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="13" font-weight="500" fill="#0f172a" fill-opacity="0.55">${escapeForSvg(shortcut.label)}</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: shortcut.id,
-    previewUrl: dataUrl,
+    previewUrl: createCategoryTile({
+      id: shortcut.id,
+      category: CATEGORY_LABELS[shortcut.category],
+      categoryColor: CATEGORY_COLORS[shortcut.category] || "#64748b",
+      mainText: displayKeys,
+      mainMonospace: true,
+      label: shortcut.label,
+    }),
     data: shortcut,
   }
 }
@@ -329,15 +303,6 @@ const kbdCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertKbdMarkdown(it.data as KeyboardShortcut),
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertKbdMarkdown(it.data as KeyboardShortcut),
-      "Keyboard shortcuts"
     )
   },
 

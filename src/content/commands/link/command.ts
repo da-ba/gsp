@@ -15,7 +15,6 @@ import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
 import {
   renderGrid,
-  state,
   showSettings,
   getInputStyles,
   getBadgeStyles,
@@ -532,25 +531,6 @@ const linkCommand: CommandSpec = {
         }
       },
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    const items = state.currentItems || []
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => {
-        const data = it.data as ItemData
-        if (isSetupItemData(data)) {
-          showSettings()
-        } else if (isCIItemData(data)) {
-          insertCILink(data.suggestion)
-        } else if (isLinkItemData(data) && data.isValid) {
-          insertLink(data)
-        }
-      },
-      "Link"
     )
   },
 

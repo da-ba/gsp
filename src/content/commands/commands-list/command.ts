@@ -9,7 +9,7 @@
 import { escapeForSvg } from "../../../utils/svg.ts"
 import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
-import { renderGrid, setSlashQueryInField, state } from "../../picker/index.ts"
+import { renderGrid, setSlashQueryInField } from "../../picker/index.ts"
 
 function makeCommandTile(name: string): PickerItem {
   const label = "/" + name
@@ -74,18 +74,6 @@ const commandsCommand: CommandSpec = {
         setSlashQueryInField(it.data as string, "")
       },
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => {
-        // Don't retain the search term when selecting a command
-        setSlashQueryInField(it.data as string, "")
-      },
-      "Commands"
     )
   },
 

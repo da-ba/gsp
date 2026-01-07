@@ -18,7 +18,6 @@ import {
 import { registerCommand, type CommandSpec } from "../registry.ts"
 import {
   renderGrid,
-  state,
   getCommandCache,
   setCommandCache,
   clearCommandCache,
@@ -284,15 +283,6 @@ const giphyCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertGifMarkdown(fromPickerItem(it).insertUrl),
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertGifMarkdown(fromPickerItem(it).insertUrl),
-      "Suggestions"
     )
   },
 

@@ -9,7 +9,6 @@ import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
 import {
   renderGrid,
-  state,
   getCommandCache,
   setCommandCache,
   insertTextAtCursor,
@@ -196,15 +195,6 @@ const mentionCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertMention((it.data as MentionItem).username),
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertMention((it.data as MentionItem).username),
-      "Mentions"
     )
   },
 

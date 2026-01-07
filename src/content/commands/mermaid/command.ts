@@ -5,10 +5,10 @@
  * GitHub natively renders Mermaid diagrams in markdown code blocks.
  */
 
-import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
+import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
+import { createIconTile } from "../../../utils/tile-builder.ts"
 import {
   DIAGRAM_TEMPLATES,
   DIAGRAM_CATEGORY_LABELS,
@@ -19,22 +19,13 @@ import {
   type DiagramCategory,
 } from "./api.ts"
 
-/** Get color for category badge */
-function getCategoryColor(category: DiagramCategory): string {
-  switch (category) {
-    case "flow":
-      return "#3b82f6"
-    case "sequence":
-      return "#8b5cf6"
-    case "class":
-      return "#ec4899"
-    case "state":
-      return "#14b8a6"
-    case "other":
-      return "#f59e0b"
-    default:
-      return "#64748b"
-  }
+/** Category colors for badges */
+const CATEGORY_COLORS: Record<DiagramCategory, string> = {
+  flow: "#3b82f6",
+  sequence: "#8b5cf6",
+  class: "#ec4899",
+  state: "#14b8a6",
+  other: "#f59e0b",
 }
 
 /** Get icon for diagram type */
@@ -72,41 +63,18 @@ function getDiagramIcon(category: DiagramCategory): string {
 
 /** Create a tile for a diagram template */
 function makeDiagramTile(template: DiagramTemplate): PickerItem {
-  const categoryColor = getCategoryColor(template.category)
-  const icon = getDiagramIcon(template.category)
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
-  <defs>
-    <linearGradient id="bg-${template.id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f8fafc" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="176" rx="18" fill="url(#bg-${template.id})"/>
-  <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
-  
-  <!-- Category badge -->
-  <rect x="20" y="20" width="${calculateBadgeWidth(DIAGRAM_CATEGORY_LABELS[template.category])}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
-  <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${categoryColor}">${escapeForSvg(DIAGRAM_CATEGORY_LABELS[template.category])}</text>
-  
-  <!-- Diagram icon -->
-  <g transform="translate(60, 35)" fill="${categoryColor}">
-    ${icon}
-  </g>
-  
-  <!-- Label -->
-  <text x="120" y="125" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="14" font-weight="600" fill="#0f172a" fill-opacity="0.86">${escapeForSvg(template.label)}</text>
-  
-  <!-- Description -->
-  <text x="120" y="145" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" font-weight="400" fill="#0f172a" fill-opacity="0.55">${escapeForSvg(template.description)}</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+  const categoryColor = CATEGORY_COLORS[template.category] || "#64748b"
 
   return {
     id: template.id,
-    previewUrl: dataUrl,
+    previewUrl: createIconTile({
+      id: template.id,
+      category: DIAGRAM_CATEGORY_LABELS[template.category],
+      categoryColor,
+      iconSvg: getDiagramIcon(template.category),
+      label: template.label,
+      description: template.description,
+    }),
     data: template,
   }
 }
@@ -146,15 +114,6 @@ const mermaidCommand: CommandSpec = {
       (it) => it.previewUrl,
       (it) => insertDiagram(it.data as DiagramTemplate),
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertDiagram(it.data as DiagramTemplate),
-      "Diagram templates"
     )
   },
 
