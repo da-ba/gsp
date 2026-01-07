@@ -10,6 +10,7 @@ import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
 import { state } from "../../picker/state.ts"
 import type { PickerItem } from "../../types.ts"
 import { createCategoryTile } from "../../../utils/tile-builder.ts"
+import { filterAndSort } from "../../../utils/filter-sort.ts"
 
 /** Font option types */
 type FontCategory = "size" | "color" | "style"
@@ -167,28 +168,19 @@ function makeFontTile(option: FontOption): PickerItem {
   }
 }
 
-/** Filter options by query */
-function filterOptions(query: string): FontOption[] {
-  const q = (query || "").toLowerCase().trim()
-  if (!q) return FONT_OPTIONS
-
-  return FONT_OPTIONS.filter((opt) => {
-    return (
-      opt.id.includes(q) ||
-      opt.label.toLowerCase().includes(q) ||
-      opt.category.includes(q) ||
-      CATEGORY_LABELS[opt.category].toLowerCase().includes(q)
-    )
-  })
-}
-
-/** Get options sorted by category order */
-function getSortedOptions(options: FontOption[]): FontOption[] {
-  return [...options].sort((a, b) => {
-    const aIdx = CATEGORY_ORDER.indexOf(a.category)
-    const bIdx = CATEGORY_ORDER.indexOf(b.category)
-    if (aIdx !== bIdx) return aIdx - bIdx
-    return FONT_OPTIONS.indexOf(a) - FONT_OPTIONS.indexOf(b)
+/** Filter and sort options by query */
+function getFilteredOptions(query: string): FontOption[] {
+  return filterAndSort({
+    items: FONT_OPTIONS,
+    query,
+    searchFields: [
+      (opt) => opt.id,
+      (opt) => opt.label,
+      (opt) => opt.category,
+      (opt) => CATEGORY_LABELS[opt.category],
+    ],
+    categoryOrder: CATEGORY_ORDER,
+    getCategory: (opt) => opt.category,
   })
 }
 
@@ -225,7 +217,7 @@ const fontCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    const options = getSortedOptions(FONT_OPTIONS)
+    const options = getFilteredOptions("")
     const items = options.map(makeFontTile)
     return {
       items,
@@ -235,9 +227,8 @@ const fontCommand: CommandSpec = {
   },
 
   getResults: async (query: string) => {
-    const filtered = filterOptions(query)
-    const sorted = getSortedOptions(filtered)
-    const items = sorted.map(makeFontTile)
+    const options = getFilteredOptions(query)
+    const items = options.map(makeFontTile)
     return {
       items,
       suggestTitle: query ? "Matching styles" : "Font styles",

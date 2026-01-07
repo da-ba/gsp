@@ -9,6 +9,7 @@ import { registerCommand, type CommandSpec } from "../registry.ts"
 import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createDetailTile } from "../../../utils/tile-builder.ts"
+import { filterItems } from "../../../utils/filter-sort.ts"
 
 /** Date format types */
 type DateFormat =
@@ -192,17 +193,16 @@ function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
 }
 
 /** Filter options by query */
-function filterOptions(query: string): DateOption[] {
-  const q = (query || "").toLowerCase().trim()
-  if (!q) return DATE_OPTIONS
-
-  return DATE_OPTIONS.filter((opt) => {
-    return (
-      opt.id.includes(q) ||
-      opt.label.toLowerCase().includes(q) ||
-      opt.description.toLowerCase().includes(q) ||
-      opt.format.includes(q)
-    )
+function getFilteredOptions(query: string): DateOption[] {
+  return filterItems({
+    items: DATE_OPTIONS,
+    query,
+    searchFields: [
+      (opt) => opt.id,
+      (opt) => opt.label,
+      (opt) => opt.description,
+      (opt) => opt.format,
+    ],
   })
 }
 
@@ -232,8 +232,8 @@ const nowCommand: CommandSpec = {
 
   getResults: async (query: string) => {
     const previewDate = new Date()
-    const filtered = filterOptions(query)
-    const items = filtered.map((opt) => makeDateTile(opt, previewDate))
+    const options = getFilteredOptions(query)
+    const items = options.map((opt) => makeDateTile(opt, previewDate))
     return {
       items,
       suggestTitle: query ? "Matching formats" : "Date formats",

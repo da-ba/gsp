@@ -13,6 +13,7 @@ import { registerCommand, type CommandSpec } from "../registry.ts"
 import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createCategoryTile } from "../../../utils/tile-builder.ts"
+import { filterAndSort } from "../../../utils/filter-sort.ts"
 
 /** Key aliases for different platforms */
 const KEY_ALIASES: Record<string, string> = {
@@ -209,29 +210,20 @@ function makeKbdTile(shortcut: KeyboardShortcut): PickerItem {
   }
 }
 
-/** Filter shortcuts by query */
-function filterShortcuts(query: string): KeyboardShortcut[] {
-  const q = (query || "").toLowerCase().trim()
-  if (!q) return COMMON_SHORTCUTS
-
-  return COMMON_SHORTCUTS.filter((shortcut) => {
-    return (
-      shortcut.id.includes(q) ||
-      shortcut.label.toLowerCase().includes(q) ||
-      shortcut.category.includes(q) ||
-      shortcut.input.toLowerCase().includes(q) ||
-      CATEGORY_LABELS[shortcut.category].toLowerCase().includes(q)
-    )
-  })
-}
-
-/** Get shortcuts sorted by category order */
-function getSortedShortcuts(shortcuts: KeyboardShortcut[]): KeyboardShortcut[] {
-  return [...shortcuts].sort((a, b) => {
-    const aIdx = CATEGORY_ORDER.indexOf(a.category)
-    const bIdx = CATEGORY_ORDER.indexOf(b.category)
-    if (aIdx !== bIdx) return aIdx - bIdx
-    return COMMON_SHORTCUTS.indexOf(a) - COMMON_SHORTCUTS.indexOf(b)
+/** Filter and sort shortcuts by query */
+function getFilteredShortcuts(query: string): KeyboardShortcut[] {
+  return filterAndSort({
+    items: COMMON_SHORTCUTS,
+    query,
+    searchFields: [
+      (s) => s.id,
+      (s) => s.label,
+      (s) => s.category,
+      (s) => s.input,
+      (s) => CATEGORY_LABELS[s.category],
+    ],
+    categoryOrder: CATEGORY_ORDER,
+    getCategory: (s) => s.category,
   })
 }
 
@@ -249,7 +241,7 @@ const kbdCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    const shortcuts = getSortedShortcuts(COMMON_SHORTCUTS)
+    const shortcuts = getFilteredShortcuts("")
     const items = shortcuts.map(makeKbdTile)
     return {
       items,
@@ -277,9 +269,8 @@ const kbdCommand: CommandSpec = {
       const customItem = makeKbdTile(customShortcut)
 
       // Also show any matching common shortcuts
-      const filtered = filterShortcuts(query)
-      const sorted = getSortedShortcuts(filtered)
-      const items = [customItem, ...sorted.map(makeKbdTile)]
+      const matchingShortcuts = getFilteredShortcuts(query)
+      const items = [customItem, ...matchingShortcuts.map(makeKbdTile)]
 
       return {
         items,
@@ -288,9 +279,8 @@ const kbdCommand: CommandSpec = {
     }
 
     // Otherwise just filter common shortcuts
-    const filtered = filterShortcuts(query)
-    const sorted = getSortedShortcuts(filtered)
-    const items = sorted.map(makeKbdTile)
+    const shortcuts = getFilteredShortcuts(query)
+    const items = shortcuts.map(makeKbdTile)
     return {
       items,
       suggestTitle: query ? "Matching shortcuts" : "Common shortcuts",

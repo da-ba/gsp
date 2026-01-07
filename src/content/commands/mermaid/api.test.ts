@@ -6,8 +6,7 @@ import { describe, it, expect } from "vitest"
 import {
   DIAGRAM_TEMPLATES,
   DIAGRAM_CATEGORY_LABELS,
-  filterTemplates,
-  getSortedTemplates,
+  getFilteredTemplates,
   getDiagramSuggestions,
   type DiagramCategory,
 } from "./api.ts"
@@ -52,20 +51,20 @@ describe("mermaid api", () => {
     })
   })
 
-  describe("filterTemplates", () => {
+  describe("getFilteredTemplates", () => {
     it("should return all templates for empty query", () => {
-      const result = filterTemplates("")
+      const result = getFilteredTemplates("")
       expect(result.length).toBe(DIAGRAM_TEMPLATES.length)
     })
 
     it("should filter by id", () => {
-      const result = filterTemplates("flowchart-basic")
+      const result = getFilteredTemplates("flowchart-basic")
       expect(result.length).toBe(1)
       expect(result[0]?.id).toBe("flowchart-basic")
     })
 
     it("should filter by label (case insensitive)", () => {
-      const result = filterTemplates("BASIC")
+      const result = getFilteredTemplates("BASIC")
       expect(result.length).toBeGreaterThan(0)
       result.forEach((tmpl) => {
         expect(
@@ -77,7 +76,7 @@ describe("mermaid api", () => {
     })
 
     it("should filter by category", () => {
-      const result = filterTemplates("flow")
+      const result = getFilteredTemplates("flow")
       expect(result.length).toBeGreaterThan(0)
       // All flow category templates should be included
       const flowTemplates = DIAGRAM_TEMPLATES.filter((t) => t.category === "flow")
@@ -87,20 +86,18 @@ describe("mermaid api", () => {
     })
 
     it("should filter by description", () => {
-      const result = filterTemplates("authentication")
+      const result = getFilteredTemplates("authentication")
       expect(result.length).toBeGreaterThan(0)
       expect(result[0]?.id).toBe("sequence-auth")
     })
 
     it("should return empty array for non-matching query", () => {
-      const result = filterTemplates("nonexistent123xyz")
+      const result = getFilteredTemplates("nonexistent123xyz")
       expect(result).toEqual([])
     })
-  })
 
-  describe("getSortedTemplates", () => {
     it("should sort templates by category order", () => {
-      const templates = getSortedTemplates(DIAGRAM_TEMPLATES)
+      const templates = getFilteredTemplates("")
       const categoryOrder: DiagramCategory[] = ["flow", "sequence", "class", "state", "other"]
 
       let lastCategoryIdx = -1
@@ -115,7 +112,7 @@ describe("mermaid api", () => {
 
     it("should preserve original order within categories", () => {
       const flowTemplates = DIAGRAM_TEMPLATES.filter((t) => t.category === "flow")
-      const sorted = getSortedTemplates(DIAGRAM_TEMPLATES)
+      const sorted = getFilteredTemplates("")
       const sortedFlowTemplates = sorted.filter((t) => t.category === "flow")
 
       expect(sortedFlowTemplates.map((t) => t.id)).toEqual(flowTemplates.map((t) => t.id))

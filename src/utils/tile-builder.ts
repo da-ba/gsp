@@ -361,6 +361,39 @@ export function createDetailTile(opts: {
 }
 
 /**
+ * Create a simple tile with a title and subtitle (for command lists).
+ */
+export function createSimpleTile(opts: {
+  id: string
+  title: string
+  subtitle: string
+  bgColor?: string
+}): string {
+  return buildTileDataUrl(
+    { id: opts.id, size: "standard", bgColor: opts.bgColor || "#eef2ff" },
+    undefined,
+    [
+      {
+        text: opts.title,
+        x: 24,
+        y: 86,
+        fontSize: 26,
+        fontWeight: "700",
+        opacity: 0.86,
+      },
+      {
+        text: opts.subtitle,
+        x: 24,
+        y: 118,
+        fontSize: 14,
+        fontWeight: "500",
+        opacity: 0.55,
+      },
+    ]
+  )
+}
+
+/**
  * Create a status tile (loading, error, warning, no results).
  */
 export function createStatusTile(opts: {

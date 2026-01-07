@@ -12,8 +12,7 @@ import { createIconTile } from "../../../utils/tile-builder.ts"
 import {
   DIAGRAM_TEMPLATES,
   DIAGRAM_CATEGORY_LABELS,
-  filterTemplates,
-  getSortedTemplates,
+  getFilteredTemplates,
   getDiagramSuggestions,
   type DiagramTemplate,
   type DiagramCategory,
@@ -89,7 +88,7 @@ const mermaidCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    const templates = getSortedTemplates(DIAGRAM_TEMPLATES)
+    const templates = getFilteredTemplates("")
     const items = templates.map(makeDiagramTile)
     return {
       items,
@@ -99,9 +98,8 @@ const mermaidCommand: CommandSpec = {
   },
 
   getResults: async (query: string) => {
-    const filtered = filterTemplates(query)
-    const sorted = getSortedTemplates(filtered)
-    const items = sorted.map(makeDiagramTile)
+    const templates = getFilteredTemplates(query)
+    const items = templates.map(makeDiagramTile)
     return {
       items,
       suggestTitle: query ? "Matching diagrams" : "Diagram templates",

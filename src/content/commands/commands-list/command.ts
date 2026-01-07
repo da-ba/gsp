@@ -6,35 +6,20 @@
  * Triggered by typing just "/" in a markdown textarea.
  */
 
-import { escapeForSvg } from "../../../utils/svg.ts"
 import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderGrid, setSlashQueryInField } from "../../picker/index.ts"
+import { createSimpleTile } from "../../../utils/tile-builder.ts"
 
 function makeCommandTile(name: string): PickerItem {
-  const label = "/" + name
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#eef2ff" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="176" rx="18" fill="url(#bg)"/>
-  <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
-  <text x="24" y="86" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="26" font-weight="700" fill="#0f172a" fill-opacity="0.86">${escapeForSvg(
-    label
-  )}</text>
-  <text x="24" y="118" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="14" font-weight="500" fill="#0f172a" fill-opacity="0.55">Select to insert</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: name,
-    previewUrl: dataUrl,
-    data: name, // Store command name for onSelect
+    previewUrl: createSimpleTile({
+      id: name,
+      title: "/" + name,
+      subtitle: "Select to insert",
+    }),
+    data: name,
   }
 }
 
