@@ -9,6 +9,7 @@ import { neg } from "../utils/math.ts"
 import { getCommand } from "./commands/registry.ts"
 import {
   state,
+  resetCommandState,
   isPickerVisible,
   showPicker,
   hidePicker,
@@ -93,12 +94,10 @@ async function handleCommandInput(
   const cmd = getCommand(cmdName)
   if (!cmd) return
 
-  // Reset lastQuery and clear items when command changes to ensure fresh results
+  // Fully reset command state when command changes to prevent stale data
   const commandChanged = state.activeCommand !== cmdName
   if (commandChanged) {
-    state.lastQuery = ""
-    state.currentItems = []
-    state.selectedIndex = 0
+    resetCommandState()
     // Show loading skeleton immediately when command changes
     renderLoadingSkeleton()
   }
