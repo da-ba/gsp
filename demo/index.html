@@ -65,6 +65,133 @@
         box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
       }
 
+      .tab-bar {
+        display: flex;
+        gap: 0;
+        margin-bottom: -1px;
+      }
+
+      .tab-btn {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-bottom: none;
+        color: #8b949e;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 6px 6px 0 0;
+      }
+
+      .tab-btn:hover {
+        color: #c9d1d9;
+      }
+
+      .tab-btn.active {
+        background: #0d1117;
+        border-color: #30363d;
+        color: #c9d1d9;
+      }
+
+      .preview-content {
+        display: none;
+        min-height: 200px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        color: #c9d1d9;
+        overflow: auto;
+      }
+
+      .preview-content.active {
+        display: block;
+      }
+
+      .preview-content:empty::before {
+        content: "Nothing to preview";
+        color: #8b949e;
+      }
+
+      /* Markdown preview styles */
+      .preview-content h1,
+      .preview-content h2,
+      .preview-content h3,
+      .preview-content h4,
+      .preview-content h5,
+      .preview-content h6 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+        font-weight: 600;
+        line-height: 1.25;
+        color: #c9d1d9;
+      }
+      .preview-content h1 { font-size: 1.5em; }
+      .preview-content h2 { font-size: 1.3em; border-bottom: 1px solid #30363d; padding-bottom: 0.3em; }
+      .preview-content h3 { font-size: 1.15em; }
+
+      .preview-content p { margin: 0 0 1em 0; }
+
+      .preview-content a { color: #58a6ff; text-decoration: none; }
+      .preview-content a:hover { text-decoration: underline; }
+
+      .preview-content pre {
+        background: #161b22;
+        padding: 12px;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin: 1em 0;
+      }
+
+      .preview-content code {
+        background: #21262d;
+        padding: 0.2em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+
+      .preview-content pre code {
+        background: none;
+        padding: 0;
+      }
+
+      .preview-content blockquote {
+        border-left: 4px solid #30363d;
+        margin: 1em 0;
+        padding-left: 1em;
+        color: #8b949e;
+      }
+
+      .preview-content ul,
+      .preview-content ol {
+        margin: 1em 0;
+        padding-left: 2em;
+      }
+
+      .preview-content li { margin: 0.25em 0; }
+
+      .preview-content hr {
+        border: none;
+        border-top: 1px solid #30363d;
+        margin: 1.5em 0;
+      }
+
+      .preview-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+      }
+
+      .preview-content del { opacity: 0.6; }
+
+      .preview-content kbd {
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 0.85em;
+      }
+
       .hint {
         margin-top: 12px;
         font-size: 12px;
@@ -179,6 +306,10 @@
     </div>
 
     <div class="comment-box">
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="write">Write</button>
+        <button class="tab-btn" data-tab="preview">Preview</button>
+      </div>
       <textarea
         id="test-textarea"
         name="comment[body]"
@@ -193,6 +324,7 @@ Examples:
   /now iso      - Insert current timestamp
   /kbd copy     - Insert keyboard shortcut for copy"
       ></textarea>
+      <div id="preview-content" class="preview-content"></div>
       <p class="hint">
         Type <code>/</code> to see all available commands, or try any command from the list
         below.
@@ -265,6 +397,103 @@ Examples:
           document.getElementById("version").textContent = "Development";
           document.getElementById("build-info").textContent = "Local";
         });
+
+      // Preview tab functionality
+      (function() {
+        const textarea = document.getElementById("test-textarea");
+        const previewContent = document.getElementById("preview-content");
+        const tabBtns = document.querySelectorAll(".tab-btn");
+
+        // Basic markdown renderer
+        function renderMarkdown(text) {
+          if (!text.trim()) return "";
+
+          let html = text
+            // Escape HTML
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+          // Code blocks (before other processing)
+          html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+            return "<pre><code>" + code.trim() + "</code></pre>";
+          });
+
+          // Inline code
+          html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+          // Headers
+          html = html.replace(/^######\s+(.+)$/gm, "<h6>$1</h6>");
+          html = html.replace(/^#####\s+(.+)$/gm, "<h5>$1</h5>");
+          html = html.replace(/^####\s+(.+)$/gm, "<h4>$1</h4>");
+          html = html.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
+          html = html.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
+          html = html.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+
+          // Bold and italic
+          html = html.replace(/\*\*\*([^*]+)\*\*\*/g, "<strong><em>$1</em></strong>");
+          html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+          html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+          html = html.replace(/___([^_]+)___/g, "<strong><em>$1</em></strong>");
+          html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+          html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
+
+          // Strikethrough
+          html = html.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+
+          // Images (before links)
+          html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+
+          // Links
+          html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+          // Blockquotes
+          html = html.replace(/^&gt;\s+(.+)$/gm, "<blockquote>$1</blockquote>");
+
+          // Horizontal rules
+          html = html.replace(/^---$/gm, "<hr />");
+          html = html.replace(/^\*\*\*$/gm, "<hr />");
+
+          // Lists
+          html = html.replace(/^[-*]\s+(.+)$/gm, "<li>$1</li>");
+          html = html.replace(/^\d+\.\s+(.+)$/gm, "<li>$1</li>");
+
+          // Wrap consecutive li in ul
+          html = html.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, "<ul>$1</ul>");
+          html = html.replace(/<\/ul>\s*<ul>/g, "");
+
+          // Paragraphs
+          html = html.split(/\n\n+/).map(para => {
+            const trimmed = para.trim();
+            if (!trimmed) return "";
+            if (/^<(h[1-6]|pre|ul|ol|blockquote|hr)/.test(trimmed)) return trimmed;
+            return "<p>" + trimmed.replace(/\n/g, "<br />") + "</p>";
+          }).join("\n");
+
+          return html;
+        }
+
+        // Tab switching
+        tabBtns.forEach(btn => {
+          btn.addEventListener("click", () => {
+            const tab = btn.dataset.tab;
+
+            // Update active tab
+            tabBtns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            if (tab === "preview") {
+              textarea.style.display = "none";
+              previewContent.classList.add("active");
+              previewContent.innerHTML = renderMarkdown(textarea.value);
+            } else {
+              textarea.style.display = "";
+              previewContent.classList.remove("active");
+              textarea.focus();
+            }
+          });
+        });
+      })();
     </script>
     <!-- Content script will be injected here by the build process -->
     <script src="./content.js"></script>
