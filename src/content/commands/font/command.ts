@@ -142,7 +142,8 @@ const FONT_SIZE_MAP: Record<string, number> = {
 /** Create a tile for a font option */
 function makeFontTile(option: FontOption): PickerItem {
   const categoryColor = CATEGORY_COLORS[option.category] || "#64748b"
-  const previewColor = option.category === "color" ? PREVIEW_COLORS[option.id] || "#0f172a" : "#0f172a"
+  const previewColor =
+    option.category === "color" ? PREVIEW_COLORS[option.id] || "#0f172a" : "#0f172a"
 
   // Font styling for preview
   const isBold = option.id === "bold" || option.id === "bolditalic"

@@ -64,7 +64,10 @@ export type IconContentConfig = {
   svg: string
 }
 
-const SIZE_PRESETS: Record<TileSize, { width: number; height: number; rx: number; innerRx: number; padding: number }> = {
+const SIZE_PRESETS: Record<
+  TileSize,
+  { width: number; height: number; rx: number; innerRx: number; padding: number }
+> = {
   standard: { width: 240, height: 176, rx: 18, innerRx: 14, padding: 12 },
   small: { width: 120, height: 120, rx: 12, innerRx: 10, padding: 4 },
   wide: { width: 240, height: 120, rx: 12, innerRx: 10, padding: 4 },
@@ -102,8 +105,8 @@ export function buildTile(
   // Render badge if provided
   if (badge) {
     const badgeWidth = calculateBadgeWidth(badge.label)
-    const badgeX = badge.x ?? (padding + 8)
-    const badgeY = badge.y ?? (padding + 8)
+    const badgeX = badge.x ?? padding + 8
+    const badgeY = badge.y ?? padding + 8
     const fontSize = config.size === "small" ? 9 : 12
 
     contentSvg += `
@@ -248,11 +251,7 @@ export function createSmallTile(opts: {
 /**
  * Create an empty/placeholder tile with dashed border.
  */
-export function createEmptyTile(opts: {
-  id: string
-  message: string
-  icon?: string
-}): string {
+export function createEmptyTile(opts: { id: string; message: string; icon?: string }): string {
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
   <defs>
@@ -354,7 +353,7 @@ export function createDetailTile(opts: {
         y: 145,
         fontSize: 12,
         fontWeight: "500",
-        opacity: 0.50,
+        opacity: 0.5,
       },
     ]
   )
