@@ -300,15 +300,27 @@ function attachToField(field: HTMLTextAreaElement): void {
 
   field.addEventListener("input", () => handleFieldInput(field))
   field.addEventListener("keyup", (ev) => {
-    // Avoid re-processing navigation/action keys
+    // Skip action keys that are handled elsewhere
     if (ev.key === "Escape") return
-    if (ev.key === "ArrowUp" || ev.key === "ArrowDown") return
-    if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") return
     if (ev.key === "Enter" || ev.key === "Tab") return
+
+    // For arrow keys when picker is visible, re-evaluate the command position
+    // This ensures state.activeLineStart is updated when cursor moves
+    if (ev.key === "ArrowUp" || ev.key === "ArrowDown" || ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+      if (isPickerVisible()) {
+        handleFieldInput(field)
+      }
+      return
+    }
+
     handleFieldInput(field)
   })
   field.addEventListener("click", () => {
-    if (isPickerVisible()) positionPickerAtCaret(field)
+    if (isPickerVisible()) {
+      // Re-evaluate the command at the new cursor position
+      // This updates state.activeLineStart and hides picker if cursor moved away from command
+      handleFieldInput(field)
+    }
   })
   field.addEventListener("scroll", () => {
     if (isPickerVisible()) positionPickerAtCaret(field)
