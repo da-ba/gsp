@@ -34,7 +34,7 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         alignItems: "center",
         gap: "10px",
         width: "100%",
-        padding: "8px 12px",
+        padding: "10px 12px",
         margin: 0,
         backgroundColor: selected
           ? dark

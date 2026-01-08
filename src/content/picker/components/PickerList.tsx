@@ -41,9 +41,7 @@ export function PickerList({ items, selectedIndex, onSelect, onHover, title }: P
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "2px",
-          maxHeight: "100%",
-          overflowY: "auto",
+          gap: "4px",
         }}
       >
         {items.map((item, idx) => (
