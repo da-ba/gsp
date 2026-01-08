@@ -141,7 +141,7 @@ export function renderTokenForm(container: HTMLElement, config: TokenFormConfig)
       msg.textContent = "Saved!"
       input.value = maskToken(val)
       config.onSaveComplete?.()
-    } catch (err) {
+    } catch (_err) {
       msg.textContent = "Error saving"
     }
   })

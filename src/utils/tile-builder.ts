@@ -232,7 +232,6 @@ export function createSmallTile(opts: {
   category: string
   categoryColor: string
 }): string {
-  const badgeWidth = calculateBadgeWidth(opts.category)
   return buildTileDataUrl(
     { id: opts.id, size: "small" },
     { label: opts.category, color: opts.categoryColor, x: 8, y: 90 },
@@ -409,6 +408,9 @@ export function createStatusTile(opts: {
   }
 
   const c = colors[opts.type]
+  if (!c) {
+    throw new Error(`Unknown status tile type: ${opts.type}`)
+  }
 
   const icons: Record<string, string> = {
     loading: `<circle cx="120" cy="50" r="12" stroke="${c.icon}" stroke-width="2" fill="none" stroke-dasharray="18 18" stroke-linecap="round">
