@@ -465,8 +465,12 @@ Examples:
         // Store mermaid blocks to render after HTML is inserted
         let mermaidBlocks = [];
 
-        renderer.code = function(code, language) {
-          if (language === "mermaid") {
+        // marked v5+ passes an object { text, lang }, older versions pass (code, language)
+        renderer.code = function(codeOrObj, language) {
+          const code = typeof codeOrObj === "object" ? codeOrObj.text : codeOrObj;
+          const lang = typeof codeOrObj === "object" ? codeOrObj.lang : language;
+
+          if (lang === "mermaid") {
             const id = "mermaid-" + mermaidBlocks.length;
             mermaidBlocks.push({ id, code });
             return '<div class="mermaid" id="' + id + '"></div>';
