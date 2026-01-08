@@ -34,6 +34,8 @@ export type PickerProps = {
   onHover: (index: number) => void
   onSuggestPick: (term: string) => void
   onSettingsClick: () => void
+  onCloseClick: () => void
+  onSettingsBackClick: () => void
   onSetupComplete: () => void
   position: Position
 }
@@ -49,6 +51,8 @@ export function Picker({
   onHover,
   onSuggestPick,
   onSettingsClick,
+  onCloseClick,
+  onSettingsBackClick,
   onSetupComplete,
   position,
 }: PickerProps) {
@@ -119,7 +123,7 @@ export function Picker({
           />
         )
       case "settings":
-        return <SettingsPanel />
+        return <SettingsPanel onBackClick={onSettingsBackClick} />
       case "setup":
         return (
           <div
@@ -154,7 +158,12 @@ export function Picker({
         top: `${position.top}px`,
       }}
     >
-      <PickerHeader title={title} subtitle={subtitle} onSettingsClick={onSettingsClick} />
+      <PickerHeader
+        title={title}
+        subtitle={subtitle}
+        onSettingsClick={onSettingsClick}
+        onCloseClick={onCloseClick}
+      />
       <PickerHints />
       {renderBody()}
       <PickerFooter />
