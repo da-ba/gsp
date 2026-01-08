@@ -306,7 +306,12 @@ function attachToField(field: HTMLTextAreaElement): void {
 
     // For arrow keys when picker is visible, re-evaluate the command position
     // This ensures state.activeLineStart is updated when cursor moves
-    if (ev.key === "ArrowUp" || ev.key === "ArrowDown" || ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+    if (
+      ev.key === "ArrowUp" ||
+      ev.key === "ArrowDown" ||
+      ev.key === "ArrowLeft" ||
+      ev.key === "ArrowRight"
+    ) {
       if (isPickerVisible()) {
         handleFieldInput(field)
       }
