@@ -7,6 +7,7 @@ import { PickerHeader } from "./PickerHeader.tsx"
 import { PickerHints } from "./PickerHints.tsx"
 import { PickerFooter } from "./PickerFooter.tsx"
 import { PickerGrid } from "./PickerGrid.tsx"
+import { PickerList } from "./PickerList.tsx"
 import { LoadingSkeleton } from "./LoadingSkeleton.tsx"
 import { Message } from "./Message.tsx"
 import { SettingsPanel } from "./SettingsPanel.tsx"
@@ -18,6 +19,7 @@ export type PickerView =
   | { type: "loading" }
   | { type: "message"; message: string }
   | { type: "grid"; items: PickerItem[]; suggestItems?: string[]; suggestTitle?: string }
+  | { type: "list"; items: PickerItem[]; title?: string }
   | { type: "settings" }
   | { type: "setup"; renderFn: (bodyEl: HTMLElement, onComplete: () => void) => void }
 
@@ -104,6 +106,16 @@ export function Picker({
             suggestItems={view.suggestItems}
             suggestTitle={view.suggestTitle}
             onSuggestPick={onSuggestPick}
+          />
+        )
+      case "list":
+        return (
+          <PickerList
+            items={view.items}
+            selectedIndex={selectedIndex}
+            onSelect={onSelect}
+            onHover={onHover}
+            title={view.title}
           />
         )
       case "settings":
