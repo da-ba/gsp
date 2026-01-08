@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GitHub Slash Palette Demo</title>
+    <!-- Markdown rendering libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
     <style>
       * {
         box-sizing: border-box;
@@ -190,6 +195,34 @@
         border-radius: 4px;
         padding: 2px 6px;
         font-size: 0.85em;
+      }
+
+      .preview-content sub,
+      .preview-content sup {
+        font-size: 0.75em;
+      }
+
+      /* Mermaid diagram styles */
+      .preview-content .mermaid {
+        background: #161b22;
+        padding: 16px;
+        border-radius: 6px;
+        margin: 1em 0;
+        text-align: center;
+      }
+
+      .preview-content .mermaid svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* KaTeX styles for dark theme */
+      .preview-content .katex {
+        font-size: 1em;
+      }
+
+      .preview-content .katex-error {
+        color: #f85149;
       }
 
       .hint {
@@ -398,84 +431,105 @@ Examples:
           document.getElementById("build-info").textContent = "Local";
         });
 
+      // Initialize mermaid with dark theme
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "dark",
+        themeVariables: {
+          darkMode: true,
+          background: "#161b22",
+          primaryColor: "#238636",
+          primaryTextColor: "#c9d1d9",
+          primaryBorderColor: "#30363d",
+          lineColor: "#8b949e",
+          secondaryColor: "#21262d",
+          tertiaryColor: "#161b22"
+        }
+      });
+
       // Preview tab functionality
       (function() {
         const textarea = document.getElementById("test-textarea");
         const previewContent = document.getElementById("preview-content");
         const tabBtns = document.querySelectorAll(".tab-btn");
 
-        // Basic markdown renderer
-        function renderMarkdown(text) {
-          if (!text.trim()) return "";
+        // Configure marked for GitHub-flavored markdown
+        marked.setOptions({
+          gfm: true,
+          breaks: true
+        });
 
-          let html = text
-            // Escape HTML
+        // Custom renderer to handle mermaid blocks and preserve HTML tags like <kbd>
+        const renderer = new marked.Renderer();
+
+        // Store mermaid blocks to render after HTML is inserted
+        let mermaidBlocks = [];
+
+        renderer.code = function(code, language) {
+          if (language === "mermaid") {
+            const id = "mermaid-" + mermaidBlocks.length;
+            mermaidBlocks.push({ id, code });
+            return '<div class="mermaid" id="' + id + '"></div>';
+          }
+          return '<pre><code>' + escapeHtml(code) + '</code></pre>';
+        };
+
+        // Escape HTML for code blocks
+        function escapeHtml(text) {
+          return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
+        }
 
-          // Code blocks (before other processing)
-          html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-            return "<pre><code>" + code.trim() + "</code></pre>";
+        // Render LaTeX math expressions (used by /font colors)
+        function renderLatex(html) {
+          // Match $...$ for inline math (GitHub uses this for colored text)
+          return html.replace(/\$([^$]+)\$/g, function(match, latex) {
+            try {
+              return katex.renderToString(latex, {
+                throwOnError: false,
+                displayMode: false
+              });
+            } catch (e) {
+              return match;
+            }
           });
+        }
 
-          // Inline code
-          html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+        // Render markdown with all extensions
+        async function renderMarkdown(text) {
+          if (!text.trim()) return "";
 
-          // Headers
-          html = html.replace(/^######\s+(.+)$/gm, "<h6>$1</h6>");
-          html = html.replace(/^#####\s+(.+)$/gm, "<h5>$1</h5>");
-          html = html.replace(/^####\s+(.+)$/gm, "<h4>$1</h4>");
-          html = html.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
-          html = html.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
-          html = html.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+          mermaidBlocks = [];
 
-          // Bold and italic
-          html = html.replace(/\*\*\*([^*]+)\*\*\*/g, "<strong><em>$1</em></strong>");
-          html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-          html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-          html = html.replace(/___([^_]+)___/g, "<strong><em>$1</em></strong>");
-          html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
-          html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
+          // Parse markdown with marked (preserves HTML like <kbd>)
+          let html = marked.parse(text, { renderer });
 
-          // Strikethrough
-          html = html.replace(/~~([^~]+)~~/g, "<del>$1</del>");
-
-          // Images (before links)
-          html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
-
-          // Links
-          html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-
-          // Blockquotes
-          html = html.replace(/^&gt;\s+(.+)$/gm, "<blockquote>$1</blockquote>");
-
-          // Horizontal rules
-          html = html.replace(/^---$/gm, "<hr />");
-          html = html.replace(/^\*\*\*$/gm, "<hr />");
-
-          // Lists
-          html = html.replace(/^[-*]\s+(.+)$/gm, "<li>$1</li>");
-          html = html.replace(/^\d+\.\s+(.+)$/gm, "<li>$1</li>");
-
-          // Wrap consecutive li in ul
-          html = html.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, "<ul>$1</ul>");
-          html = html.replace(/<\/ul>\s*<ul>/g, "");
-
-          // Paragraphs
-          html = html.split(/\n\n+/).map(para => {
-            const trimmed = para.trim();
-            if (!trimmed) return "";
-            if (/^<(h[1-6]|pre|ul|ol|blockquote|hr)/.test(trimmed)) return trimmed;
-            return "<p>" + trimmed.replace(/\n/g, "<br />") + "</p>";
-          }).join("\n");
+          // Render LaTeX expressions
+          html = renderLatex(html);
 
           return html;
         }
 
+        // Render mermaid diagrams after HTML is in DOM
+        async function renderMermaidDiagrams() {
+          for (const block of mermaidBlocks) {
+            const el = document.getElementById(block.id);
+            if (el) {
+              try {
+                const { svg } = await mermaid.render(block.id + "-svg", block.code);
+                el.innerHTML = svg;
+              } catch (e) {
+                el.innerHTML = '<pre style="color: #f85149;">Mermaid error: ' + escapeHtml(e.message) + '</pre>';
+              }
+            }
+          }
+        }
+
         // Tab switching
         tabBtns.forEach(btn => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", async () => {
             const tab = btn.dataset.tab;
 
             // Update active tab
@@ -485,7 +539,8 @@ Examples:
             if (tab === "preview") {
               textarea.style.display = "none";
               previewContent.classList.add("active");
-              previewContent.innerHTML = renderMarkdown(textarea.value);
+              previewContent.innerHTML = await renderMarkdown(textarea.value);
+              await renderMermaidDiagrams();
             } else {
               textarea.style.display = "";
               previewContent.classList.remove("active");
