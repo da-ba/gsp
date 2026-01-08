@@ -5,7 +5,7 @@
  * into GitHub markdown fields.
  */
 
-import { registerCommand, createGridHandlers } from "../registry.ts"
+import { registerCommand, createGridHandlers, type CommandSpec } from "../registry.ts"
 import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createDetailTile } from "../../../utils/tile-builder.ts"

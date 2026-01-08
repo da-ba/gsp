@@ -5,7 +5,7 @@
  * using HTML formatting that works in GitHub markdown.
  */
 
-import { registerCommand, createGridHandlers } from "../registry.ts"
+import { registerCommand, createGridHandlers, type CommandSpec } from "../registry.ts"
 import { insertTextAtCursor } from "../../picker/index.ts"
 import { state } from "../../picker/state.ts"
 import type { PickerItem } from "../../types.ts"
