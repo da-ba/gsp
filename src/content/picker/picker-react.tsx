@@ -291,11 +291,15 @@ export function setSlashQueryInField(cmd: string, term: string): void {
   if (!field) return
   if (field.tagName !== "TEXTAREA") return
 
+  // Guard against undefined values to prevent inserting "undefined" text
+  const safeCmd = cmd ?? ""
+  const safeTerm = term ?? ""
+
   const value = field.value || ""
   const pos = field.selectionStart || 0
   const lineStart = state.activeLineStart
 
-  const replacement = "/" + cmd + " " + term
+  const replacement = "/" + safeCmd + (safeTerm ? " " + safeTerm : "")
   const newValue = value.slice(0, lineStart) + replacement + value.slice(pos)
 
   field.value = newValue

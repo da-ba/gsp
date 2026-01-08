@@ -130,8 +130,13 @@ export function insertTextAtCursor(replacement: string): boolean {
   if (!field) return false
   if (field.tagName !== "TEXTAREA") return false
 
+  // Guard against undefined/null replacement to prevent inserting "undefined"
+  if (replacement === null || replacement === undefined) return false
+
   const value = field.value || ""
-  const pos = field.selectionStart || 0
+  // Use state.activeCursorPos for consistency - this is the cursor position
+  // from when the command was detected, ensuring we replace the correct range
+  const pos = state.activeCursorPos || field.selectionStart || 0
   const lineStart = state.activeLineStart
 
   const newValue = replaceRange(value, lineStart, pos, replacement)

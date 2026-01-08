@@ -195,8 +195,16 @@ function extractUserText(): string {
   if (!field) return "text"
 
   const value = field.value || ""
-  const pos = field.selectionStart || 0
+  // Use state.activeCursorPos instead of field.selectionStart
+  // This ensures we use the cursor position from when the command was detected,
+  // not the current position which may have changed
+  const pos = state.activeCursorPos || field.selectionStart || 0
   const lineStart = state.activeLineStart
+
+  // Validate that lineStart and pos make sense
+  if (lineStart < 0 || pos < lineStart || lineStart > value.length) {
+    return "text"
+  }
 
   const currentLine = value.slice(lineStart, pos)
   const cmdMatch = currentLine.match(/^\/font\s*(.*)/i)
