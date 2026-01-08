@@ -130,6 +130,9 @@ export function insertTextAtCursor(replacement: string): boolean {
   if (!field) return false
   if (field.tagName !== "TEXTAREA") return false
 
+  // Guard against undefined/null replacement to prevent inserting "undefined"
+  if (replacement == null) return false
+
   const value = field.value || ""
   const pos = field.selectionStart || 0
   const lineStart = state.activeLineStart

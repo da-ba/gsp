@@ -56,7 +56,8 @@ function resolveCommand(parsed: { cmd: string; query: string }): {
  * Update suggestions for the active command
  */
 async function updateSuggestionsForActiveCommand(query: string): Promise<void> {
-  const cmd = getCommand(state.activeCommand)
+  const cmdName = state.activeCommand
+  const cmd = getCommand(cmdName)
   if (!cmd?.getSuggestions) return
 
   const q = (query || "").trim()
@@ -66,7 +67,14 @@ async function updateSuggestionsForActiveCommand(query: string): Promise<void> {
 
   if (state.suggestDebounceId) clearTimeout(state.suggestDebounceId)
   state.suggestDebounceId = setTimeout(async () => {
+    // Check if command changed before applying results
+    if (state.activeCommand !== cmdName) return
+
     const res = await cmd.getSuggestions!(q)
+
+    // Check again after async call - command could have changed during request
+    if (state.activeCommand !== cmdName) return
+
     if (res?.items?.length) {
       state.suggestItems = res.items
     } else {
@@ -74,10 +82,12 @@ async function updateSuggestionsForActiveCommand(query: string): Promise<void> {
     }
     if (isPickerVisible() && state.currentItems?.length) {
       // Re-render current items with updated suggestions
-      if (cmd.renderCurrent) {
-        cmd.renderCurrent()
-      } else {
-        cmd.renderItems(state.currentItems, "")
+      // Re-fetch command to ensure we use the current one
+      const currentCmd = getCommand(state.activeCommand)
+      if (currentCmd?.renderCurrent) {
+        currentCmd.renderCurrent()
+      } else if (currentCmd) {
+        currentCmd.renderItems(state.currentItems, "")
       }
     }
   }, 180)
@@ -123,6 +133,10 @@ async function handleCommandInput(
   if (!query) {
     renderLoadingSkeleton()
     const res = await cmd.getEmptyState()
+
+    // Check if command changed during async call
+    if (state.activeCommand !== cmdName) return
+
     if (res?.error) {
       renderMessage(res.error)
       return
@@ -140,9 +154,13 @@ async function handleCommandInput(
   if (query === state.lastQuery) return
   state.lastQuery = query
 
-  // Debounce search
+  // Debounce search - capture cmdName to check if command changed during async operation
+  const searchCmdName = cmdName
   if (state.debounceId) clearTimeout(state.debounceId)
   state.debounceId = setTimeout(async () => {
+    // Check if command changed before starting search
+    if (state.activeCommand !== searchCmdName) return
+
     showPicker()
     positionPickerAtCaret(field)
     // Only show skeleton if no items are displayed yet (reduces flicker)
@@ -154,6 +172,10 @@ async function handleCommandInput(
     state.inFlight = true
     try {
       const res = await cmd.getResults(query)
+
+      // Check again after async call - command could have changed during request
+      if (state.activeCommand !== searchCmdName) return
+
       if (res?.error) {
         renderMessage(res.error)
       } else {
