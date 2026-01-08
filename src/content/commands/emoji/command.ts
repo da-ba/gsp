@@ -4,9 +4,8 @@
  * Provides an emoji picker with search and recently used favorites.
  */
 
-import { registerCommand, type CommandSpec } from "../registry.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
 import {
-  renderGrid,
   getCommandCache,
   setCommandCache,
   insertTextAtCursor,
@@ -114,19 +113,7 @@ const emojiCommand: CommandSpec = {
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertEmoji((it.data as EmojiItem).emoji),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertEmoji((it.data as EmojiItem).emoji)
-  },
+  ...createGridHandlers<EmojiItem>((item) => insertEmoji(item.emoji)),
 
   noResultsMessage: "No matching emojis found. Try: smile, heart, fire, star",
 }

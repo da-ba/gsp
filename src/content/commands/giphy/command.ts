@@ -15,9 +15,8 @@ import {
   type GifItem,
   type GiphyImageFormat,
 } from "./api.ts"
-import { registerCommand, type CommandSpec } from "../registry.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
 import {
-  renderGrid,
   getCommandCache,
   setCommandCache,
   clearCommandCache,
@@ -47,11 +46,6 @@ function toPickerItem(gif: GifItem): PickerItem {
     previewUrl: gif.previewUrl,
     data: gif, // Store original GifItem for insertUrl access
   }
-}
-
-/** Get original GifItem from PickerItem */
-function fromPickerItem(item: PickerItem): GifItem {
-  return item.data as GifItem
 }
 
 /** Get cached image format settings, loading from storage if needed */
@@ -202,19 +196,7 @@ const giphyCommand: CommandSpec = {
     return { items: r.data ?? [] }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertGifMarkdown(fromPickerItem(it).insertUrl),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertGifMarkdown(fromPickerItem(it).insertUrl)
-  },
+  ...createGridHandlers<GifItem>((gif) => insertGifMarkdown(gif.insertUrl)),
 
   noResultsMessage: "No results. Check your Giphy key in extension settings.",
 

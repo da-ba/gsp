@@ -5,8 +5,8 @@
  * GitHub natively renders Mermaid diagrams in markdown code blocks.
  */
 
-import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createIconTile } from "../../../utils/tile-builder.ts"
 import {
@@ -106,19 +106,7 @@ const mermaidCommand: CommandSpec = {
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertDiagram(it.data as DiagramTemplate),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertDiagram(it.data as DiagramTemplate)
-  },
+  ...createGridHandlers<DiagramTemplate>(insertDiagram),
 
   noResultsMessage: "No matching diagrams found. Try: flowchart, sequence, class, state",
 }

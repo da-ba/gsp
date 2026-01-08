@@ -6,9 +6,8 @@
  */
 
 import { escapeForSvg } from "../../../utils/svg.ts"
-import { registerCommand, type CommandSpec } from "../registry.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
 import {
-  renderGrid,
   getCommandCache,
   setCommandCache,
   insertTextAtCursor,
@@ -189,19 +188,7 @@ const mentionCommand: CommandSpec = {
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertMention((it.data as MentionItem).username),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertMention((it.data as MentionItem).username)
-  },
+  ...createGridHandlers<MentionItem>((item) => insertMention(item.username)),
 
   noResultsMessage: "No matching users found. Try typing a username.",
 }

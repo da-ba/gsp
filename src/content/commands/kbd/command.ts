@@ -9,8 +9,8 @@
  * - Alternative keys: 1/2/3
  */
 
-import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createCategoryTile } from "../../../utils/tile-builder.ts"
 import { filterAndSort } from "../../../utils/filter-sort.ts"
@@ -287,19 +287,7 @@ const kbdCommand: CommandSpec = {
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertKbdMarkdown(it.data as KeyboardShortcut),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertKbdMarkdown(it.data as KeyboardShortcut)
-  },
+  ...createGridHandlers<KeyboardShortcut>(insertKbdMarkdown),
 
   noResultsMessage: "No matching shortcuts. Type your own like: ctrl+p, cmd+shift+s",
 }

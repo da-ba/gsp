@@ -5,8 +5,8 @@
  * into GitHub markdown fields.
  */
 
-import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createDetailTile } from "../../../utils/tile-builder.ts"
 import { filterItems } from "../../../utils/filter-sort.ts"
@@ -240,19 +240,7 @@ const nowCommand: CommandSpec = {
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertDateString(it.data as DateOption),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertDateString(it.data as DateOption)
-  },
+  ...createGridHandlers<DateOption>(insertDateString),
 
   noResultsMessage: "No matching date formats found. Try: iso, local, utc, relative",
 }

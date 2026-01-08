@@ -5,8 +5,8 @@
  * using HTML formatting that works in GitHub markdown.
  */
 
-import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, insertTextAtCursor } from "../../picker/index.ts"
+import { registerCommand, createGridHandlers } from "../registry.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import { state } from "../../picker/state.ts"
 import type { PickerItem } from "../../types.ts"
 import { createCategoryTile } from "../../../utils/tile-builder.ts"
@@ -235,19 +235,7 @@ const fontCommand: CommandSpec = {
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertFontMarkdown(it.data as FontOption),
-      suggestTitle
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertFontMarkdown(it.data as FontOption)
-  },
+  ...createGridHandlers<FontOption>(insertFontMarkdown),
 
   noResultsMessage: "No matching font styles found. Try: bold, italic, red, large",
 }
