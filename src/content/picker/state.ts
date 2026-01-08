@@ -63,14 +63,38 @@ export function createPickerState(): PickerState {
 // Global state singleton
 export const state = createPickerState()
 
-export function resetPickerState(): void {
+/**
+ * Reset command-related state when switching commands.
+ * Call this when the active command changes to ensure clean state.
+ * Does NOT reset activeCommand - caller should set that after calling this.
+ */
+export function resetCommandState(): void {
   state.lastQuery = ""
   state.currentItems = []
   state.selectedIndex = 0
   state.suggestItems = []
   state.lastSuggestQuery = ""
-  state.activeCommand = ""
   state.showingSettings = false
+  // Clear any pending debounce timers
+  if (state.debounceId) {
+    clearTimeout(state.debounceId)
+    state.debounceId = null
+  }
+  if (state.suggestDebounceId) {
+    clearTimeout(state.suggestDebounceId)
+    state.suggestDebounceId = null
+  }
+  // Reset in-flight state to prevent stale results from previous command
+  state.inFlight = false
+}
+
+/**
+ * Full state reset when hiding the picker.
+ * Resets all command state plus clears the active command.
+ */
+export function resetPickerState(): void {
+  resetCommandState()
+  state.activeCommand = ""
 }
 
 /**

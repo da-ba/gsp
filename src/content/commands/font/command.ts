@@ -5,10 +5,13 @@
  * using HTML formatting that works in GitHub markdown.
  */
 
-import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
+import { state } from "../../picker/state.ts"
 import type { PickerItem } from "../../types.ts"
+import { createCategoryTile } from "../../../utils/tile-builder.ts"
+import { filterAndSort } from "../../../utils/filter-sort.ts"
 
 /** Font option types */
 type FontCategory = "size" | "color" | "style"
@@ -112,115 +115,74 @@ const CATEGORY_LABELS: Record<FontCategory, string> = {
 /** Category display order */
 const CATEGORY_ORDER: FontCategory[] = ["style", "color", "size"]
 
-/** Get color for category badge in SVG */
-function getCategoryColor(category: FontCategory): string {
-  switch (category) {
-    case "size":
-      return "#6366f1"
-    case "color":
-      return "#ec4899"
-    case "style":
-      return "#14b8a6"
-    default:
-      return "#64748b"
-  }
+/** Category colors for badges */
+const CATEGORY_COLORS: Record<FontCategory, string> = {
+  size: "#6366f1",
+  color: "#ec4899",
+  style: "#14b8a6",
 }
 
-/** Get preview color for color options */
-function getPreviewColor(id: string): string {
-  switch (id) {
-    case "red":
-      return "#ef4444"
-    case "blue":
-      return "#3b82f6"
-    case "green":
-      return "#22c55e"
-    case "orange":
-      return "#f97316"
-    case "purple":
-      return "#a855f7"
-    case "gray":
-      return "#6b7280"
-    default:
-      return "#0f172a"
-  }
+/** Preview colors for color options */
+const PREVIEW_COLORS: Record<string, string> = {
+  red: "#ef4444",
+  blue: "#3b82f6",
+  green: "#22c55e",
+  orange: "#f97316",
+  purple: "#a855f7",
+  gray: "#6b7280",
+}
+
+/** Font size overrides for specific options */
+const FONT_SIZE_MAP: Record<string, number> = {
+  tiny: 14,
+  small: 16,
+  large: 28,
+  huge: 34,
 }
 
 /** Create a tile for a font option */
 function makeFontTile(option: FontOption): PickerItem {
-  const categoryColor = getCategoryColor(option.category)
-  const previewColor = option.category === "color" ? getPreviewColor(option.id) : "#0f172a"
+  const categoryColor = CATEGORY_COLORS[option.category] || "#64748b"
+  const previewColor =
+    option.category === "color" ? PREVIEW_COLORS[option.id] || "#0f172a" : "#0f172a"
 
   // Font styling for preview
-  let fontWeight = "500"
-  let fontStyle = "normal"
-  let textDecoration = "none"
-  let fontSize = "22"
-
-  if (option.id === "bold" || option.id === "bolditalic") fontWeight = "700"
-  if (option.id === "italic" || option.id === "bolditalic") fontStyle = "italic"
-  if (option.id === "strikethrough") textDecoration = "line-through"
-  if (option.id === "tiny") fontSize = "14"
-  if (option.id === "small") fontSize = "16"
-  if (option.id === "large") fontSize = "28"
-  if (option.id === "huge") fontSize = "34"
-  if (option.id === "code") {
-    fontWeight = "400"
-  }
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
-  <defs>
-    <linearGradient id="bg-${option.id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f8fafc" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="176" rx="18" fill="url(#bg-${option.id})"/>
-  <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
-  
-  <!-- Category badge -->
-  <rect x="20" y="20" width="${calculateBadgeWidth(CATEGORY_LABELS[option.category])}" height="24" rx="6" fill="${categoryColor}" fill-opacity="0.15"/>
-  <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${categoryColor}">${escapeForSvg(CATEGORY_LABELS[option.category])}</text>
-  
-  <!-- Preview text -->
-  <text x="120" y="${option.id === "huge" ? "100" : "95"}" text-anchor="middle" font-family="${option.id === "code" ? "ui-monospace, monospace" : "system-ui, -apple-system, Segoe UI, Roboto, sans-serif"}" font-size="${fontSize}" font-weight="${fontWeight}" font-style="${fontStyle}" text-decoration="${textDecoration}" fill="${previewColor}" fill-opacity="0.92">${escapeForSvg(option.preview)}</text>
-  
-  <!-- Label -->
-  <text x="120" y="145" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="13" font-weight="500" fill="#0f172a" fill-opacity="0.55">${escapeForSvg(option.label)}</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
+  const isBold = option.id === "bold" || option.id === "bolditalic"
+  const isItalic = option.id === "italic" || option.id === "bolditalic"
+  const fontSize = FONT_SIZE_MAP[option.id] || 22
 
   return {
     id: option.id,
-    previewUrl: dataUrl,
+    previewUrl: createCategoryTile({
+      id: option.id,
+      category: CATEGORY_LABELS[option.category],
+      categoryColor,
+      mainText: option.preview,
+      mainFontSize: fontSize,
+      mainFontWeight: isBold ? "700" : option.id === "code" ? "400" : "500",
+      mainFontStyle: isItalic ? "italic" : undefined,
+      mainTextDecoration: option.id === "strikethrough" ? "line-through" : undefined,
+      mainColor: previewColor,
+      mainMonospace: option.id === "code",
+      label: option.label,
+    }),
     data: option,
   }
 }
 
-/** Filter options by query */
-function filterOptions(query: string): FontOption[] {
-  const q = (query || "").toLowerCase().trim()
-  if (!q) return FONT_OPTIONS
-
-  return FONT_OPTIONS.filter((opt) => {
-    return (
-      opt.id.includes(q) ||
-      opt.label.toLowerCase().includes(q) ||
-      opt.category.includes(q) ||
-      CATEGORY_LABELS[opt.category].toLowerCase().includes(q)
-    )
-  })
-}
-
-/** Get options sorted by category order */
-function getSortedOptions(options: FontOption[]): FontOption[] {
-  return [...options].sort((a, b) => {
-    const aIdx = CATEGORY_ORDER.indexOf(a.category)
-    const bIdx = CATEGORY_ORDER.indexOf(b.category)
-    if (aIdx !== bIdx) return aIdx - bIdx
-    return FONT_OPTIONS.indexOf(a) - FONT_OPTIONS.indexOf(b)
+/** Filter and sort options by query */
+function getFilteredOptions(query: string): FontOption[] {
+  return filterAndSort({
+    items: FONT_OPTIONS,
+    query,
+    searchFields: [
+      (opt) => opt.id,
+      (opt) => opt.label,
+      (opt) => opt.category,
+      (opt) => CATEGORY_LABELS[opt.category],
+    ],
+    categoryOrder: CATEGORY_ORDER,
+    getCategory: (opt) => opt.category,
   })
 }
 
@@ -257,7 +219,7 @@ const fontCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    const options = getSortedOptions(FONT_OPTIONS)
+    const options = getFilteredOptions("")
     const items = options.map(makeFontTile)
     return {
       items,
@@ -267,37 +229,15 @@ const fontCommand: CommandSpec = {
   },
 
   getResults: async (query: string) => {
-    const filtered = filterOptions(query)
-    const sorted = getSortedOptions(filtered)
-    const items = sorted.map(makeFontTile)
+    const options = getFilteredOptions(query)
+    const items = options.map(makeFontTile)
     return {
       items,
       suggestTitle: query ? "Matching styles" : "Font styles",
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertFontMarkdown(it.data as FontOption),
-      suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertFontMarkdown(it.data as FontOption),
-      "Font styles"
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertFontMarkdown(it.data as FontOption)
-  },
+  ...createGridHandlers<FontOption>(insertFontMarkdown),
 
   noResultsMessage: "No matching font styles found. Try: bold, italic, red, large",
 }

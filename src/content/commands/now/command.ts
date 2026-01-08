@@ -5,10 +5,12 @@
  * into GitHub markdown fields.
  */
 
-import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
-import { renderGrid, state, insertTextAtCursor, calculateBadgeWidth } from "../../picker/index.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
+import { createDetailTile } from "../../../utils/tile-builder.ts"
+import { filterItems } from "../../../utils/filter-sort.ts"
 
 /** Date format types */
 type DateFormat =
@@ -147,116 +149,61 @@ const DATE_OPTIONS: DateOption[] = [
   },
 ]
 
-/** Get format color for category badge */
-function getFormatColor(format: DateFormat): string {
-  switch (format) {
-    case "iso":
-    case "iso-date":
-      return "#6366f1"
-    case "local":
-    case "local-date":
-    case "local-time":
-      return "#22c55e"
-    case "utc":
-    case "utc-date":
-    case "utc-time":
-      return "#3b82f6"
-    case "relative":
-      return "#f59e0b"
-    case "unix":
-      return "#8b5cf6"
-    default:
-      return "#64748b"
-  }
+/** Format category colors */
+const FORMAT_COLORS: Record<string, string> = {
+  iso: "#6366f1",
+  "iso-date": "#6366f1",
+  local: "#22c55e",
+  "local-date": "#22c55e",
+  "local-time": "#22c55e",
+  utc: "#3b82f6",
+  "utc-date": "#3b82f6",
+  "utc-time": "#3b82f6",
+  relative: "#f59e0b",
+  unix: "#8b5cf6",
 }
 
-/** Get format category label */
-function getFormatCategory(format: DateFormat): string {
-  switch (format) {
-    case "iso":
-    case "iso-date":
-      return "ISO"
-    case "local":
-    case "local-date":
-    case "local-time":
-      return "Local"
-    case "utc":
-    case "utc-date":
-    case "utc-time":
-      return "UTC"
-    case "relative":
-      return "Relative"
-    case "unix":
-      return "Unix"
-    default:
-      return "Other"
-  }
+/** Format category labels */
+const FORMAT_CATEGORIES: Record<string, string> = {
+  iso: "ISO",
+  "iso-date": "ISO",
+  local: "Local",
+  "local-date": "Local",
+  "local-time": "Local",
+  utc: "UTC",
+  "utc-date": "UTC",
+  "utc-time": "UTC",
+  relative: "Relative",
+  unix: "Unix",
 }
-
-/** SVG layout constants for tile rendering */
-const TILE_PREVIEW_MAX_LENGTH = 28
-const TILE_PREVIEW_TRUNCATE_AT = 25
 
 /** Create a tile for a date option */
 function makeDateTile(option: DateOption, previewDate: Date): PickerItem {
-  const formatColor = getFormatColor(option.format)
-  const categoryLabel = getFormatCategory(option.format)
-  const previewValue = option.formatter(previewDate)
-
-  // Truncate long preview values
-  const displayValue =
-    previewValue.length > TILE_PREVIEW_MAX_LENGTH
-      ? previewValue.slice(0, TILE_PREVIEW_TRUNCATE_AT) + "..."
-      : previewValue
-
-  const badgeWidth = calculateBadgeWidth(categoryLabel)
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176">
-  <defs>
-    <linearGradient id="bg-${option.id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f8fafc" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="176" rx="18" fill="url(#bg-${option.id})"/>
-  <rect x="12" y="12" width="216" height="152" rx="14" fill="#ffffff" fill-opacity="0.65" stroke="#0f172a" stroke-opacity="0.10"/>
-  
-  <!-- Category badge -->
-  <rect x="20" y="20" width="${badgeWidth}" height="24" rx="6" fill="${formatColor}" fill-opacity="0.15"/>
-  <text x="28" y="37" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="${formatColor}">${escapeForSvg(categoryLabel)}</text>
-  
-  <!-- Label -->
-  <text x="24" y="75" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="18" font-weight="600" fill="#0f172a" fill-opacity="0.86">${escapeForSvg(option.label)}</text>
-  
-  <!-- Preview value -->
-  <text x="24" y="105" font-family="ui-monospace, monospace" font-size="12" font-weight="400" fill="#0f172a" fill-opacity="0.65">${escapeForSvg(displayValue)}</text>
-  
-  <!-- Description -->
-  <text x="24" y="145" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="500" fill="#0f172a" fill-opacity="0.50">${escapeForSvg(option.description)}</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: option.id,
-    previewUrl: dataUrl,
+    previewUrl: createDetailTile({
+      id: option.id,
+      category: FORMAT_CATEGORIES[option.format] || "Other",
+      categoryColor: FORMAT_COLORS[option.format] || "#64748b",
+      title: option.label,
+      preview: option.formatter(previewDate),
+      description: option.description,
+    }),
     data: option,
   }
 }
 
 /** Filter options by query */
-function filterOptions(query: string): DateOption[] {
-  const q = (query || "").toLowerCase().trim()
-  if (!q) return DATE_OPTIONS
-
-  return DATE_OPTIONS.filter((opt) => {
-    return (
-      opt.id.includes(q) ||
-      opt.label.toLowerCase().includes(q) ||
-      opt.description.toLowerCase().includes(q) ||
-      opt.format.includes(q)
-    )
+function getFilteredOptions(query: string): DateOption[] {
+  return filterItems({
+    items: DATE_OPTIONS,
+    query,
+    searchFields: [
+      (opt) => opt.id,
+      (opt) => opt.label,
+      (opt) => opt.description,
+      (opt) => opt.format,
+    ],
   })
 }
 
@@ -286,36 +233,15 @@ const nowCommand: CommandSpec = {
 
   getResults: async (query: string) => {
     const previewDate = new Date()
-    const filtered = filterOptions(query)
-    const items = filtered.map((opt) => makeDateTile(opt, previewDate))
+    const options = getFilteredOptions(query)
+    const items = options.map((opt) => makeDateTile(opt, previewDate))
     return {
       items,
       suggestTitle: query ? "Matching formats" : "Date formats",
     }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertDateString(it.data as DateOption),
-      suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertDateString(it.data as DateOption),
-      "Date formats"
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertDateString(it.data as DateOption)
-  },
+  ...createGridHandlers<DateOption>(insertDateString),
 
   noResultsMessage: "No matching date formats found. Try: iso, local, utc, relative",
 }

@@ -5,6 +5,8 @@
  * that can be inserted into GitHub markdown.
  */
 
+import { filterAndSort } from "../../../utils/filter-sort.ts"
+
 /** Diagram categories */
 export type DiagramCategory = "flow" | "sequence" | "class" | "state" | "other"
 
@@ -272,30 +274,23 @@ gitGraph
   },
 ]
 
-/** Filter templates by query */
-export function filterTemplates(query: string): DiagramTemplate[] {
-  const q = (query || "").toLowerCase().trim()
-  if (!q) return DIAGRAM_TEMPLATES
+/** Category display order */
+const CATEGORY_ORDER: DiagramCategory[] = ["flow", "sequence", "class", "state", "other"]
 
-  return DIAGRAM_TEMPLATES.filter((tmpl) => {
-    return (
-      tmpl.id.toLowerCase().includes(q) ||
-      tmpl.label.toLowerCase().includes(q) ||
-      tmpl.description.toLowerCase().includes(q) ||
-      tmpl.category.includes(q) ||
-      DIAGRAM_CATEGORY_LABELS[tmpl.category].toLowerCase().includes(q)
-    )
-  })
-}
-
-/** Get templates sorted by category */
-export function getSortedTemplates(templates: DiagramTemplate[]): DiagramTemplate[] {
-  const categoryOrder: DiagramCategory[] = ["flow", "sequence", "class", "state", "other"]
-  return [...templates].sort((a, b) => {
-    const aIdx = categoryOrder.indexOf(a.category)
-    const bIdx = categoryOrder.indexOf(b.category)
-    if (aIdx !== bIdx) return aIdx - bIdx
-    return DIAGRAM_TEMPLATES.indexOf(a) - DIAGRAM_TEMPLATES.indexOf(b)
+/** Filter and sort templates by query */
+export function getFilteredTemplates(query: string): DiagramTemplate[] {
+  return filterAndSort({
+    items: DIAGRAM_TEMPLATES,
+    query,
+    searchFields: [
+      (tmpl) => tmpl.id,
+      (tmpl) => tmpl.label,
+      (tmpl) => tmpl.description,
+      (tmpl) => tmpl.category,
+      (tmpl) => DIAGRAM_CATEGORY_LABELS[tmpl.category],
+    ],
+    categoryOrder: CATEGORY_ORDER,
+    getCategory: (tmpl) => tmpl.category,
   })
 }
 

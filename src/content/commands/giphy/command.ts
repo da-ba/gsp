@@ -16,17 +16,15 @@ import {
   type GiphyImageFormat,
 } from "./api.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
 import {
-  renderGrid,
-  state,
   getCommandCache,
   setCommandCache,
   clearCommandCache,
   getCardStyles,
-  getInputStyles,
-  getBadgeStyles,
   applyStyles,
   insertTextAtCursor,
+  renderTokenForm,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 
@@ -49,11 +47,6 @@ function toPickerItem(gif: GifItem): PickerItem {
     previewUrl: gif.previewUrl,
     data: gif, // Store original GifItem for insertUrl access
   }
-}
-
-/** Get original GifItem from PickerItem */
-function fromPickerItem(item: PickerItem): GifItem {
-  return item.data as GifItem
 }
 
 /** Get cached image format settings, loading from storage if needed */
@@ -98,105 +91,31 @@ export type GiphyKeyFormOptions = {
 }
 
 /**
- * Render Giphy API key form (shared between setup panel and settings)
+ * Render Giphy API key form using shared token form component.
  */
 function renderGiphyKeyForm(container: HTMLElement, options: GiphyKeyFormOptions = {}): void {
   const { showClear = false, showCurrentKey = false, onSave } = options
 
-  const section = document.createElement("div")
-  section.style.display = "flex"
-  section.style.flexDirection = "column"
-  section.style.gap = "8px"
-
-  const label = document.createElement("div")
-  label.textContent = "Giphy API Key"
-  label.style.fontWeight = "600"
-  section.appendChild(label)
-
-  const desc = document.createElement("div")
-  desc.style.fontSize = "12px"
-  desc.style.opacity = "0.72"
-  desc.innerHTML =
-    'Get a free key at <a href="https://developers.giphy.com/dashboard/" target="_blank" style="color:inherit;text-decoration:underline;">developers.giphy.com</a>'
-  section.appendChild(desc)
-
-  const input = document.createElement("input")
-  input.type = "text"
-  input.placeholder = "Paste API key…"
-  applyStyles(input, getInputStyles())
-  section.appendChild(input)
-
-  // Load current key if requested
-  if (showCurrentKey) {
-    getGiphyKey().then((key) => {
-      if (key) {
-        input.value = key.slice(0, 4) + "…" + key.slice(-4)
-      }
-    })
-  }
-
-  const btnRow = document.createElement("div")
-  btnRow.style.display = "flex"
-  btnRow.style.gap = "8px"
-
-  const saveBtn = document.createElement("button")
-  saveBtn.type = "button"
-  saveBtn.setAttribute("data-settings-action", "true")
-  saveBtn.textContent = "Save Key"
-  applyStyles(saveBtn, getBadgeStyles())
-  saveBtn.style.cursor = "pointer"
-  saveBtn.style.padding = "6px 12px"
-  btnRow.appendChild(saveBtn)
-
-  if (showClear) {
-    const clearBtn = document.createElement("button")
-    clearBtn.type = "button"
-    clearBtn.setAttribute("data-settings-action", "true")
-    clearBtn.textContent = "Clear"
-    applyStyles(clearBtn, getBadgeStyles())
-    clearBtn.style.cursor = "pointer"
-    clearBtn.style.padding = "6px 12px"
-    clearBtn.style.opacity = "0.72"
-    btnRow.appendChild(clearBtn)
-
-    clearBtn.addEventListener("click", async (ev) => {
-      ev.preventDefault()
-      ev.stopPropagation()
-      await setGiphyKey("")
+  renderTokenForm(container, {
+    label: "Giphy API Key",
+    description:
+      'Get a free key at <a href="https://developers.giphy.com/dashboard/" target="_blank" style="color:inherit;text-decoration:underline;">developers.giphy.com</a>',
+    placeholder: "Paste API key…",
+    saveButtonText: "Save Key",
+    showClear,
+    loadCurrentValue: showCurrentKey ? getGiphyKey : undefined,
+    onSave: async (value) => {
+      await setGiphyKey(value)
       clearGiphyCaches()
-      input.value = ""
-      msg.textContent = "Cleared"
-    })
-  }
-
-  section.appendChild(btnRow)
-
-  const msg = document.createElement("div")
-  msg.style.fontSize = "12px"
-  msg.style.opacity = "0.72"
-  section.appendChild(msg)
-
-  saveBtn.addEventListener("click", async (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    const val = input.value.trim()
-    if (val.includes("…")) {
-      msg.textContent = "Enter a new key to save"
-      return
-    }
-    if (!val) {
-      msg.textContent = "Please enter a key"
-      return
-    }
-    msg.textContent = "Saving…"
-    await setGiphyKey(val)
-    clearGiphyCaches()
-    msg.textContent = "Saved!"
-    input.value = val.slice(0, 4) + "…" + val.slice(-4)
-    onSave?.()
+    },
+    onClear: showClear
+      ? async () => {
+          await setGiphyKey("")
+          clearGiphyCaches()
+        }
+      : undefined,
+    onSaveComplete: onSave,
   })
-
-  container.appendChild(section)
 }
 
 /**
@@ -278,28 +197,7 @@ const giphyCommand: CommandSpec = {
     return { items: r.data ?? [] }
   },
 
-  renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => insertGifMarkdown(fromPickerItem(it).insertUrl),
-      suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    renderGrid(
-      state.currentItems || [],
-      (it) => it.previewUrl,
-      (it) => insertGifMarkdown(fromPickerItem(it).insertUrl),
-      "Suggestions"
-    )
-  },
-
-  onSelect: (it: PickerItem) => {
-    if (!it) return
-    insertGifMarkdown(fromPickerItem(it).insertUrl)
-  },
+  ...createGridHandlers<GifItem>((gif) => insertGifMarkdown(gif.insertUrl)),
 
   noResultsMessage: "No results. Check your Giphy key in extension settings.",
 

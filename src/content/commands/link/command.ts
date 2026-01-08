@@ -12,15 +12,13 @@
  */
 
 import { escapeForSvg } from "../../../utils/svg.ts"
+import { createStatusTile, createEmptyTile } from "../../../utils/tile-builder.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
 import {
   renderGrid,
-  state,
   showSettings,
-  getInputStyles,
-  getBadgeStyles,
-  applyStyles,
   insertTextAtCursor,
+  renderTokenForm,
 } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { parseLinkQuery, formatMarkdownLink, type LinkParseResult } from "./api.ts"
@@ -85,32 +83,19 @@ function makeLinkTile(parsed: LinkParseResult): PickerItem {
   }
 }
 
+/** Link icon SVG for empty tile */
+const LINK_ICON_SVG = `<path d="M104 50 L114 40 Q118 36 122 40 L132 50 Q136 54 132 58 L128 62" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M124 58 L114 68 Q110 72 106 68 L96 58 Q92 54 96 50 L100 46" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+
 /** Create a tile for entering a new link */
 function makeEmptyLinkTile(): PickerItem {
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-empty" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f8fafc" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f1f5f9" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-empty)"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06" stroke-dasharray="4 2"/>
-
-  <!-- Link icon -->
-  <path d="M104 50 L114 40 Q118 36 122 40 L132 50 Q136 54 132 58 L128 62" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M124 58 L114 68 Q110 72 106 68 L96 58 Q92 54 96 50 L100 46" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-
-  <!-- Hint text -->
-  <text x="120" y="92" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#64748b">Type a URL after /link</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: "link-empty",
-    previewUrl: dataUrl,
+    previewUrl: createEmptyTile({
+      id: "link-empty",
+      message: "Type a URL after /link",
+      icon: LINK_ICON_SVG,
+    }),
     data: null,
   }
 }
@@ -183,63 +168,27 @@ function makeCITile(suggestion: CILinkSuggestion): PickerItem {
 
 /** Create a tile for CI setup/token required */
 function makeCISetupTile(): PickerItem {
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-setup" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fef3c7" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#fef9c3" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-setup)"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
-
-  <!-- Warning icon -->
-  <path d="M120 35 L135 60 L105 60 Z" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linejoin="round"/>
-  <line x1="120" y1="45" x2="120" y2="50" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="120" cy="55" r="1.5" fill="#f59e0b"/>
-
-  <!-- Text -->
-  <text x="120" y="80" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#92400e">GitHub token required</text>
-  <text x="120" y="96" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="10" fill="#92400e" fill-opacity="0.7">Click to configure</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: "ci-setup",
-    previewUrl: dataUrl,
+    previewUrl: createStatusTile({
+      id: "ci-setup",
+      type: "warning",
+      message: "GitHub token required",
+      submessage: "Click to configure",
+    }),
     data: { type: "setup" },
   }
 }
 
 /** Create a tile for CI loading state */
 function makeCILoadingTile(): PickerItem {
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-loading" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f8fafc" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f1f5f9" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-loading)"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
-
-  <!-- Loading spinner -->
-  <circle cx="120" cy="50" r="12" stroke="#94a3b8" stroke-width="2" fill="none" stroke-dasharray="18 18" stroke-linecap="round">
-    <animateTransform attributeName="transform" type="rotate" from="0 120 50" to="360 120 50" dur="1s" repeatCount="indefinite"/>
-  </circle>
-
-  <!-- Text -->
-  <text x="120" y="85" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#64748b">Loading CI resources...</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: "ci-loading",
-    previewUrl: dataUrl,
+    previewUrl: createStatusTile({
+      id: "ci-loading",
+      type: "loading",
+      message: "Loading CI resources...",
+    }),
     data: { type: "loading" },
   }
 }
@@ -247,62 +196,26 @@ function makeCILoadingTile(): PickerItem {
 /** Create a tile for CI error state */
 function makeCIErrorTile(error: string): PickerItem {
   const displayError = error.slice(0, DISPLAY_LIMITS.ERROR_LENGTH)
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-error" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fef2f2" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#fee2e2" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-error)"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
-
-  <!-- Error icon -->
-  <circle cx="120" cy="45" r="12" stroke="#ef4444" stroke-width="2" fill="none"/>
-  <line x1="115" y1="40" x2="125" y2="50" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-  <line x1="125" y1="40" x2="115" y2="50" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-
-  <!-- Text -->
-  <text x="120" y="80" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#dc2626">${escapeForSvg(displayError)}</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: "ci-error",
-    previewUrl: dataUrl,
+    previewUrl: createStatusTile({
+      id: "ci-error",
+      type: "error",
+      message: displayError,
+    }),
     data: { type: "error" },
   }
 }
 
 /** Create a tile for no CI results */
 function makeCINoResultsTile(): PickerItem {
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-noresults" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f8fafc" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f1f5f9" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-noresults)"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
-
-  <!-- Search icon -->
-  <circle cx="115" cy="45" r="12" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <line x1="123" y1="53" x2="130" y2="60" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-
-  <!-- Text -->
-  <text x="120" y="85" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#64748b">No matching CI resources</text>
-</svg>`
-
-  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)
-
   return {
     id: "ci-noresults",
-    previewUrl: dataUrl,
+    previewUrl: createStatusTile({
+      id: "ci-noresults",
+      type: "empty",
+      message: "No matching CI resources",
+    }),
     data: { type: "noresults" },
   }
 }
@@ -352,96 +265,24 @@ function isLinkItemData(data: ItemData): data is LinkItemData {
 }
 
 /**
- * Render GitHub Token form for settings panel
+ * Render GitHub Token form using shared token form component.
  */
 function renderGitHubTokenForm(container: HTMLElement): void {
-  const section = document.createElement("div")
-  section.style.display = "flex"
-  section.style.flexDirection = "column"
-  section.style.gap = "8px"
-
-  const label = document.createElement("div")
-  label.textContent = "GitHub Token (for /link ci)"
-  label.style.fontWeight = "600"
-  section.appendChild(label)
-
-  const desc = document.createElement("div")
-  desc.style.fontSize = "12px"
-  desc.style.opacity = "0.72"
-  desc.innerHTML =
-    'Create a <a href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo" target="_blank" style="color:inherit;text-decoration:underline;">Personal Access Token</a> with <code style="font-size:11px;">public_repo</code> or <code style="font-size:11px;">repo</code> scope.'
-  section.appendChild(desc)
-
-  const input = document.createElement("input")
-  input.type = "text"
-  input.placeholder = "Paste GitHub token…"
-  applyStyles(input, getInputStyles())
-  section.appendChild(input)
-
-  // Load current token (masked)
-  getGitHubToken().then((token) => {
-    if (token) {
-      input.value = token.slice(0, 4) + "…" + token.slice(-4)
-    }
+  renderTokenForm(container, {
+    label: "GitHub Token (for /link ci)",
+    description:
+      'Create a <a href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo" target="_blank" style="color:inherit;text-decoration:underline;">Personal Access Token</a> with <code style="font-size:11px;">public_repo</code> or <code style="font-size:11px;">repo</code> scope.',
+    placeholder: "Paste GitHub token…",
+    saveButtonText: "Save Token",
+    showClear: true,
+    loadCurrentValue: getGitHubToken,
+    onSave: async (value) => {
+      await setGitHubToken(value)
+    },
+    onClear: async () => {
+      await setGitHubToken("")
+    },
   })
-
-  const btnRow = document.createElement("div")
-  btnRow.style.display = "flex"
-  btnRow.style.gap = "8px"
-
-  const saveBtn = document.createElement("button")
-  saveBtn.type = "button"
-  saveBtn.setAttribute("data-settings-action", "true")
-  saveBtn.textContent = "Save Token"
-  applyStyles(saveBtn, getBadgeStyles())
-  saveBtn.style.cursor = "pointer"
-  saveBtn.style.padding = "6px 12px"
-  btnRow.appendChild(saveBtn)
-
-  const clearBtn = document.createElement("button")
-  clearBtn.type = "button"
-  clearBtn.setAttribute("data-settings-action", "true")
-  clearBtn.textContent = "Clear"
-  applyStyles(clearBtn, getBadgeStyles())
-  clearBtn.style.cursor = "pointer"
-  clearBtn.style.padding = "6px 12px"
-  clearBtn.style.opacity = "0.72"
-  btnRow.appendChild(clearBtn)
-
-  section.appendChild(btnRow)
-
-  const msg = document.createElement("div")
-  msg.style.fontSize = "12px"
-  msg.style.opacity = "0.72"
-  section.appendChild(msg)
-
-  saveBtn.addEventListener("click", async (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    const val = input.value.trim()
-    if (val.includes("…")) {
-      msg.textContent = "Enter a new token to save"
-      return
-    }
-    if (!val) {
-      msg.textContent = "Please enter a token"
-      return
-    }
-    msg.textContent = "Saving…"
-    await setGitHubToken(val)
-    msg.textContent = "Saved!"
-    input.value = val.slice(0, 4) + "…" + val.slice(-4)
-  })
-
-  clearBtn.addEventListener("click", async (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    await setGitHubToken("")
-    input.value = ""
-    msg.textContent = "Cleared"
-  })
-
-  container.appendChild(section)
 }
 
 const linkCommand: CommandSpec = {
@@ -532,25 +373,6 @@ const linkCommand: CommandSpec = {
         }
       },
       suggestTitle
-    )
-  },
-
-  renderCurrent: () => {
-    const items = state.currentItems || []
-    renderGrid(
-      items,
-      (it) => it.previewUrl,
-      (it) => {
-        const data = it.data as ItemData
-        if (isSetupItemData(data)) {
-          showSettings()
-        } else if (isCIItemData(data)) {
-          insertCILink(data.suggestion)
-        } else if (isLinkItemData(data) && data.isValid) {
-          insertLink(data)
-        }
-      },
-      "Link"
     )
   },
 
