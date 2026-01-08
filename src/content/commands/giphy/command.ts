@@ -15,7 +15,8 @@ import {
   type GifItem,
   type GiphyImageFormat,
 } from "./api.ts"
-import { registerCommand, createGridHandlers, type CommandSpec } from "../registry.ts"
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
 import {
   getCommandCache,
   setCommandCache,

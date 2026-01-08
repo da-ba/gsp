@@ -6,7 +6,8 @@
  */
 
 import { escapeForSvg } from "../../../utils/svg.ts"
-import { registerCommand, createGridHandlers, type CommandSpec } from "../registry.ts"
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
 import { getCommandCache, setCommandCache, insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import {

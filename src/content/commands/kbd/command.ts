@@ -9,7 +9,8 @@
  * - Alternative keys: 1/2/3
  */
 
-import { registerCommand, createGridHandlers, type CommandSpec } from "../registry.ts"
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
 import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createCategoryTile } from "../../../utils/tile-builder.ts"

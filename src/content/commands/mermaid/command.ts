@@ -5,7 +5,8 @@
  * GitHub natively renders Mermaid diagrams in markdown code blocks.
  */
 
-import { registerCommand, createGridHandlers, type CommandSpec } from "../registry.ts"
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
 import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createIconTile } from "../../../utils/tile-builder.ts"

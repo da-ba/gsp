@@ -3,7 +3,6 @@
  */
 
 import type { PickerItem } from "../types.ts"
-import { renderGrid } from "../picker/index.ts"
 
 export type PreflightResult = {
   showSetup: boolean
@@ -55,32 +54,6 @@ export type CommandSpec = {
 }
 
 const commandRegistry: Record<string, CommandSpec> = {}
-
-/**
- * Create standard renderItems and onSelect handlers for a grid-based command.
- * Most commands follow the same pattern: display items in a grid and insert content on select.
- *
- * @param onInsert - Function to call when an item is selected, receives item.data
- * @returns Object with renderItems and onSelect methods to spread into CommandSpec
- */
-export function createGridHandlers<T>(
-  onInsert: (data: T) => void
-): Pick<CommandSpec, "renderItems" | "onSelect"> {
-  return {
-    renderItems: (items: PickerItem[], suggestTitle: string) => {
-      renderGrid(
-        items,
-        (it) => it.previewUrl,
-        (it) => onInsert(it.data as T),
-        suggestTitle
-      )
-    },
-    onSelect: (it: PickerItem) => {
-      if (!it) return
-      onInsert(it.data as T)
-    },
-  }
-}
 
 export function registerCommand(name: string, spec: CommandSpec): void {
   commandRegistry[name] = spec
