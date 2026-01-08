@@ -5,7 +5,7 @@
 import { isGitHubMarkdownField, getCursorInfo, parseSlashCommand } from "../utils/dom.ts"
 import { onThemeChange, setThemeOverride } from "../utils/theme.ts"
 import { getThemePreference } from "../utils/storage.ts"
-import { neg } from "../utils/math.ts"
+import { add, neg } from "../utils/math.ts"
 import { getCommand } from "./commands/registry.ts"
 import {
   state,
@@ -261,7 +261,8 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   }
 
   state.activeField = field
-  state.activeLineStart = info.lineStart
+  // Calculate slash position: lineStart + offset where slash was found in the line
+  state.activeLineStart = add(info.lineStart, parsed.slashOffset)
   state.activeCursorPos = info.pos
 
   await handleCommandInput(field, cmdName, query || "")

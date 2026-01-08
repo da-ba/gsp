@@ -3377,3 +3377,289 @@ test.describe("Mention Command", () => {
     await browser.close();
   });
 });
+
+test.describe("Mid-Sentence Slash Commands", () => {
+  let testServer: { server: Server; port: number };
+
+  test.beforeAll(async () => {
+    const testPagePath = join(__dirname, "fixtures", "test-page.html");
+    const testPageContent = await readFile(testPagePath, "utf-8");
+
+    testServer = await new Promise((resolve) => {
+      const server = createServer((req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(testPageContent);
+      });
+
+      server.listen(0, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address ? address.port : 0;
+        resolve({ server, port });
+      });
+    });
+  });
+
+  test.afterAll(async () => {
+    testServer?.server?.close();
+  });
+
+  // Helper to inject extension content script into a page
+  async function injectContentScript(page: Page) {
+    const contentScriptPath = join(__dirname, "..", "dist", "content.js");
+    const contentScript = await readFile(contentScriptPath, "utf-8");
+    await page.addScriptTag({ content: contentScript });
+  }
+
+  // Helper to set up the page and inject script
+  async function setupPage(
+    browser: Awaited<ReturnType<typeof chromium.launch>>,
+    port: number
+  ): Promise<{ page: Page; textarea: ReturnType<Page["locator"]> }> {
+    const page = await browser.newPage();
+    await page.goto(`http://localhost:${port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+
+    return { page, textarea };
+  }
+
+  test("mid-sentence /font command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command
+    await textarea.fill("Hello /font");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows font styles
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Popular styles");
+
+    await browser.close();
+  });
+
+  test("mid-sentence /font selection replaces only the command", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command with query
+    await textarea.fill("Hello /font bold");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the first (bold) option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that only the command part was replaced, preserving "Hello "
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("Hello **bold**");
+
+    await browser.close();
+  });
+
+  test("mid-sentence /emoji command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command
+    await textarea.fill("Check this /emoji");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows emoji content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Popular");
+
+    await browser.close();
+  });
+
+  test("mid-sentence /emoji selection replaces only the command", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command with query
+    await textarea.fill("Check this /emoji thumbs up");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the emoji
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that only the command part was replaced, preserving "Check this "
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("Check this 👍 ");
+
+    await browser.close();
+  });
+
+  test("mid-sentence /now command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command
+    await textarea.fill("Today is /now");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows date format content
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Date formats");
+
+    await browser.close();
+  });
+
+  test("mid-sentence /now selection replaces only the command", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command with query
+    await textarea.fill("Today is /now iso-date");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the ISO Date option
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that only the command part was replaced, preserving "Today is "
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toMatch(/^Today is \d{4}-\d{2}-\d{2}$/);
+
+    await browser.close();
+  });
+
+  test("mid-sentence /kbd command shows picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command
+    await textarea.fill("Press /kbd");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Verify the picker shows keyboard shortcuts
+    const pickerContent = await picker.textContent();
+    expect(pickerContent).toContain("Common shortcuts");
+
+    await browser.close();
+  });
+
+  test("mid-sentence /kbd selection replaces only the command", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type text followed by a slash command with query
+    await textarea.fill("Press /kbd copy");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Enter to select the copy shortcut
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+
+    // Check that only the command part was replaced, preserving "Press "
+    const textareaValue = await textarea.inputValue();
+    expect(textareaValue).toBe("Press <kbd>⌃</kbd><kbd>C</kbd> ");
+
+    await browser.close();
+  });
+
+  test("slash in URL does not trigger picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a URL (slashes in URLs should not trigger the picker)
+    await textarea.fill("https://example.com/path");
+    await page.waitForTimeout(500);
+
+    // Picker should NOT be visible
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("slash command after URL triggers picker", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    // Type a URL followed by a command (the command should trigger the picker)
+    await textarea.fill("See https://example.com /emoji");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    await browser.close();
+  });
+
+  test("picker closes on Escape for mid-sentence command", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("Hello /font");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(200);
+
+    // Picker should be closed
+    await expect(picker).not.toBeVisible();
+
+    await browser.close();
+  });
+
+  test("navigation works for mid-sentence commands", async () => {
+    const browser = await chromium.launch({ headless: false });
+    const { page, textarea } = await setupPage(browser, testServer.port);
+
+    await textarea.fill("Text /font");
+    await page.waitForTimeout(500);
+
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // First item should be selected by default
+    const firstButton = picker.locator('button[data-item-index="0"]');
+    const initialStyle = await firstButton.getAttribute("style");
+    expect(initialStyle).toContain("box-shadow");
+
+    // Press right arrow to move selection
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(100);
+
+    // Second item should now be selected
+    const secondButton = picker.locator('button[data-item-index="1"]');
+    const secondStyle = await secondButton.getAttribute("style");
+    expect(secondStyle).toContain("box-shadow");
+
+    await browser.close();
+  });
+});
