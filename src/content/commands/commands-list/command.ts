@@ -8,17 +8,14 @@
 
 import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
-import { renderGrid, setSlashQueryInField } from "../../picker/index.ts"
-import { createSimpleTile } from "../../../utils/tile-builder.ts"
+import { renderList, setSlashQueryInField } from "../../picker/index.ts"
 
-function makeCommandTile(name: string): PickerItem {
+function makeCommandItem(name: string): PickerItem {
   return {
     id: name,
-    previewUrl: createSimpleTile({
-      id: name,
-      title: "/" + name,
-      subtitle: "Select to insert",
-    }),
+    previewUrl: "",
+    title: "/" + name,
+    subtitle: "Select to insert",
     data: name,
   }
 }
@@ -33,7 +30,7 @@ const commandsCommand: CommandSpec = {
 
   getEmptyState: async () => {
     const cmds = getAllCommandNames()
-    const items = cmds.map(makeCommandTile)
+    const items = cmds.map(makeCommandItem)
     return {
       items,
       suggestTitle: "Commands",
@@ -43,7 +40,7 @@ const commandsCommand: CommandSpec = {
   getResults: async (query: string) => {
     const q = (query || "").trim().toLowerCase()
     const cmds = getAllCommandNames().filter((c) => (q ? c.includes(q) : true))
-    const items = cmds.map(makeCommandTile)
+    const items = cmds.map(makeCommandItem)
     return {
       items,
       suggestTitle: q ? "Matching commands" : "Commands",
@@ -51,9 +48,8 @@ const commandsCommand: CommandSpec = {
   },
 
   renderItems: (items: PickerItem[], suggestTitle: string) => {
-    renderGrid(
+    renderList(
       items,
-      (it) => it.previewUrl,
       (it) => {
         // Don't retain the search term when selecting a command
         setSlashQueryInField(it.data as string, "")

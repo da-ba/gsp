@@ -267,6 +267,7 @@ export function renderGrid(
 
   state.currentItems = items
   state.selectedIndex = clamp(state.selectedIndex, 0, Math.max(0, sub(items.length, 1)))
+  state.cols = 3
 
   currentImgUrlFn = imgUrlFn
   currentOnSelect = onPickItem
@@ -282,6 +283,27 @@ export function renderGrid(
     items,
     suggestItems: state.suggestItems,
     suggestTitle,
+  }
+  renderPicker()
+}
+
+export function renderList(
+  items: PickerItem[],
+  onPickItem: (item: PickerItem) => void,
+  title?: string
+): void {
+  clearBody()
+
+  state.currentItems = items
+  state.selectedIndex = clamp(state.selectedIndex, 0, Math.max(0, sub(items.length, 1)))
+  state.cols = 1
+
+  currentOnSelect = onPickItem
+
+  reactState.view = {
+    type: "list",
+    items,
+    title,
   }
   renderPicker()
 }
