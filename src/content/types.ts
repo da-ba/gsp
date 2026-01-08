@@ -11,4 +11,6 @@ export type PickerItem = {
   title?: string
   /** Subtitle text for list view display */
   subtitle?: string
+  /** Icon (emoji or symbol) for list view display */
+  icon?: string
 }

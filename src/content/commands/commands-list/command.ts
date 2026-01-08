@@ -10,12 +10,54 @@ import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderList, setSlashQueryInField } from "../../picker/index.ts"
 
+type CommandMeta = {
+  icon: string
+  description: string
+}
+
+const commandMeta: Record<string, CommandMeta> = {
+  giphy: {
+    icon: "🎬",
+    description: "Search and insert animated GIFs",
+  },
+  emoji: {
+    icon: "😀",
+    description: "Search and insert emoji",
+  },
+  font: {
+    icon: "𝔄",
+    description: "Transform text into fancy unicode fonts",
+  },
+  mermaid: {
+    icon: "📊",
+    description: "Create diagrams and flowcharts",
+  },
+  mention: {
+    icon: "@",
+    description: "Mention a GitHub user",
+  },
+  now: {
+    icon: "🕐",
+    description: "Insert current date and time",
+  },
+  kbd: {
+    icon: "⌨️",
+    description: "Insert keyboard shortcut notation",
+  },
+  link: {
+    icon: "🔗",
+    description: "Insert formatted links",
+  },
+}
+
 function makeCommandItem(name: string): PickerItem {
+  const meta = commandMeta[name] || { icon: "📝", description: "Insert content" }
   return {
     id: name,
     previewUrl: "",
     title: "/" + name,
-    subtitle: "Select to insert",
+    subtitle: meta.description,
+    icon: meta.icon,
     data: name,
   }
 }

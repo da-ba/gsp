@@ -49,25 +49,50 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         textAlign: "left",
       }}
     >
-      <span
-        style={{
-          fontSize: "14px",
-          fontWeight: 500,
-          color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.87)",
-        }}
-      >
-        {item.title || item.id}
-      </span>
-      {item.subtitle && (
+      {item.icon && (
         <span
           style={{
-            fontSize: "12px",
-            color: dark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.50)",
+            fontSize: "18px",
+            width: "24px",
+            textAlign: "center",
+            flexShrink: 0,
           }}
         >
-          {item.subtitle}
+          {item.icon}
         </span>
       )}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "2px",
+          minWidth: 0,
+          flex: 1,
+        }}
+      >
+        <span
+          style={{
+            fontSize: "14px",
+            fontWeight: 500,
+            color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.87)",
+          }}
+        >
+          {item.title || item.id}
+        </span>
+        {item.subtitle && (
+          <span
+            style={{
+              fontSize: "12px",
+              color: dark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.50)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {item.subtitle}
+          </span>
+        )}
+      </div>
     </button>
   )
 }
