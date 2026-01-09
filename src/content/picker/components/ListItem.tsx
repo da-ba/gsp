@@ -37,7 +37,7 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
       onMouseEnter={() => onHover(index)}
       style={{
         display: "flex",
-        alignItems: "flex-start",
+        alignItems: "center",
         gap: "12px",
         width: "100%",
         padding: "10px 12px",
@@ -55,7 +55,8 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         <span
           style={{
             fontSize: "16px",
-            lineHeight: "1.4",
+            width: "20px",
+            textAlign: "center",
             flexShrink: 0,
           }}
         >
