@@ -11,20 +11,19 @@ export function PickerFooter() {
   return (
     <div
       style={{
-        padding: "10px",
+        padding: "10px 12px",
         fontSize: "12px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        height: "44px",
+        height: "40px",
         boxSizing: "border-box",
-        borderTop: dark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.10)",
+        borderTop: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.1)",
       }}
     >
       <span
         style={{
-          opacity: 0.62,
-          color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+          color: dark ? "#8d96a0" : "#656d76",
         }}
       >
         Tip: type / to list commands

@@ -2,7 +2,7 @@
  * Picker inline styles
  */
 
-import { isDarkMode, fontSystemUi, fontSansSerif, tokenLinearGradient } from "../../utils/theme.ts"
+import { isDarkMode, fontSystemUi, fontSansSerif } from "../../utils/theme.ts"
 
 /** SVG badge layout constants */
 export const BADGE_CHAR_WIDTH = 8
@@ -26,7 +26,6 @@ function getConfig(): StyleConfig {
 
 export function applyPickerStyles(el: HTMLElement): void {
   const { dark } = getConfig()
-  const lg = tokenLinearGradient()
 
   // Use fixed positioning so the picker is stable across scroll containers
   // (GitHub popovers/dialogs) and doesn't depend on page scroll offsets.
@@ -35,33 +34,34 @@ export function applyPickerStyles(el: HTMLElement): void {
   el.style.width = "400px"
   el.style.maxHeight = "380px"
   el.style.overflow = "hidden"
-  el.style.borderRadius = "14px"
-  el.style.fontSize = "13px"
+  el.style.borderRadius = "12px"
+  el.style.fontSize = "14px"
   el.style.fontFamily = fontSystemUi() + ", " + fontSansSerif()
-  el.style.backdropFilter = "blur(12px)"
+  el.style.backdropFilter = "blur(16px)"
 
+  // GitHub-style colors matching their popover design
   if (dark) {
-    el.style.color = "rgba(255,255,255,0.92)"
-    el.style.border = "1px solid rgba(255,255,255,0.14)"
-    el.style.backgroundColor = "rgba(18,18,20,0.82)"
-    el.style.backgroundImage = lg + "(180deg, rgba(35,35,40,0.92), rgba(14,14,16,0.82))"
-    el.style.boxShadow = "0 18px 46px rgba(0,0,0,0.55)"
+    el.style.color = "#e6edf3"
+    el.style.border = "1px solid #3d444d"
+    el.style.backgroundColor = "rgba(22,27,34,0.95)"
+    el.style.backgroundImage = "none"
+    el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset"
   } else {
-    el.style.color = "rgba(0,0,0,0.88)"
-    el.style.border = "1px solid rgba(0,0,0,0.14)"
-    el.style.backgroundColor = "rgba(255,255,255,0.86)"
-    el.style.backgroundImage = lg + "(180deg, rgba(255,255,255,0.96), rgba(245,247,255,0.86))"
-    el.style.boxShadow = "0 18px 46px rgba(0,0,0,0.22)"
+    el.style.color = "#1f2328"
+    el.style.border = "1px solid rgba(31,35,40,0.15)"
+    el.style.backgroundColor = "rgba(255,255,255,0.97)"
+    el.style.backgroundImage = "none"
+    el.style.boxShadow = "0 8px 24px rgba(140,149,159,0.2), 0 0 0 1px rgba(0,0,0,0.03) inset"
   }
 }
 
 export function getCardStyles(): Partial<CSSStyleDeclaration> {
   const { dark } = getConfig()
   return {
-    padding: "10px",
-    borderRadius: "12px",
-    border: dark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.10)",
-    backgroundColor: dark ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.55)",
+    padding: "12px",
+    borderRadius: "6px",
+    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
+    backgroundColor: dark ? "rgba(33,38,45,0.6)" : "rgba(246,248,250,0.8)",
   }
 }
 
@@ -69,24 +69,24 @@ export function getBadgeStyles(): Partial<CSSStyleDeclaration> {
   const { dark } = getConfig()
   return {
     fontSize: "12px",
-    opacity: "0.72",
-    borderRadius: "999px",
-    padding: "4px 10px",
-    border: dark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(0,0,0,0.14)",
-    backgroundColor: dark ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.55)",
-    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+    fontWeight: "500",
+    borderRadius: "6px",
+    padding: "4px 8px",
+    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
+    backgroundColor: dark ? "rgba(33,38,45,0.6)" : "rgba(246,248,250,0.8)",
+    color: dark ? "#8d96a0" : "#656d76",
   }
 }
 
 export function getButtonStyles(): Partial<CSSStyleDeclaration> {
   const { dark } = getConfig()
   return {
-    padding: "10px 12px",
-    borderRadius: "10px",
+    padding: "8px 12px",
+    borderRadius: "6px",
     cursor: "pointer",
-    border: dark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(0,0,0,0.18)",
-    backgroundColor: dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.85)",
-    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
+    backgroundColor: dark ? "#21262d" : "#f6f8fa",
+    color: dark ? "#e6edf3" : "#1f2328",
   }
 }
 
@@ -95,11 +95,11 @@ export function getInputStyles(): Partial<CSSStyleDeclaration> {
   return {
     width: "100%",
     boxSizing: "border-box",
-    padding: "10px 12px",
-    borderRadius: "10px",
-    border: dark ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(0,0,0,0.18)",
-    backgroundColor: dark ? "rgba(0,0,0,0.20)" : "rgba(255,255,255,0.85)",
-    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
+    backgroundColor: dark ? "#0d1117" : "#ffffff",
+    color: dark ? "#e6edf3" : "#1f2328",
   }
 }
 
@@ -108,9 +108,9 @@ export function getSkeletonStyles(): Partial<CSSStyleDeclaration> {
   return {
     width: "100%",
     height: "88px",
-    borderRadius: "12px",
-    backgroundColor: dark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)",
-    border: dark ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "6px",
+    backgroundColor: dark ? "rgba(110,118,129,0.1)" : "rgba(31,35,40,0.04)",
+    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.08)",
   }
 }
 
@@ -118,17 +118,13 @@ export function getGridItemSelectedStyles(selected: boolean): Partial<CSSStyleDe
   const { dark } = getConfig()
   return {
     outline: "0",
-    transform: selected ? "scale(1.03)" : "scale(1)",
+    transform: selected ? "scale(1.02)" : "scale(1)",
     boxShadow: selected
       ? dark
-        ? "0 10px 22px rgba(0,0,0,0.55)"
-        : "0 10px 22px rgba(0,0,0,0.22)"
-      : "0 0 0 rgba(0,0,0,0)",
-    border: selected
-      ? dark
-        ? "1px solid rgba(255,255,255,0.20)"
-        : "1px solid rgba(0,0,0,0.18)"
-      : "1px solid rgba(0,0,0,0)",
+        ? "0 4px 12px rgba(0,0,0,0.4)"
+        : "0 4px 12px rgba(0,0,0,0.15)"
+      : "none",
+    border: selected ? (dark ? "2px solid #58a6ff" : "2px solid #0969da") : "1px solid transparent",
   }
 }
 

@@ -37,11 +37,11 @@ export function GridItem({ item, index, selected, imgUrlFn, onSelect, onHover }:
         margin: 0,
         backgroundColor: "transparent",
         cursor: "pointer",
-        borderRadius: "12px",
+        borderRadius: "8px",
         overflow: "hidden",
-        border: "1px solid rgba(0,0,0,0)",
-        transition: "transform 90ms ease, boxShadow 90ms ease",
-        boxShadow: dark ? "0 6px 14px rgba(0,0,0,0.40)" : "0 6px 14px rgba(0,0,0,0.12)",
+        border: "1px solid transparent",
+        transition: "transform 80ms ease, box-shadow 80ms ease",
+        boxShadow: dark ? "0 4px 12px rgba(0,0,0,0.3)" : "0 4px 12px rgba(0,0,0,0.08)",
         ...(selectedStyles as React.CSSProperties),
       }}
     >

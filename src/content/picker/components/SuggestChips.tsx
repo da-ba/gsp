@@ -3,6 +3,7 @@
  */
 
 import React from "react"
+import { isDarkMode } from "../../../utils/theme.ts"
 import { getBadgeStyles } from "../styles.ts"
 
 export type SuggestChipsProps = {
@@ -13,6 +14,7 @@ export type SuggestChipsProps = {
 
 export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null)
+  const dark = isDarkMode()
   const badgeStyles = getBadgeStyles()
 
   if (!items.length) return null
@@ -30,9 +32,9 @@ export function SuggestChips({ items, title, onPick }: SuggestChipsProps) {
         <div
           style={{
             width: "100%",
-            opacity: 0.72,
             fontSize: "12px",
             marginBottom: "4px",
+            color: dark ? "#8d96a0" : "#656d76",
           }}
         >
           {title}

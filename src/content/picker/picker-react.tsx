@@ -6,6 +6,7 @@ import React from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { add, sub, clamp } from "../../utils/math.ts"
 import { getCaretCoordinates } from "../../utils/dom.ts"
+import { isDarkMode } from "../../utils/theme.ts"
 import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
@@ -50,6 +51,7 @@ function renderPicker(): void {
   pickerRoot.render(
     React.createElement(Picker, {
       visible: reactState.visible,
+      isDark: isDarkMode(),
       title: reactState.title,
       subtitle: reactState.subtitle,
       view: reactState.view,
@@ -96,6 +98,11 @@ function renderPicker(): void {
         }
         renderPicker()
       },
+      onThemeChange: () => {
+        // Re-render all picker components when theme changes
+        // Use setTimeout to avoid re-rendering during an active render cycle
+        setTimeout(() => renderPicker(), 0)
+      },
       onSetupComplete: currentOnSetupComplete,
       position: reactState.position,
     })
@@ -132,10 +139,19 @@ export function ensurePicker(field?: HTMLElement | null): HTMLElement {
   const el = document.createElement("div")
   el.id = "slashPalettePickerContainer"
 
-  // Keep textarea focus when selecting GIFs with the mouse
+  // Keep textarea focus when interacting with the picker
   const shouldPreventFocusSteal = (target: EventTarget | null): boolean => {
     const t = target as HTMLElement | null
     if (!t) return false
+
+    // When settings panel is showing, prevent focus steal for all buttons
+    // This keeps the picker open when interacting with settings controls
+    if (state.showingSettings) {
+      const btn = t.closest("button") as HTMLButtonElement | null
+      if (btn) return true
+    }
+
+    // For non-settings views, only prevent for specific interactive buttons
     const btn = t.closest("button") as HTMLButtonElement | null
     return !!(
       btn &&

@@ -34,18 +34,18 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         alignItems: "center",
         gap: "10px",
         width: "100%",
-        padding: "10px 12px",
+        padding: "8px 12px",
         margin: 0,
         backgroundColor: selected
           ? dark
-            ? "rgba(255,255,255,0.10)"
-            : "rgba(0,0,0,0.06)"
+            ? "rgba(110,118,129,0.15)"
+            : "rgba(31,35,40,0.06)"
           : "transparent",
         cursor: "pointer",
-        borderRadius: "8px",
+        borderRadius: "6px",
         overflow: "hidden",
         border: "none",
-        transition: "background-color 90ms ease",
+        transition: "background-color 80ms ease",
         textAlign: "left",
       }}
     >
@@ -74,7 +74,7 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
           style={{
             fontSize: "14px",
             fontWeight: 500,
-            color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.87)",
+            color: dark ? "#e6edf3" : "#1f2328",
           }}
         >
           {item.title || item.id}
@@ -83,7 +83,7 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
           <span
             style={{
               fontSize: "12px",
-              color: dark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.50)",
+              color: dark ? "#8d96a0" : "#656d76",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",

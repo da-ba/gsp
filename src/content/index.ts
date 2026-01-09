@@ -337,6 +337,8 @@ function attachToField(field: HTMLTextAreaElement): void {
 
   field.addEventListener("blur", () => {
     setTimeout(() => {
+      // Never hide while settings panel is open - user is interacting with controls
+      if (state.showingSettings) return
       if (state.mouseDownInPicker) return
       if (
         state.pickerEl &&
