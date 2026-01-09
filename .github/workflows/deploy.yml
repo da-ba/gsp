@@ -118,7 +118,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages
-          keep_files: true
+          keep_files: false
 
       - name: Create GitHub Deployment (PR)
         if: github.event_name == 'pull_request'
