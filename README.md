@@ -117,53 +117,36 @@ src/
 ├── assets/             # Static assets (icons, images)
 ├── content/            # Content scripts
 │   ├── commands/       # Slash command implementations
-│   │   ├── commands-list/ # Command palette (/) command
-│   │   ├── emoji/      # Emoji picker command
-│   │   ├── font/       # Font styling command
-│   │   ├── giphy/      # GIF search command
-│   │   ├── kbd/        # Keyboard shortcut command
-│   │   ├── link/       # Link insertion command (includes CI links)
-│   │   ├── mention/    # Mention autocomplete command
-│   │   ├── mermaid/    # Diagram templates command
-│   │   ├── now/        # Timestamp command
-│   │   ├── index.ts    # Command exports
-│   │   └── registry.ts # Command registry
-│   ├── picker/         # Picker UI (supports .tsx files)
-│   │   ├── picker.ts
-│   │   ├── state.ts
-│   │   └── styles.ts
+│   │   ├── <command>/  # Each command in its own folder
+│   │   │   ├── api.ts       # Data layer (API calls, storage)
+│   │   │   ├── api.test.ts  # API tests
+│   │   │   ├── command.ts   # CommandSpec implementation
+│   │   │   ├── command.test.ts
+│   │   │   └── index.ts     # Barrel exports
+│   │   ├── grid-handlers.ts # Shared grid rendering handlers
+│   │   ├── registry.ts      # Command registry
+│   │   └── index.ts         # Command exports
+│   ├── picker/         # Picker UI (React components)
+│   │   ├── components/ # React UI components
+│   │   ├── state.ts    # Global picker state
+│   │   └── styles.ts   # Shared styles
 │   ├── index.ts        # Content entry
-│   └── types.ts
-├── options/            # Options page and shared options
-│   └── github/         # Shared GitHub API options
+│   └── types.ts        # Shared types
+├── options/            # Options page
+│   ├── components/     # React options components
+│   └── github/         # GitHub API options
 ├── utils/              # Shared utilities
-│   ├── dom.ts
-│   ├── math.ts
-│   ├── storage.ts
-│   └── theme.ts
+│   ├── dom.ts          # DOM manipulation
+│   ├── filter-sort.ts  # Generic filtering/sorting
+│   ├── math.ts         # Math utilities
+│   ├── storage.ts      # Chrome storage wrapper
+│   ├── svg.ts          # SVG utilities
+│   ├── theme.ts        # Theme detection
+│   └── tile-builder.ts # SVG tile generation
 dist/                   # Build output (load in Chrome)
-docs/                   # Documentation
-│   ├── commands/       # Per-command docs
-│   │   ├── README.md   # Command list
-│   │   ├── commands-list/ # / docs
-│   │   ├── emoji/      # /emoji docs
-│   │   ├── font/       # /font docs
-│   │   ├── giphy/      # /giphy docs
-│   │   ├── kbd/        # /kbd docs
-│   │   ├── link/       # /link docs
-│   │   ├── mention/    # /mention docs
-│   │   ├── mermaid/    # /mermaid docs
-│   │   └── now/        # /now docs
-│   └── options/        # Options documentation
-│       └── github/     # GitHub API options docs
+docs/commands/          # Per-command documentation
 e2e/                    # End-to-end tests (Playwright)
 scripts/                # Build scripts
-│   └── build.ts
-PRIVACY.md              # Privacy policy
-package.json            # Project metadata & scripts
-tsconfig.json           # TypeScript config
-vitest.config.ts        # Test config
-playwright.config.ts    # E2E test config
 ```
 
 ---
@@ -189,25 +172,31 @@ playwright.config.ts    # E2E test config
 
 ## Adding New Commands
 
-1. Create a new file in `src/content/commands/` and implement your command.
-2. Register it in `src/content/commands/registry.ts` and import in `src/content/index.ts`.
+1. Create a new folder `src/content/commands/<command>/` with:
+   - `api.ts` - Data layer (API calls, storage)
+   - `command.ts` - CommandSpec implementation
+   - `index.ts` - Barrel exports
+2. Export the command from `src/content/commands/index.ts`.
 3. Add end-user docs under `docs/commands/<command>/README.md`.
 
 Example skeleton:
 
 ```typescript
-import { registerCommand, type CommandSpec } from "./registry.ts";
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
+import type { PickerItem } from "../../types.ts"
+
+type MyItem = { id: string; label: string }
 
 const myCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
-  getEmptyState: async () => ({ items: [] }),
+  getEmptyState: async () => ({ items: [], suggest: [] }),
   getResults: async (query) => ({ items: [] }),
-  renderItems: (items, suggestTitle) => { /* ... */ },
-  renderCurrent: () => { /* ... */ },
-  onSelect: (item) => { /* ... */ },
-};
+  ...createGridHandlers<MyItem>((item) => insertTextAtCursor(item.label)),
+}
 
-registerCommand("mycommand", myCommand);
+registerCommand("mycommand", myCommand)
 ```
 
 ---

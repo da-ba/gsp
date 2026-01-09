@@ -78,3 +78,9 @@ The command accepts multiple input formats:
 ```
 
 Which renders as: <kbd>Ctrl</kbd><kbd>P</kbd>
+
+## Developer notes
+
+Implementation files:
+
+- Command: `src/content/commands/kbd/command.ts`

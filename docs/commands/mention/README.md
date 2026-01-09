@@ -44,3 +44,11 @@ The `/mention` command provides context-aware mention autocomplete for GitHub is
 - The command extracts participants from the visible page content
 - Recently mentioned users are stored locally and persist across sessions
 - Teams are detected from existing mentions in the discussion
+
+## Developer notes
+
+Implementation files:
+
+- Command: `src/content/commands/mention/command.ts`
+- Participant extraction: `src/content/commands/mention/api.ts`
+- Storage utilities: `src/utils/storage.ts`

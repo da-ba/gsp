@@ -61,3 +61,10 @@ flowchart TD
 - Templates are starting points that you can customize
 - GitHub automatically renders Mermaid diagrams in issues, PRs, and markdown files
 - See [Mermaid documentation](https://mermaid.js.org/) for full syntax reference
+
+## Developer notes
+
+Implementation files:
+
+- Command: `src/content/commands/mermaid/command.ts`
+- Diagram templates: `src/content/commands/mermaid/api.ts`

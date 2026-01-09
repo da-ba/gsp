@@ -63,3 +63,9 @@ The selected format is inserted as plain text at the cursor position. For exampl
 - Times are based on your local system time
 - Local formats depend on your browser's locale settings
 - Useful for logging timestamps, meeting notes, or date references
+
+## Developer notes
+
+Implementation files:
+
+- Command: `src/content/commands/now/command.ts`

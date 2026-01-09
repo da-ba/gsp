@@ -44,6 +44,6 @@ The command inserts standard Markdown image syntax:
 
 Implementation files:
 
-- Command: `src/content/commands/giphy.ts`
-- Giphy API client: `src/api/giphy.ts`
+- Command: `src/content/commands/giphy/command.ts`
+- Giphy API client: `src/content/commands/giphy/api.ts`
 - Key storage: `src/utils/storage.ts`
