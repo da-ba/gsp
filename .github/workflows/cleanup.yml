@@ -29,7 +29,8 @@ jobs:
       - name: Check if PR deployment exists
         id: check
         run: |
-          if [ -d "gh-pages/pr-${{ github.event.pull_request.number }}" ]; then
+          # Check for flat structure: pr-{NUMBER}-{SHA} directories
+          if ls -d gh-pages/pr-${{ github.event.pull_request.number }}-* 1>/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -38,8 +39,9 @@ jobs:
       - name: Remove PR deployment
         if: steps.check.outputs.exists == 'true'
         run: |
-          rm -rf "gh-pages/pr-${{ github.event.pull_request.number }}"
-          echo "Removed deployment for PR #${{ github.event.pull_request.number }}"
+          # Remove all deployments matching pr-{NUMBER}-* pattern (flat structure)
+          rm -rf gh-pages/pr-${{ github.event.pull_request.number }}-*
+          echo "Removed deployment(s) for PR #${{ github.event.pull_request.number }}"
 
       - name: Regenerate index page
         if: steps.check.outputs.exists == 'true'
