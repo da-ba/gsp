@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-GitHub Slash Palette is a Chrome extension that adds slash command functionality to GitHub markdown textareas. Users can type commands like `/giphy`, `/emoji`, `/font`, `/kbd`, `/link`, `/mention`, `/mermaid`, and `/now` to quickly insert content.
+GitHub Slash Palette is a Chrome extension that adds slash command functionality to GitHub markdown textareas. Users can type commands like `/giphy`, `/emoji`, `/font`, `/kbd`, `/link`, `/mention`, `/mermaid`, and `/now` to quickly insert content. Typing just `/` shows a list of all available commands.
 
 ## Tech Stack
 
 - **Runtime & Build**: [Bun](https://bun.sh/) - Fast all-in-one JavaScript runtime
 - **Language**: TypeScript with JSX/TSX support
-- **UI Components**: React (for complex UI components)
+- **UI Components**: React (for picker UI and settings)
 - **Testing**: Vitest (unit tests) + Playwright (E2E tests)
 - **Linting**: ESLint with typescript-eslint
 - **Formatting**: Prettier
@@ -31,21 +31,32 @@ src/
 ├── content/            # Content scripts injected into GitHub pages
 │   ├── commands/       # Slash command implementations
 │   │   ├── <command>/  # Each command in its own folder
-│   │   │   ├── api.ts       # API/data layer
-│   │   │   ├── api.test.ts  # API tests
-│   │   │   ├── command.ts   # Command implementation
-│   │   │   ├── command.test.ts # Command tests (if applicable)
-│   │   │   └── index.ts     # Barrel export
-│   │   ├── registry.ts     # Command registry
-│   │   └── index.ts        # Command exports
-│   ├── picker/         # Picker UI components
-│   └── types.ts        # Shared content script types
+│   │   │   ├── api.ts            # API/data layer
+│   │   │   ├── api.test.ts       # API tests
+│   │   │   ├── command.ts        # CommandSpec implementation
+│   │   │   ├── <Cmd>OptionsSection.tsx # Options UI (if needed)
+│   │   │   └── index.ts          # Barrel export
+│   │   ├── grid-handlers.ts      # Factory for grid command handlers
+│   │   ├── options-registry.ts   # Options section registry
+│   │   ├── registry.ts           # Command registry
+│   │   └── index.ts              # Command exports
+│   ├── picker/         # Picker UI (React-based)
+│   │   ├── components/ # React components (Picker, Header, Grid, List, etc.)
+│   │   ├── picker-react.tsx      # Main picker React integration
+│   │   ├── state.ts              # Picker state management
+│   │   ├── styles.ts             # Theme-aware styles
+│   │   └── index.ts              # Barrel exports
+│   ├── index.ts        # Main content script entry
+│   └── types.ts        # Shared types (PickerItem)
 ├── options/            # Extension options page
 ├── utils/              # Shared utilities
 │   ├── dom.ts          # DOM manipulation helpers
+│   ├── filter-sort.ts  # Generic filter/sort utilities
 │   ├── math.ts         # Math utilities
 │   ├── storage.ts      # Chrome storage utilities
-│   └── theme.ts        # Theme utilities
+│   ├── svg.ts          # SVG utilities
+│   ├── theme.ts        # Theme detection and override
+│   └── tile-builder.ts # SVG tile generation for picker items
 └── test/               # Test setup files
 ```
 
@@ -57,25 +68,51 @@ src/
 4. Export the command from an `index.ts` barrel file
 5. Add the command export to `src/content/commands/index.ts`
 6. Add documentation under `docs/commands/<command>/README.md`
-7. **If applicable**, add options implementation (API tokens, command settings)
+7. **If applicable**, add options component (API tokens, settings)
 8. **Always** add E2E tests for the new command in `e2e/extension.spec.ts`
+
+### Using Grid Handlers (Recommended for Grid Commands)
+
+Most commands display items in a grid and use `createGridHandlers` to reduce boilerplate:
+
+```typescript
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
+import type { PickerItem } from "../../types.ts"
+
+type MyData = { value: string }
+
+const myCommand: CommandSpec = {
+  preflight: async () => ({ showSetup: false }),
+  getEmptyState: async () => ({ items: [...], suggestTitle: "Title" }),
+  getResults: async (query) => ({ items: [...], suggestTitle: "Results" }),
+
+  // Use createGridHandlers for standard grid behavior
+  ...createGridHandlers<MyData>((data) => {
+    insertTextAtCursor(data.value)
+  }),
+
+  noResultsMessage: "No results found",
+}
+
+registerCommand("mycommand", myCommand)
+```
 
 ### Adding Command Options
 
 If your command requires configuration (API tokens, settings):
 
-1. Create an options section component (e.g., `<Command>OptionsSection.tsx`)
+1. Create a React component in the command folder (e.g., `GiphyOptionsSection.tsx`)
 2. Register it using `registerOptionsSection()` from `options-registry.ts`
 3. Store settings via `getStorageValue`/`setStorageValue` from `utils/storage.ts`
-
-Example options component (in `src/content/commands/<command>/`):
 
 ```typescript
 import { registerOptionsSection } from "../options-registry.ts"
 import { getStorageValue, setStorageValue } from "../../../utils/storage.ts"
 
 export function MyCommandOptionsSection() {
-  // React component with settings UI
+  // React component - appears in picker settings panel
 }
 
 registerOptionsSection("mycommand", MyCommandOptionsSection)
@@ -83,18 +120,10 @@ registerOptionsSection("mycommand", MyCommandOptionsSection)
 
 ### Adding E2E Tests
 
-E2E tests are **required** for all new commands and command extensions:
-
-1. Add tests to `e2e/extension.spec.ts`
-2. Follow the existing test patterns (test.describe blocks per command)
-3. Test key functionality: picker visibility, search/filtering, selection, insertion
-
-Example E2E test structure:
+E2E tests are **required** for all new commands:
 
 ```typescript
 test.describe("MyCommand Command", () => {
-  // Setup helpers...
-
   test("/mycommand shows picker", async () => {
     // Test picker appears
   })
@@ -113,15 +142,14 @@ test.describe("MyCommand Command", () => {
 
 ```typescript
 type CommandSpec = {
-  preflight: () => Promise<PreflightResult>     // Setup check (e.g., API keys)
-  getEmptyState: () => Promise<EmptyStateResult> // Initial state when command opens
-  getResults: (query: string) => Promise<ResultsResult> // Search results
-  getSuggestions?: (query: string) => Promise<SuggestionsResult> // Autocomplete
+  preflight: () => Promise<PreflightResult>       // Setup check (e.g., API keys)
+  getEmptyState: () => Promise<EmptyStateResult>  // Initial state when command opens
+  getResults: (query: string) => Promise<ResultsResult>  // Search results
+  getSuggestions?: (query: string) => Promise<SuggestionsResult>  // Autocomplete
   renderItems: (items: PickerItem[], suggestTitle: string) => void
-  renderCurrent: () => void
-  onSelect: (item: PickerItem) => void          // Handle selection
-  noResultsMessage?: string                      // Custom "no results" message
-  renderSettings?: (container: HTMLElement) => void // Optional settings UI
+  renderCurrent?: () => void                       // Optional, deprecated
+  onSelect: (item: PickerItem) => void            // Handle selection
+  noResultsMessage?: string                        // Custom "no results" message
 }
 ```
 
@@ -129,8 +157,7 @@ type CommandSpec = {
 
 ### Unit Tests (Vitest)
 
-- Test files use `.test.ts` suffix
-- Tests are colocated with source files
+- Test files use `.test.ts` suffix, colocated with source files
 - Use `describe`, `it`, `expect` from Vitest globals
 - Mock Chrome APIs using Vitest's `vi` module
 - Run with: `bun run test`
@@ -148,61 +175,62 @@ type CommandSpec = {
 ```typescript
 import { getStorageValue, setStorageValue } from "../../../utils/storage.ts"
 
-// Reading a value with a default
 const value = await getStorageValue<MyType>("myKey", defaultValue)
-
-// Writing a value
 await setStorageValue("myKey", newValue)
 ```
 
-### DOM Manipulation
+### Text Insertion
 
 ```typescript
-import { replaceRange, getCursorInfo, parseSlashCommand } from "../../../utils/dom.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 
-// Replace text in a string range
-const newValue = replaceRange(text, startPos, endPos, replacement)
+// Insert text at cursor, replacing the slash command
+insertTextAtCursor("inserted text ")
 ```
 
-### React Components in Picker
-
-- TSX files are supported for complex UI components
-- Use functional components with hooks
-- Components should follow the existing picker styling patterns
-
 ### Caching
-
-Commands use a per-command cache system:
 
 ```typescript
 import { getCommandCache, setCommandCache, clearCommandCache } from "../../picker/index.ts"
 
-// Get cached value
 const cached = getCommandCache<MyType>("mycommand:cacheKey")
-
-// Set cached value
 setCommandCache("mycommand:cacheKey", value)
-
-// Clear cached value
 clearCommandCache("mycommand:cacheKey")
+```
+
+### Creating Picker Tiles
+
+```typescript
+import { createSmallTile } from "../../../utils/tile-builder.ts"
+
+const tile = createSmallTile({
+  id: "unique-id",
+  mainText: "Display text",
+  mainFontSize: 42,
+  category: "Category",
+  categoryColor: "#f59e0b",
+})
+```
+
+### Filtering and Sorting
+
+```typescript
+import { filterItems, sortByCategory, matchesQuery } from "../../../utils/filter-sort.ts"
+
+const filtered = filterItems({
+  items: allItems,
+  query: searchQuery,
+  searchFields: [(item) => item.name, (item) => item.description],
+})
 ```
 
 ## Build & Development
 
 ```bash
-# Install dependencies
-bun install
-
-# Development with watch mode
-bun run dev
-
-# Production build
-bun run build
-
-# Run all checks (typecheck, lint, format, test)
-bun run check
-
-# Individual checks
+bun install          # Install dependencies
+bun run dev          # Development with watch mode
+bun run build        # Production build
+bun run check        # Run all checks (typecheck, lint, format, test)
 bun run typecheck    # TypeScript type checking
 bun run lint         # ESLint check
 bun run format:check # Prettier check
@@ -217,14 +245,15 @@ bun run test:e2e     # E2E tests
 - Strict mode enabled
 - Path alias: `@/*` maps to `src/*`
 - JSX: react-jsx (automatic runtime)
-- File extensions: `.ts` imports must include `.ts` extension
+- File extensions: `.ts`/`.tsx` imports must include extension
 
 ## Important Notes
 
 - **Chrome Extension Context**: Code runs as a content script with access to Chrome APIs
-- **GitHub DOM**: The extension manipulates GitHub's textarea elements
+- **GitHub DOM**: The extension injects into GitHub's markdown textareas
 - **API Keys**: Some commands (e.g., `/giphy`, `/link ci`) require API keys stored via `chrome.storage.local`
 - **Privacy**: No data is sent to external servers except necessary API calls (Giphy, GitHub)
+- **Theme Support**: Picker styling aligns with GitHub's native UI and supports light/dark themes
 
 ## Documentation
 
