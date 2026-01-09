@@ -10,39 +10,43 @@ TEMPLATE_FILE="${2:-demo/index-template.html}"
 # Find all deployments
 DEPLOYMENTS=""
 
-# Check for main deployment (now under main/{sha}/)
-if [ -d "${GH_PAGES_DIR}/main" ]; then
-  # Find the SHA subdirectory (there should only be one)
-  for sha_dir in "${GH_PAGES_DIR}"/main/*/; do
-    if [ -d "$sha_dir" ] && [ -f "${sha_dir}meta.json" ]; then
-      MAIN_META=$(cat "${sha_dir}meta.json" 2>/dev/null || echo '{}')
-      MAIN_BUILD=$(echo "$MAIN_META" | jq -r '.build // "unknown"')
-      MAIN_TIME=$(echo "$MAIN_META" | jq -r '.timestamp // ""')
-      SHA_NAME=$(basename "$sha_dir")
-      MAIN_PATH=$(echo "$MAIN_META" | jq -r --arg default "main/${SHA_NAME}" '.path // $default')
-      DEPLOYMENTS="${DEPLOYMENTS}<div class=\"deployment main\"><a href=\"./${MAIN_PATH}/\"><strong>main</strong></a><span class=\"build\">${MAIN_BUILD}</span><span class=\"time\">${MAIN_TIME}</span></div>"
-      break
-    fi
-  done
-fi
-
-# Find PR deployments (now under pr-{number}/{sha}/)
-for pr_dir in "${GH_PAGES_DIR}"/pr-*/; do
-  if [ -d "$pr_dir" ]; then
-    PR_NUM=$(basename "$pr_dir" | sed 's/pr-//')
-    # Find the SHA subdirectory (there should only be one)
-    for sha_dir in "${pr_dir}"*/; do
-      if [ -d "$sha_dir" ] && [ -f "${sha_dir}meta.json" ]; then
-        PR_META=$(cat "${sha_dir}meta.json" 2>/dev/null || echo '{}')
-        PR_BUILD=$(echo "$PR_META" | jq -r '.build // "unknown"')
-        PR_TIME=$(echo "$PR_META" | jq -r '.timestamp // ""')
-        SHA_NAME=$(basename "$sha_dir")
-        PR_PATH=$(echo "$PR_META" | jq -r --arg default "pr-${PR_NUM}/${SHA_NAME}" '.path // $default')
-        DEPLOYMENTS="${DEPLOYMENTS}<div class=\"deployment pr\"><a href=\"./${PR_PATH}/\"><strong>PR #${PR_NUM}</strong></a><span class=\"build\">${PR_BUILD}</span><span class=\"time\">${PR_TIME}</span></div>"
-        break
-      fi
-    done
+# Check for main deployment (flat structure: main-{sha})
+for main_dir in "${GH_PAGES_DIR}"/main-*/; do
+  if [ -d "$main_dir" ] && [ -f "${main_dir}meta.json" ]; then
+    MAIN_META=$(cat "${main_dir}meta.json" 2>/dev/null || echo '{}')
+    MAIN_BUILD=$(echo "$MAIN_META" | jq -r '.build // "unknown"')
+    MAIN_TIME=$(echo "$MAIN_META" | jq -r '.timestamp // ""')
+    DIR_NAME=$(basename "$main_dir")
+    MAIN_PATH=$(echo "$MAIN_META" | jq -r --arg default "${DIR_NAME}" '.path // $default')
+    DEPLOYMENTS="${DEPLOYMENTS}<div class=\"deployment main\"><a href=\"./${MAIN_PATH}/\"><strong>main</strong></a><span class=\"build\">${MAIN_BUILD}</span><span class=\"time\">${MAIN_TIME}</span></div>"
+    break
   fi
+done
+
+# Find PR deployments (flat structure: pr-{number}-{sha})
+# Use a temp file to collect unique PR numbers and their deployments
+declare -A PR_DEPLOYMENTS
+
+for pr_dir in "${GH_PAGES_DIR}"/pr-*-*/; do
+  if [ -d "$pr_dir" ] && [ -f "${pr_dir}meta.json" ]; then
+    DIR_NAME=$(basename "$pr_dir")
+    # Extract PR number from pr-{NUMBER}-{SHA} format
+    PR_NUM=$(echo "$DIR_NAME" | sed -E 's/^pr-([0-9]+)-.*$/\1/')
+
+    # Only process if we haven't seen this PR yet (in case of duplicates)
+    if [ -z "${PR_DEPLOYMENTS[$PR_NUM]}" ]; then
+      PR_META=$(cat "${pr_dir}meta.json" 2>/dev/null || echo '{}')
+      PR_BUILD=$(echo "$PR_META" | jq -r '.build // "unknown"')
+      PR_TIME=$(echo "$PR_META" | jq -r '.timestamp // ""')
+      PR_PATH=$(echo "$PR_META" | jq -r --arg default "${DIR_NAME}" '.path // $default')
+      PR_DEPLOYMENTS[$PR_NUM]="<div class=\"deployment pr\"><a href=\"./${PR_PATH}/\"><strong>PR #${PR_NUM}</strong></a><span class=\"build\">${PR_BUILD}</span><span class=\"time\">${PR_TIME}</span></div>"
+    fi
+  fi
+done
+
+# Add PR deployments sorted by PR number
+for pr_num in $(echo "${!PR_DEPLOYMENTS[@]}" | tr ' ' '\n' | sort -n); do
+  DEPLOYMENTS="${DEPLOYMENTS}${PR_DEPLOYMENTS[$pr_num]}"
 done
 
 # If no deployments, show empty message

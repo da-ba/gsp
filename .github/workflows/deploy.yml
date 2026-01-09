@@ -72,23 +72,28 @@ jobs:
             # Use the PR head SHA, not the merge commit SHA
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
             SHORT_SHA="${HEAD_SHA:0:7}"
-            echo "path=pr-${{ github.event.pull_request.number }}/${SHORT_SHA}" >> $GITHUB_OUTPUT
-            echo "base_path=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            # Flat structure: pr-{NUMBER}-{SHA}
+            echo "path=pr-${{ github.event.pull_request.number }}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+            echo "prefix=pr-${{ github.event.pull_request.number }}-" >> $GITHUB_OUTPUT
             echo "build=PR#${{ github.event.pull_request.number }}@${SHORT_SHA}" >> $GITHUB_OUTPUT
+            echo "environment=pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           else
             SHORT_SHA="${GITHUB_SHA:0:7}"
-            echo "path=main/${SHORT_SHA}" >> $GITHUB_OUTPUT
-            echo "base_path=main" >> $GITHUB_OUTPUT
+            # Flat structure: main-{SHA}
+            echo "path=main-${SHORT_SHA}" >> $GITHUB_OUTPUT
+            echo "prefix=main-" >> $GITHUB_OUTPUT
             echo "build=main@${SHORT_SHA}" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
           fi
 
       - name: Prepare deployment
         run: |
           DEPLOY_PATH="${{ steps.deploy-path.outputs.path }}"
-          BASE_PATH="${{ steps.deploy-path.outputs.base_path }}"
-          
-          # Remove old deployments for this base path (e.g., all old SHAs for this PR or main)
-          rm -rf "gh-pages/${BASE_PATH}"
+          PREFIX="${{ steps.deploy-path.outputs.prefix }}"
+
+          # Remove old deployments with the same prefix (e.g., all old SHAs for this PR or main)
+          # Using find with prefix pattern to handle flat structure
+          find gh-pages -maxdepth 1 -type d -name "${PREFIX}*" -exec rm -rf {} \; 2>/dev/null || true
           mkdir -p "gh-pages/${DEPLOY_PATH}"
           
           # Copy demo page
@@ -123,9 +128,24 @@ jobs:
             const repo = context.repo;
             const deployPath = '${{ steps.deploy-path.outputs.path }}';
             const environmentUrl = `https://${repo.owner}.github.io/${repo.repo}/${deployPath}/`;
-            const environment = `pr-${{ github.event.pull_request.number }}`;
-            
-            // Create deployment
+            const environment = '${{ steps.deploy-path.outputs.environment }}';
+
+            // Deactivate old deployments for this environment first
+            const { data: oldDeployments } = await github.rest.repos.listDeployments({
+              ...repo,
+              environment,
+            });
+
+            for (const oldDeployment of oldDeployments) {
+              await github.rest.repos.createDeploymentStatus({
+                ...repo,
+                deployment_id: oldDeployment.id,
+                state: 'inactive',
+                description: 'Superseded by newer deployment',
+              });
+            }
+
+            // Create new deployment
             const { data: deployment } = await github.rest.repos.createDeployment({
               ...repo,
               ref: context.payload.pull_request.head.sha,
@@ -136,7 +156,7 @@ jobs:
               production_environment: false,
               description: `PR #${{ github.event.pull_request.number }} preview deployment`,
             });
-            
+
             // Mark deployment as successful with the environment URL
             await github.rest.repos.createDeploymentStatus({
               ...repo,
@@ -155,19 +175,35 @@ jobs:
             const repo = context.repo;
             const deployPath = '${{ steps.deploy-path.outputs.path }}';
             const environmentUrl = `https://${repo.owner}.github.io/${repo.repo}/${deployPath}/`;
-            
-            // Create deployment
+            const environment = '${{ steps.deploy-path.outputs.environment }}';
+
+            // Deactivate old deployments for production environment first
+            const { data: oldDeployments } = await github.rest.repos.listDeployments({
+              ...repo,
+              environment,
+            });
+
+            for (const oldDeployment of oldDeployments) {
+              await github.rest.repos.createDeploymentStatus({
+                ...repo,
+                deployment_id: oldDeployment.id,
+                state: 'inactive',
+                description: 'Superseded by newer deployment',
+              });
+            }
+
+            // Create new deployment
             const { data: deployment } = await github.rest.repos.createDeployment({
               ...repo,
               ref: context.sha,
-              environment: 'production',
+              environment,
               auto_merge: false,
               required_contexts: [],
               transient_environment: false,
               production_environment: true,
               description: 'Main branch deployment',
             });
-            
+
             // Mark deployment as successful with the environment URL
             await github.rest.repos.createDeploymentStatus({
               ...repo,
