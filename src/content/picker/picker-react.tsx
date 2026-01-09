@@ -6,6 +6,7 @@ import React from "react"
 import { createRoot, type Root } from "react-dom/client"
 import { add, sub, clamp } from "../../utils/math.ts"
 import { getCaretCoordinates } from "../../utils/dom.ts"
+import { isDarkMode } from "../../utils/theme.ts"
 import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
@@ -50,6 +51,7 @@ function renderPicker(): void {
   pickerRoot.render(
     React.createElement(Picker, {
       visible: reactState.visible,
+      isDark: isDarkMode(),
       title: reactState.title,
       subtitle: reactState.subtitle,
       view: reactState.view,

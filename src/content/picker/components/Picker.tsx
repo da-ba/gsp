@@ -25,6 +25,7 @@ export type PickerView =
 
 export type PickerProps = {
   visible: boolean
+  isDark: boolean
   title: string
   subtitle: string
   view: PickerView
@@ -43,6 +44,7 @@ export type PickerProps = {
 
 export function Picker({
   visible,
+  isDark,
   title,
   subtitle,
   view,
@@ -66,7 +68,7 @@ export function Picker({
     if (containerRef.current) {
       applyPickerStyles(containerRef.current)
     }
-  }, [visible])
+  }, [visible, isDark])
 
   // Handle setup panel rendering
   React.useEffect(() => {

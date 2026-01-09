@@ -10,8 +10,7 @@ import {
   type ThemePreference,
 } from "../../../utils/storage.ts"
 import { getOptionsSections } from "../../commands/options-registry.ts"
-import { getCardStyles, getBadgeStyles, applyPickerStyles } from "../styles.ts"
-import { state } from "../state.ts"
+import { getCardStyles, getBadgeStyles } from "../styles.ts"
 
 const THEMES: { value: ThemePreference; label: string }[] = [
   { value: "system", label: "System" },
@@ -49,11 +48,7 @@ export function SettingsPanel({ onBackClick, onThemeChange }: SettingsPanelProps
     await setThemePreference(value)
     setThemeOverride(value)
     setCurrentTheme(value)
-    // Refresh picker styles
-    if (state.pickerEl) {
-      applyPickerStyles(state.pickerEl)
-    }
-    // Trigger full re-render of picker components
+    // Trigger full re-render of picker components with new theme
     onThemeChange?.()
   }
 
