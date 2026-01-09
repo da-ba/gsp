@@ -13,6 +13,7 @@ import {
   setGiphyCenterImage,
   type GiphyImageFormat,
 } from "./api.ts"
+import { clearImageSettingsCache } from "./command.ts"
 
 /** Styles for the Giphy options section */
 const sectionStyles = `
@@ -125,11 +126,13 @@ export function GiphyOptionsSection() {
   const handleFormatChange = async (format: GiphyImageFormat) => {
     setImageFormat(format)
     await setGiphyImageFormat(format)
+    clearImageSettingsCache()
   }
 
   const handleCenterChange = async (center: boolean) => {
     setCenterImage(center)
     await setGiphyCenterImage(center)
+    clearImageSettingsCache()
   }
 
   return (
