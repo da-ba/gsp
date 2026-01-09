@@ -32,6 +32,9 @@ const reactState: ReactPickerState = {
   position: { left: 0, top: 0 },
 }
 
+// Store the view before switching to settings so we can restore it
+let viewBeforeSettings: PickerView | null = null
+
 // Callbacks for picker interactions
 let currentImgUrlFn: (item: PickerItem) => string = (item) => item.previewUrl
 let currentOnSelect: (item: PickerItem) => void = () => {}
@@ -71,8 +74,26 @@ function renderPicker(): void {
       },
       onSuggestPick: currentOnSuggestPick,
       onSettingsClick: () => {
+        // Store current view before switching to settings
+        if (reactState.view.type !== "settings") {
+          viewBeforeSettings = reactState.view
+        }
         state.showingSettings = true
         reactState.view = { type: "settings" }
+        renderPicker()
+      },
+      onCloseClick: () => {
+        hidePicker()
+      },
+      onSettingsBackClick: () => {
+        state.showingSettings = false
+        // Restore the previous view if available
+        if (viewBeforeSettings) {
+          reactState.view = viewBeforeSettings
+          viewBeforeSettings = null
+        } else {
+          reactState.view = { type: "loading" }
+        }
         renderPicker()
       },
       onSetupComplete: currentOnSetupComplete,
@@ -179,6 +200,7 @@ export function hidePicker(): void {
   if (!state.pickerEl) return
   reactState.visible = false
   reactState.view = { type: "loading" }
+  viewBeforeSettings = null
   renderPicker()
   resetPickerState()
 }

@@ -34,6 +34,9 @@ import "./commands/now/index.ts"
 import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
 
+// Import shared options modules to register them for the settings panel
+import "../options/github/index.ts"
+
 /**
  * Resolve the command name and query from parsed slash command.
  * If the parsed command name is not a registered command and has no query,
