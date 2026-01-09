@@ -151,7 +151,7 @@ test.describe("Slash Commands", () => {
     await expect(picker).toBeVisible({ timeout: 3000 });
 
     // Verify the picker shows the header
-    const headerText = await picker.locator("text=GitHub Slash Palette").count();
+    const headerText = await picker.locator("text=Slash Palette").count();
     expect(headerText).toBeGreaterThan(0);
 
     await context.close();
@@ -3367,7 +3367,7 @@ test.describe("Mention Command", () => {
     await expect(picker).toBeVisible({ timeout: 3000 });
 
     // Verify the picker shows the correct header
-    const headerText = await picker.locator("text=GitHub Slash Palette").count();
+    const headerText = await picker.locator("text=Slash Palette").count();
     expect(headerText).toBeGreaterThan(0);
 
     // Verify it shows /mention in the subtitle

@@ -4,7 +4,6 @@
 
 import React from "react"
 import { isDarkMode } from "../../../utils/theme.ts"
-import { getBadgeStyles } from "../styles.ts"
 
 export type PickerHeaderProps = {
   title: string
@@ -34,7 +33,6 @@ export function PickerHeader({
 }: PickerHeaderProps) {
   const [hoveredBtn, setHoveredBtn] = React.useState<"settings" | "close" | null>(null)
   const dark = isDarkMode()
-  const badgeStyles = getBadgeStyles()
 
   const iconButtonStyle = (btn: "settings" | "close"): React.CSSProperties => ({
     background: "none",
@@ -42,7 +40,7 @@ export function PickerHeader({
     cursor: "pointer",
     padding: "4px",
     borderRadius: "4px",
-    opacity: hoveredBtn === btn ? 1 : 0.7,
+    opacity: hoveredBtn === btn ? 1 : 0.6,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -55,33 +53,40 @@ export function PickerHeader({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "12px 12px 8px 12px",
-        height: "48px",
-        boxSizing: "border-box",
+        padding: "8px 12px",
+        borderBottom: dark ? "1px solid #3d444d" : "1px solid #d0d7de",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-        <div
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        <span
+          style={{
+            color: dark ? "#8d96a0" : "#656d76",
+            fontSize: "16px",
+            fontWeight: 500,
+          }}
+        >
+          /
+        </span>
+        <span
           style={{
             fontWeight: 600,
-            fontSize: "13px",
+            fontSize: "14px",
             color: dark ? "#e6edf3" : "#1f2328",
           }}
         >
           {title}
-        </div>
-        <div
+        </span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span
           style={{
             fontSize: "12px",
             color: dark ? "#8d96a0" : "#656d76",
           }}
         >
           {subtitle}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <div style={badgeStyles as React.CSSProperties}>Esc close</div>
+        </span>
         <button
           type="button"
           data-settings-btn="true"

@@ -116,7 +116,7 @@ async function handleCommandInput(
   }
 
   state.activeCommand = cmdName
-  setHeader("GitHub Slash Palette", "/" + cmdName + (query ? " " + query : ""))
+  setHeader("Slash Palette", "/" + cmdName + (query ? " " + query : ""))
 
   showPicker(field)
   positionPickerAtCaret(field)

@@ -18,7 +18,7 @@ export function Message({ message }: MessageProps) {
     <div
       style={{
         overflow: "auto",
-        padding: "0 12px 12px 12px",
+        padding: "12px",
         flex: "1 1 auto",
         minHeight: 0,
       }}
