@@ -98,7 +98,8 @@ function renderPicker(): void {
       },
       onThemeChange: () => {
         // Re-render all picker components when theme changes
-        renderPicker()
+        // Use setTimeout to avoid re-rendering during an active render cycle
+        setTimeout(() => renderPicker(), 0)
       },
       onSetupComplete: currentOnSetupComplete,
       position: reactState.position,

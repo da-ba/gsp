@@ -2,7 +2,7 @@
  * Picker inline styles
  */
 
-import { isDarkMode, fontSystemUi, fontSansSerif, tokenLinearGradient } from "../../utils/theme.ts"
+import { isDarkMode, fontSystemUi, fontSansSerif } from "../../utils/theme.ts"
 
 /** SVG badge layout constants */
 export const BADGE_CHAR_WIDTH = 8
@@ -124,11 +124,7 @@ export function getGridItemSelectedStyles(selected: boolean): Partial<CSSStyleDe
         ? "0 4px 12px rgba(0,0,0,0.4)"
         : "0 4px 12px rgba(0,0,0,0.15)"
       : "none",
-    border: selected
-      ? dark
-        ? "2px solid #58a6ff"
-        : "2px solid #0969da"
-      : "1px solid transparent",
+    border: selected ? (dark ? "2px solid #58a6ff" : "2px solid #0969da") : "1px solid transparent",
   }
 }
 
