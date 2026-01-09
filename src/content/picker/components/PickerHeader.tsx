@@ -25,13 +25,33 @@ const SettingsIcon = () => (
   </svg>
 )
 
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+  </svg>
+)
+
 export function PickerHeader({
   title,
   subtitle,
   onSettingsClick,
+  onCloseClick,
 }: PickerHeaderProps) {
-  const [hoveredBtn, setHoveredBtn] = React.useState<"settings" | null>(null)
+  const [hoveredBtn, setHoveredBtn] = React.useState<"settings" | "close" | null>(null)
   const dark = isDarkMode()
+
+  const iconButtonStyle = (btn: "settings" | "close"): React.CSSProperties => ({
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px",
+    borderRadius: "4px",
+    opacity: hoveredBtn === btn ? 1 : 0.6,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: dark ? "#8d96a0" : "#656d76",
+  })
 
   return (
     <div
@@ -74,20 +94,20 @@ export function PickerHeader({
           onClick={onSettingsClick}
           onMouseEnter={() => setHoveredBtn("settings")}
           onMouseLeave={() => setHoveredBtn(null)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px",
-            borderRadius: "4px",
-            opacity: hoveredBtn === "settings" ? 1 : 0.6,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: dark ? "#8d96a0" : "#656d76",
-          }}
+          style={iconButtonStyle("settings")}
         >
           <SettingsIcon />
+        </button>
+        <button
+          type="button"
+          data-settings-btn="true"
+          title="Close"
+          onClick={onCloseClick}
+          onMouseEnter={() => setHoveredBtn("close")}
+          onMouseLeave={() => setHoveredBtn(null)}
+          style={iconButtonStyle("close")}
+        >
+          <CloseIcon />
         </button>
       </div>
     </div>
