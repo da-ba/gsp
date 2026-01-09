@@ -53,10 +53,10 @@ export function parseSlashCommand(
   let slashIdx = -1
   for (let i = text.length - 1; i >= 0; i--) {
     if (text[i] === "/" && (i === 0 || text[i - 1] === " ")) {
-      // Validate that the character after the slash (if any) is a letter or it's just "/"
-      // This prevents matching HTML like " />" or " </p>" as slash commands
+      // Validate that the character after the slash (if any) is a letter, whitespace, or end of string
+      // This prevents matching HTML like " />" as slash commands
       const nextChar = text[i + 1]
-      if (nextChar === undefined || /[a-zA-Z]/.test(nextChar)) {
+      if (nextChar === undefined || /[a-zA-Z\s]/.test(nextChar)) {
         slashIdx = i
         break
       }

@@ -159,6 +159,24 @@ describe("DOM utilities", () => {
       const result = parseSlashCommand("See https://example.com /link")
       expect(result).toEqual({ cmd: "link", query: "", slashOffset: 24 })
     })
+
+    it("ignores HTML self-closing tag pattern", () => {
+      // " />" in HTML like '<img src="url" />' should not be parsed as a command
+      const result = parseSlashCommand('<img src="test.gif" />')
+      expect(result).toBeNull()
+    })
+
+    it("ignores slash followed by special characters", () => {
+      // Patterns like " />" should not match
+      expect(parseSlashCommand("text />")).toBeNull()
+      expect(parseSlashCommand("text /)")).toBeNull()
+    })
+
+    it("parses command in text with HTML before it", () => {
+      // Real command after HTML should still work
+      const result = parseSlashCommand('<p align="center"> /giphy cat')
+      expect(result).toEqual({ cmd: "giphy", query: "cat", slashOffset: 19 })
+    })
   })
 
   describe("replaceRange", () => {
