@@ -4,8 +4,6 @@
 
 import React from "react"
 import { PickerHeader } from "./PickerHeader.tsx"
-import { PickerHints } from "./PickerHints.tsx"
-import { PickerFooter } from "./PickerFooter.tsx"
 import { PickerGrid } from "./PickerGrid.tsx"
 import { PickerList } from "./PickerList.tsx"
 import { LoadingSkeleton } from "./LoadingSkeleton.tsx"
@@ -134,7 +132,7 @@ export function Picker({
             ref={setupBodyRef}
             style={{
               overflow: "auto",
-              padding: "0 12px 12px 12px",
+              padding: "12px",
               flex: "1 1 auto",
               minHeight: 0,
             }}
@@ -152,10 +150,10 @@ export function Picker({
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "380px",
-        maxHeight: "380px",
-        width: "400px",
-        maxWidth: "400px",
+        height: "auto",
+        maxHeight: "320px",
+        width: "320px",
+        maxWidth: "320px",
         boxSizing: "border-box",
         position: "fixed",
         left: `${position.left}px`,
@@ -168,9 +166,7 @@ export function Picker({
         onSettingsClick={onSettingsClick}
         onCloseClick={onCloseClick}
       />
-      <PickerHints />
       {renderBody()}
-      <PickerFooter />
     </div>
   )
 }

@@ -31,27 +31,27 @@ export function applyPickerStyles(el: HTMLElement): void {
   // (GitHub popovers/dialogs) and doesn't depend on page scroll offsets.
   el.style.position = "fixed"
   el.style.zIndex = "999999"
-  el.style.width = "400px"
-  el.style.maxHeight = "380px"
+  el.style.width = "320px"
+  el.style.maxHeight = "320px"
   el.style.overflow = "hidden"
-  el.style.borderRadius = "12px"
+  el.style.borderRadius = "6px"
   el.style.fontSize = "14px"
   el.style.fontFamily = fontSystemUi() + ", " + fontSansSerif()
-  el.style.backdropFilter = "blur(16px)"
+  el.style.backdropFilter = "none"
 
-  // GitHub-style colors matching their popover design
+  // GitHub-style colors matching their native slash commands popover
   if (dark) {
     el.style.color = "#e6edf3"
     el.style.border = "1px solid #3d444d"
-    el.style.backgroundColor = "rgba(22,27,34,0.95)"
+    el.style.backgroundColor = "#161b22"
     el.style.backgroundImage = "none"
-    el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset"
+    el.style.boxShadow = "0 8px 24px rgba(1,4,9,0.75)"
   } else {
     el.style.color = "#1f2328"
-    el.style.border = "1px solid rgba(31,35,40,0.15)"
-    el.style.backgroundColor = "rgba(255,255,255,0.97)"
+    el.style.border = "1px solid #d0d7de"
+    el.style.backgroundColor = "#ffffff"
     el.style.backgroundImage = "none"
-    el.style.boxShadow = "0 8px 24px rgba(140,149,159,0.2), 0 0 0 1px rgba(0,0,0,0.03) inset"
+    el.style.boxShadow = "0 8px 24px rgba(140,149,159,0.2)"
   }
 }
 

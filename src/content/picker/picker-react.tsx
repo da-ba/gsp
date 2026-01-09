@@ -27,8 +27,8 @@ export type ReactPickerState = {
 
 const reactState: ReactPickerState = {
   visible: false,
-  title: "GitHub Slash Palette",
-  subtitle: "Type a slash command",
+  title: "Slash Palette",
+  subtitle: "",
   view: { type: "loading" },
   position: { left: 0, top: 0 },
 }
@@ -229,8 +229,8 @@ export function clearBody(): void {
 
 export function setHeader(title: string, subtitle: string): void {
   ensurePicker()
-  reactState.title = title || "GitHub Slash Palette"
-  reactState.subtitle = subtitle || "Type a slash command"
+  reactState.title = title || "Slash Palette"
+  reactState.subtitle = subtitle || ""
   renderPicker()
 }
 
@@ -252,12 +252,12 @@ export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
   const caret = getCaretCoordinates(field, field.selectionStart || 0)
 
   let left = add(rect.left, caret.left)
-  let top = add(rect.top, add(caret.top, add(caret.height, 10)))
+  let top = add(rect.top, add(caret.top, add(caret.height, 8)))
 
   const vw = document.documentElement.clientWidth
   const vh = document.documentElement.clientHeight
-  const pickerWidth = 400
-  const pickerHeight = 380
+  const pickerWidth = 320
+  const pickerHeight = 320
 
   const maxLeft = sub(sub(vw, pickerWidth), 10)
   if (left > maxLeft) left = maxLeft
@@ -266,7 +266,7 @@ export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
 
   const maxTop = sub(sub(vh, pickerHeight), 10)
   if (top > maxTop) {
-    top = sub(add(rect.top, caret.top), add(pickerHeight, 10))
+    top = sub(add(rect.top, caret.top), add(pickerHeight, 8))
   }
   const minTop = 10
   if (top < minTop) top = minTop

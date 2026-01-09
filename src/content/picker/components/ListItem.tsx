@@ -23,6 +23,12 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
     onSelect(item)
   }
 
+  // GitHub uses solid blue for selection (#2f81f7)
+  const getBackgroundColor = () => {
+    if (selected) return "#2f81f7"
+    return "transparent"
+  }
+
   return (
     <button
       type="button"
@@ -31,36 +37,20 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
       onMouseEnter={() => onHover(index)}
       style={{
         display: "flex",
-        alignItems: "center",
-        gap: "10px",
+        alignItems: "flex-start",
+        gap: "12px",
         width: "100%",
-        padding: "8px 12px",
+        padding: "10px 12px",
         margin: 0,
-        backgroundColor: selected
-          ? dark
-            ? "rgba(110,118,129,0.15)"
-            : "rgba(31,35,40,0.06)"
-          : "transparent",
+        backgroundColor: getBackgroundColor(),
         cursor: "pointer",
-        borderRadius: "6px",
+        borderRadius: "0",
         overflow: "hidden",
         border: "none",
         transition: "background-color 80ms ease",
         textAlign: "left",
       }}
     >
-      {item.icon && (
-        <span
-          style={{
-            fontSize: "18px",
-            width: "24px",
-            textAlign: "center",
-            flexShrink: 0,
-          }}
-        >
-          {item.icon}
-        </span>
-      )}
       <div
         style={{
           display: "flex",
@@ -73,8 +63,8 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         <span
           style={{
             fontSize: "14px",
-            fontWeight: 500,
-            color: dark ? "#e6edf3" : "#1f2328",
+            fontWeight: 600,
+            color: selected ? "#ffffff" : dark ? "#e6edf3" : "#1f2328",
           }}
         >
           {item.title || item.id}
@@ -82,11 +72,15 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         {item.subtitle && (
           <span
             style={{
-              fontSize: "12px",
-              color: dark ? "#8d96a0" : "#656d76",
-              whiteSpace: "nowrap",
+              fontSize: "14px",
+              color: selected ? "rgba(255,255,255,0.9)" : dark ? "#8d96a0" : "#656d76",
+              whiteSpace: "normal",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              lineHeight: "1.4",
             }}
           >
             {item.subtitle}

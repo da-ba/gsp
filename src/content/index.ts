@@ -3,6 +3,29 @@
  */
 
 import { isGitHubMarkdownField, getCursorInfo, parseSlashCommand } from "../utils/dom.ts"
+
+/**
+ * Check if GitHub's native slash commands menu is currently visible.
+ * GitHub renders this as a suggester container with specific classes.
+ */
+function isGitHubSlashMenuVisible(): boolean {
+  // GitHub's slash command menu is rendered as a text-expander-menu or suggester
+  const selectors = [
+    "text-expander-menu[role='listbox']",
+    ".suggester-container",
+    ".slash-command-suggester",
+    "markdown-toolbar + [role='listbox']",
+    "[data-target='text-expander.menu']",
+  ]
+
+  for (const selector of selectors) {
+    const el = document.querySelector(selector)
+    if (el && (el as HTMLElement).offsetParent !== null) {
+      return true
+    }
+  }
+  return false
+}
 import { onThemeChange, setThemeOverride } from "../utils/theme.ts"
 import { getThemePreference } from "../utils/storage.ts"
 import { add, neg } from "../utils/math.ts"
@@ -116,7 +139,7 @@ async function handleCommandInput(
   }
 
   state.activeCommand = cmdName
-  setHeader("GitHub Slash Palette", "/" + cmdName + (query ? " " + query : ""))
+  setHeader("Slash Palette", "/" + cmdName + (query ? " " + query : ""))
 
   showPicker(field)
   positionPickerAtCaret(field)
@@ -281,6 +304,13 @@ async function handleFieldInput(field: HTMLTextAreaElement): Promise<void> {
   const { cmdName, query } = resolveCommand(parsed)
   const cmd = getCommand(cmdName)
   if (!cmd) {
+    if (state.activeField === field) hidePicker()
+    return
+  }
+
+  // Don't show our picker if GitHub's native slash commands menu is visible
+  // This prevents both popovers from appearing simultaneously
+  if (isGitHubSlashMenuVisible()) {
     if (state.activeField === field) hidePicker()
     return
   }

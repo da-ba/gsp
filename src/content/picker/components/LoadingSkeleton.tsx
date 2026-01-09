@@ -12,7 +12,7 @@ export function LoadingSkeleton() {
     <div
       style={{
         overflow: "auto",
-        padding: "0 12px 12px 12px",
+        padding: "8px",
         flex: "1 1 auto",
         minHeight: 0,
       }}
@@ -24,7 +24,7 @@ export function LoadingSkeleton() {
           gap: "8px",
         }}
       >
-        {Array.from({ length: 12 }).map((_, idx) => (
+        {Array.from({ length: 9 }).map((_, idx) => (
           <SkeletonBox key={idx} styles={skeletonStyles} />
         ))}
       </div>

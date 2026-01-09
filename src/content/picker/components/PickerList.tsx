@@ -22,7 +22,7 @@ export function PickerList({ items, selectedIndex, onSelect, onHover, title }: P
     <div
       style={{
         overflow: "auto",
-        padding: "0 12px 12px 12px",
+        padding: "0",
         flex: "1 1 auto",
         minHeight: 0,
       }}
@@ -32,7 +32,7 @@ export function PickerList({ items, selectedIndex, onSelect, onHover, title }: P
           style={{
             width: "100%",
             fontSize: "12px",
-            marginBottom: "4px",
+            padding: "8px 12px 4px 12px",
             color: dark ? "#8d96a0" : "#656d76",
           }}
         >
@@ -44,7 +44,7 @@ export function PickerList({ items, selectedIndex, onSelect, onHover, title }: P
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "4px",
+          gap: "0",
         }}
       >
         {items.map((item, idx) => (
