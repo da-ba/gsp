@@ -36,6 +36,7 @@ export type PickerProps = {
   onSettingsClick: () => void
   onCloseClick: () => void
   onSettingsBackClick: () => void
+  onThemeChange: () => void
   onSetupComplete: () => void
   position: Position
 }
@@ -53,6 +54,7 @@ export function Picker({
   onSettingsClick,
   onCloseClick,
   onSettingsBackClick,
+  onThemeChange,
   onSetupComplete,
   position,
 }: PickerProps) {
@@ -123,14 +125,14 @@ export function Picker({
           />
         )
       case "settings":
-        return <SettingsPanel onBackClick={onSettingsBackClick} />
+        return <SettingsPanel onBackClick={onSettingsBackClick} onThemeChange={onThemeChange} />
       case "setup":
         return (
           <div
             ref={setupBodyRef}
             style={{
               overflow: "auto",
-              padding: "0 10px 10px 10px",
+              padding: "0 12px 12px 12px",
               flex: "1 1 auto",
               minHeight: 0,
             }}

@@ -3,6 +3,7 @@
  */
 
 import React from "react"
+import { isDarkMode } from "../../../utils/theme.ts"
 import { GridItem } from "./GridItem.tsx"
 import { SuggestChips } from "./SuggestChips.tsx"
 import type { PickerItem } from "../../types.ts"
@@ -28,11 +29,13 @@ export function PickerGrid({
   suggestTitle = "",
   onSuggestPick,
 }: PickerGridProps) {
+  const dark = isDarkMode()
+
   return (
     <div
       style={{
         overflow: "auto",
-        padding: "0 10px 10px 10px",
+        padding: "0 12px 12px 12px",
         flex: "1 1 auto",
         minHeight: 0,
       }}
@@ -46,9 +49,9 @@ export function PickerGrid({
         <div
           style={{
             width: "100%",
-            opacity: 0.72,
             fontSize: "12px",
             marginBottom: "4px",
+            color: dark ? "#8d96a0" : "#656d76",
           }}
         >
           {suggestTitle}

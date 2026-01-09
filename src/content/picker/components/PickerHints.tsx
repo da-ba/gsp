@@ -16,7 +16,7 @@ export function PickerHints() {
         display: "flex",
         flexWrap: "wrap",
         gap: "6px",
-        padding: "0 10px 10px 10px",
+        padding: "0 12px 10px 12px",
         height: "32px",
         boxSizing: "border-box",
       }}
@@ -26,8 +26,7 @@ export function PickerHints() {
           key={hint}
           style={{
             ...(badgeStyles as React.CSSProperties),
-            padding: "3px 10px",
-            fontWeight: 600,
+            padding: "3px 8px",
           }}
         >
           {hint}

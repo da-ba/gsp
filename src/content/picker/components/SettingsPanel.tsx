@@ -27,9 +27,10 @@ const BackIcon = () => (
 
 export type SettingsPanelProps = {
   onBackClick: () => void
+  onThemeChange?: () => void
 }
 
-export function SettingsPanel({ onBackClick }: SettingsPanelProps) {
+export function SettingsPanel({ onBackClick, onThemeChange }: SettingsPanelProps) {
   const [currentTheme, setCurrentTheme] = React.useState<ThemePreference>("system")
   const [isHovered, setIsHovered] = React.useState(false)
   const cardStyles = getCardStyles()
@@ -52,13 +53,15 @@ export function SettingsPanel({ onBackClick }: SettingsPanelProps) {
     if (state.pickerEl) {
       applyPickerStyles(state.pickerEl)
     }
+    // Trigger full re-render of picker components
+    onThemeChange?.()
   }
 
   return (
     <div
       style={{
         overflow: "auto",
-        padding: "0 10px 10px 10px",
+        padding: "0 12px 12px 12px",
         flex: "1 1 auto",
         minHeight: 0,
       }}
@@ -77,11 +80,12 @@ export function SettingsPanel({ onBackClick }: SettingsPanelProps) {
             border: "none",
             cursor: "pointer",
             padding: "4px 8px",
-            opacity: isHovered ? 1 : 0.72,
+            borderRadius: "4px",
+            opacity: isHovered ? 1 : 0.75,
             display: "flex",
             alignItems: "center",
             gap: "4px",
-            color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+            color: dark ? "#8d96a0" : "#656d76",
             fontSize: "12px",
             fontWeight: 500,
           }}
@@ -101,7 +105,9 @@ export function SettingsPanel({ onBackClick }: SettingsPanelProps) {
       >
         {/* Theme Section */}
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div style={{ fontWeight: 600 }}>Theme</div>
+          <div style={{ fontWeight: 600, fontSize: "13px", color: dark ? "#e6edf3" : "#1f2328" }}>
+            Theme
+          </div>
           <div style={{ display: "flex", gap: "6px" }}>
             {THEMES.map(({ value, label }) => (
               <button

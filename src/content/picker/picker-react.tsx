@@ -96,6 +96,10 @@ function renderPicker(): void {
         }
         renderPicker()
       },
+      onThemeChange: () => {
+        // Re-render all picker components when theme changes
+        renderPicker()
+      },
       onSetupComplete: currentOnSetupComplete,
       position: reactState.position,
     })

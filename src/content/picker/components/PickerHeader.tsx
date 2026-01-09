@@ -41,11 +41,12 @@ export function PickerHeader({
     border: "none",
     cursor: "pointer",
     padding: "4px",
-    opacity: hoveredBtn === btn ? 1 : 0.62,
+    borderRadius: "4px",
+    opacity: hoveredBtn === btn ? 1 : 0.7,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: dark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.88)",
+    color: dark ? "#8d96a0" : "#656d76",
   })
 
   return (
@@ -54,23 +55,29 @@ export function PickerHeader({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "10px 10px 8px 10px",
-        height: "44px",
+        padding: "12px 12px 8px 12px",
+        height: "48px",
         boxSizing: "border-box",
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
         <div
           style={{
-            fontWeight: 700,
-            letterSpacing: "0.4px",
-            fontSize: "12px",
-            opacity: 0.92,
+            fontWeight: 600,
+            fontSize: "13px",
+            color: dark ? "#e6edf3" : "#1f2328",
           }}
         >
           {title}
         </div>
-        <div style={{ fontSize: "12px", opacity: 0.72 }}>{subtitle}</div>
+        <div
+          style={{
+            fontSize: "12px",
+            color: dark ? "#8d96a0" : "#656d76",
+          }}
+        >
+          {subtitle}
+        </div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
