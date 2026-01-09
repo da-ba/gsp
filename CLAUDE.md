@@ -2,7 +2,7 @@
 
 ## Project Context
 
-GitHub Slash Palette is a Chrome extension that enhances GitHub's markdown textareas with slash command functionality. Users can type commands like `/giphy`, `/emoji`, `/font`, `/kbd`, `/link`, `/mention`, `/mermaid`, and `/now` to quickly insert content.
+GitHub Slash Palette is a Chrome extension that enhances GitHub's markdown textareas with slash command functionality. Users can type commands like `/giphy`, `/emoji`, `/font`, `/kbd`, `/link`, `/mention`, `/mermaid`, and `/now` to quickly insert content. Typing just `/` shows a list of all available commands.
 
 ## Tech Stack & Tools
 
@@ -47,19 +47,40 @@ src/
 ├── content/            # Content scripts (injected into GitHub)
 │   ├── commands/       # Slash command implementations
 │   │   ├── <command>/  # Self-contained command modules
-│   │   │   ├── api.ts       # Data fetching/external APIs
-│   │   │   ├── api.test.ts  # API layer tests
-│   │   │   ├── command.ts   # CommandSpec implementation
-│   │   │   ├── command.test.ts
-│   │   │   └── index.ts     # Barrel exports
-│   │   └── registry.ts      # Global command registry
-│   ├── picker/         # Picker UI (dropdown/modal)
-│   └── types.ts        # Shared type definitions
-├── options/            # Extension settings page
+│   │   │   ├── api.ts            # Data fetching/external APIs
+│   │   │   ├── api.test.ts       # API layer tests
+│   │   │   ├── command.ts        # CommandSpec implementation
+│   │   │   ├── <Cmd>OptionsSection.tsx  # Options UI (if needed)
+│   │   │   └── index.ts          # Barrel exports
+│   │   ├── grid-handlers.ts      # Factory for grid command handlers
+│   │   ├── options-registry.ts   # Options section registry
+│   │   ├── registry.ts           # Command registry and types
+│   │   └── index.ts              # Command exports
+│   ├── picker/         # Picker UI (React-based)
+│   │   ├── components/ # React components
+│   │   │   ├── Picker.tsx        # Main picker container
+│   │   │   ├── PickerHeader.tsx  # Header with title, settings, close
+│   │   │   ├── PickerGrid.tsx    # Grid view for items
+│   │   │   ├── PickerList.tsx    # List view for items
+│   │   │   ├── GridItem.tsx      # Individual grid item
+│   │   │   ├── ListItem.tsx      # Individual list item
+│   │   │   ├── SettingsPanel.tsx # Settings UI (theme, options)
+│   │   │   └── ...               # Other components
+│   │   ├── picker-react.tsx      # React integration and rendering
+│   │   ├── state.ts              # State management and helpers
+│   │   ├── styles.ts             # Theme-aware style utilities
+│   │   └── index.ts              # Barrel exports
+│   ├── index.ts        # Main content script entry
+│   └── types.ts        # Shared types (PickerItem)
+├── options/            # Extension options page
 ├── utils/              # Shared utilities
-│   ├── dom.ts          # DOM manipulation
+│   ├── dom.ts          # DOM manipulation (replaceRange, getCursorInfo)
+│   ├── filter-sort.ts  # Generic filter/sort utilities
+│   ├── math.ts         # Math utilities
 │   ├── storage.ts      # Chrome storage wrapper
-│   └── theme.ts        # Theme detection
+│   ├── svg.ts          # SVG escape utilities
+│   ├── theme.ts        # Theme detection and override
+│   └── tile-builder.ts # SVG tile generation for picker items
 └── test/               # Test configuration
 ```
 
@@ -67,11 +88,13 @@ src/
 
 **Commands**: Each slash command is a self-contained module implementing the `CommandSpec` interface. Commands handle their own data fetching, UI rendering, and content insertion.
 
-**Picker**: The dropdown/modal UI that appears when users type a slash command. It displays items, handles search/filtering, and manages keyboard navigation.
+**Picker**: The React-based dropdown UI that appears when users type a slash command. Supports grid view (for images/tiles) and list view (for text items). Includes settings panel with theme selection.
 
-**Registry**: Central system for registering commands and options sections. Uses a registration pattern to keep modules decoupled.
+**Registry**: Central system for registering commands (`registerCommand`) and options sections (`registerOptionsSection`). Uses a registration pattern to keep modules decoupled.
 
-**Storage**: Persistent settings stored via `chrome.storage.local` API, wrapped in async utilities.
+**State**: Picker state management in `state.ts` provides helpers like `insertTextAtCursor()`, caching functions, and state reset utilities.
+
+**Storage**: Persistent settings stored via `chrome.storage.local` API, wrapped in async utilities with theme preference support.
 
 ## Working with Commands
 
@@ -82,6 +105,7 @@ The `CommandSpec` interface defines the command lifecycle:
 ```typescript
 type CommandSpec = {
   // Initial setup check (e.g., verify API keys)
+  // Can return renderSetup callback for custom setup UI
   preflight: () => Promise<PreflightResult>
 
   // Initial state when command is triggered
@@ -93,11 +117,8 @@ type CommandSpec = {
   // Optional autocomplete suggestions
   getSuggestions?: (query: string) => Promise<SuggestionsResult>
 
-  // Render items in the picker
+  // Render items in the picker (use renderGrid or renderList)
   renderItems: (items: PickerItem[], suggestTitle: string) => void
-
-  // Render current selected item
-  renderCurrent: () => void
 
   // Handle item selection and insertion
   onSelect: (item: PickerItem) => void
@@ -105,8 +126,8 @@ type CommandSpec = {
   // Custom "no results" message
   noResultsMessage?: string
 
-  // Optional settings UI in picker
-  renderSettings?: (container: HTMLElement) => void
+  // Optional: re-render current items (deprecated, rarely needed)
+  renderCurrent?: () => void
 }
 ```
 
@@ -120,7 +141,6 @@ type CommandSpec = {
    ├── api.ts           # Data layer
    ├── api.test.ts      # API tests
    ├── command.ts       # CommandSpec implementation
-   ├── command.test.ts  # Command tests
    └── index.ts         # Exports
    ```
 
@@ -128,8 +148,8 @@ type CommandSpec = {
    - Start with `preflight()` - check prerequisites
    - Implement `getEmptyState()` - initial data
    - Implement `getResults()` - search logic
-   - Implement `renderItems()` - UI rendering
-   - Implement `onSelect()` - insertion logic
+   - Use `createGridHandlers` for standard grid behavior (recommended)
+   - Or implement custom `renderItems()` and `onSelect()`
 
 3. **Register the command**
    ```typescript
@@ -149,27 +169,84 @@ type CommandSpec = {
 
 7. **Add documentation** in `docs/commands/<command>/README.md`
 
+### Using Grid Handlers (Recommended)
+
+Most commands display items in a grid. Use `createGridHandlers` to reduce boilerplate:
+
+```typescript
+import { registerCommand, type CommandSpec } from "../registry.ts"
+import { createGridHandlers } from "../grid-handlers.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
+import type { PickerItem } from "../../types.ts"
+
+type MyData = { value: string }
+
+const myCommand: CommandSpec = {
+  preflight: async () => ({ showSetup: false }),
+
+  getEmptyState: async () => ({
+    items: myItems.map(makePickerItem),
+    suggest: ["suggestion1", "suggestion2"],
+    suggestTitle: "Popular items",
+  }),
+
+  getResults: async (query) => ({
+    items: searchItems(query).map(makePickerItem),
+    suggestTitle: query ? "Search results" : "All items",
+  }),
+
+  // createGridHandlers provides renderItems and onSelect
+  ...createGridHandlers<MyData>((data) => {
+    insertTextAtCursor(data.value + " ")
+  }),
+
+  noResultsMessage: "No items found. Try different search terms.",
+}
+
+registerCommand("mycommand", myCommand)
+```
+
 ### Adding Command Options
 
 If your command needs configuration (API keys, settings):
 
-1. **Create options component** in command folder
+1. **Create options component** in command folder (e.g., `GiphyOptionsSection.tsx`)
    ```typescript
-   import { registerOptionsSection } from "../options-registry"
-   import { getStorageValue, setStorageValue } from "../../../utils/storage"
+   import React from "react"
+   import { registerOptionsSection } from "../options-registry.ts"
+   import { getStorageValue, setStorageValue } from "../../../utils/storage.ts"
 
    export function MyCommandOptionsSection() {
-     // React component for settings UI
+     // React component - appears in picker settings panel
+     const [apiKey, setApiKey] = React.useState("")
+
+     React.useEffect(() => {
+       getStorageValue<string>("mycommand:apiKey", "").then(setApiKey)
+     }, [])
+
+     const handleSave = async (value: string) => {
+       await setStorageValue("mycommand:apiKey", value)
+       setApiKey(value)
+     }
+
+     return (
+       <div>
+         <label>API Key</label>
+         <input value={apiKey} onChange={(e) => handleSave(e.target.value)} />
+       </div>
+     )
    }
 
    registerOptionsSection("mycommand", MyCommandOptionsSection)
    ```
 
-2. **Store/retrieve settings**
+2. **Import in command's index.ts** to ensure registration
    ```typescript
-   const apiKey = await getStorageValue<string>("mycommand:apiKey", "")
-   await setStorageValue("mycommand:apiKey", newKey)
+   export { myCommand } from "./command"
+   import "./MyCommandOptionsSection.tsx"  // Side-effect import for registration
    ```
+
+Options sections appear in the unified settings panel (gear icon in picker header).
 
 ## Testing Strategy
 
@@ -218,24 +295,38 @@ test.describe("MyCommand Command", () => {
 
 ## Common Utilities
 
+### Text Insertion
+
+```typescript
+import { insertTextAtCursor } from "../../picker/index.ts"
+
+// Insert text at cursor position, replacing the slash command
+// Returns true if successful, false otherwise
+insertTextAtCursor("inserted text ")
+```
+
 ### Storage Operations
 
 ```typescript
-import { getStorageValue, setStorageValue } from "../utils/storage"
+import { getStorageValue, setStorageValue } from "../utils/storage.ts"
 
 // Read with default
 const value = await getStorageValue<MyType>("key", defaultValue)
 
 // Write
 await setStorageValue("key", newValue)
+
+// Theme preference (system, light, dark)
+import { getThemePreference, setThemePreference } from "../utils/storage.ts"
+const pref = await getThemePreference()
 ```
 
 ### DOM Manipulation
 
 ```typescript
-import { replaceRange, getCursorInfo, parseSlashCommand } from "../utils/dom"
+import { replaceRange, getCursorInfo, parseSlashCommand } from "../utils/dom.ts"
 
-// Replace text at cursor
+// Replace text in a string range
 const newText = replaceRange(text, start, end, replacement)
 
 // Get cursor position and context
@@ -248,9 +339,9 @@ const command = parseSlashCommand(text, cursorPos)
 ### Caching
 
 ```typescript
-import { getCommandCache, setCommandCache, clearCommandCache } from "../../picker"
+import { getCommandCache, setCommandCache, clearCommandCache } from "../../picker/index.ts"
 
-// Get cached data
+// Get cached data (returns null if not found)
 const cached = getCommandCache<MyType>("mycommand:key")
 
 // Set cache
@@ -258,6 +349,45 @@ setCommandCache("mycommand:key", data)
 
 // Clear cache
 clearCommandCache("mycommand:key")
+```
+
+### Creating Picker Tiles
+
+```typescript
+import { createSmallTile, createStandardTile } from "../../../utils/tile-builder.ts"
+
+// Small tile (for emoji, font, etc.)
+const tile = createSmallTile({
+  id: "unique-id",
+  mainText: "Display",
+  mainFontSize: 42,
+  category: "Category",
+  categoryColor: "#f59e0b",
+})
+
+// Standard tile (for images with badge)
+const tile = createStandardTile({
+  id: "unique-id",
+  badge: { label: "Label", color: "#3b82f6" },
+})
+```
+
+### Filtering and Sorting
+
+```typescript
+import { filterItems, sortByCategory, matchesQuery } from "../../../utils/filter-sort.ts"
+
+// Filter items by query
+const filtered = filterItems({
+  items: allItems,
+  query: searchQuery,
+  searchFields: [(item) => item.name, (item) => item.keywords.join(" ")],
+})
+
+// Simple query matching
+if (matchesQuery(query, item.name, item.description)) {
+  // item matches
+}
 ```
 
 ## Development Workflow
@@ -312,9 +442,10 @@ bun run test:e2e       # E2E tests
 ### GitHub DOM Integration
 
 - Extension injects into GitHub's markdown textareas
+- Picker styling aligns with GitHub's native slash commands UI
 - Must handle GitHub's dynamic DOM updates
 - Should not interfere with GitHub's native functionality
-- Respect user's theme (light/dark mode)
+- Respect user's theme (light/dark mode) with System/Light/Dark options
 
 ### Privacy & Security
 
@@ -389,11 +520,12 @@ bun run test:e2e       # E2E tests
 
 ### Updating UI/Rendering
 
-1. Locate `renderItems()` in command implementation
-2. Follow existing HTML/DOM patterns
-3. Use theme-aware styles (check `utils/theme.ts`)
-4. Test in both light and dark modes
-5. Ensure keyboard navigation works
+1. Use `renderGrid()` or `renderList()` from picker for standard views
+2. For grid commands, use `createGridHandlers()` factory
+3. Use theme-aware styles from `picker/styles.ts` (e.g., `getCardStyles`, `getBadgeStyles`)
+4. Check `utils/theme.ts` for `isDarkMode()` when needed
+5. Test in both light and dark modes (use settings panel theme toggle)
+6. Ensure keyboard navigation works
 
 ## Documentation Standards
 
