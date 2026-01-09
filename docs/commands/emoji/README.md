@@ -38,3 +38,11 @@ The command inserts the emoji character directly:
 - Recently used emojis are stored locally and persist across sessions
 - The picker shows up to 24 results at a time
 - Categories are color-coded for easy identification
+
+## Developer notes
+
+Implementation files:
+
+- Command: `src/content/commands/emoji/command.ts`
+- Emoji data and API: `src/content/commands/emoji/api.ts`
+- Storage utilities: `src/utils/storage.ts`

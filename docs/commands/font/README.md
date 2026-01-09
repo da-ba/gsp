@@ -67,3 +67,9 @@ For example, `/font Hello World` with Bold selected inserts:
 - Colors use LaTeX syntax which GitHub renders in markdown
 - Size styles use HTML tags or markdown headers
 - Text styles use standard markdown syntax
+
+## Developer notes
+
+Implementation files:
+
+- Command: `src/content/commands/font/command.ts`
