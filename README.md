@@ -10,9 +10,7 @@ Slash commands for GitHub markdown fields. Includes GIF search, emoji picker, Me
 
 ## Live Demo
 
-Try the extension without installing it: **[Live Demo](https://da-ba.github.io/gsp/main/)**
-
-All deployments (main + PR previews): **[Deployments Index](https://da-ba.github.io/gsp/)**
+Try the extension without installing it. All deployments (main + PR previews): **[Deployments Index](https://da-ba.github.io/gsp/)**
 
 ---
 
