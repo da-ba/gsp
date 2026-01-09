@@ -12,12 +12,6 @@ export type PickerHeaderProps = {
   onCloseClick: () => void
 }
 
-const CodeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-    <path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Zm7.47 3.97a.75.75 0 0 1 1.06 0l2.5 2.5a.75.75 0 0 1 0 1.06l-2.5 2.5a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L11.69 8 9.22 5.53a.75.75 0 0 1 0-1.06Zm-4.94 0a.75.75 0 0 1 1.06 1.06L2.81 8l2.47 2.47a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215l-2.5-2.5a.75.75 0 0 1 0-1.06Z" />
-  </svg>
-)
-
 const SettingsIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
     <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
@@ -63,9 +57,15 @@ export function PickerHeader({
         borderBottom: dark ? "1px solid #3d444d" : "1px solid #d0d7de",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ color: dark ? "#8d96a0" : "#656d76", display: "flex" }}>
-          <CodeIcon />
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        <span
+          style={{
+            color: dark ? "#8d96a0" : "#656d76",
+            fontSize: "16px",
+            fontWeight: 500,
+          }}
+        >
+          /
         </span>
         <span
           style={{

@@ -51,6 +51,17 @@ export function ListItem({ item, index, selected, onSelect, onHover }: ListItemP
         textAlign: "left",
       }}
     >
+      {item.icon && (
+        <span
+          style={{
+            fontSize: "16px",
+            lineHeight: "1.4",
+            flexShrink: 0,
+          }}
+        >
+          {item.icon}
+        </span>
+      )}
       <div
         style={{
           display: "flex",
