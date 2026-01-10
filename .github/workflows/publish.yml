@@ -100,8 +100,8 @@ jobs:
 
           echo "Uploading ${ASSET_NAME} to Chrome Web Store..."
 
-          # Upload using Chrome Web Store API V2
-          # https://developer.chrome.com/docs/webstore/api/reference/rest
+          # Upload using Chrome Web Store API
+          # Note: Do not add -v flag as it would print the Authorization header
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -H "Authorization: Bearer ${ACCESS_TOKEN}" \
             -H "x-goog-api-version: 2" \
@@ -139,6 +139,7 @@ jobs:
           echo "Publishing extension to Chrome Web Store..."
 
           # Publish using Chrome Web Store API
+          # Note: Do not add -v flag as it would print the Authorization header
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -H "Authorization: Bearer ${ACCESS_TOKEN}" \
             -H "x-goog-api-version: 2" \
