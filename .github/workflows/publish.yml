@@ -1,0 +1,184 @@
+name: Publish to Chrome Web Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version to publish (e.g., 0.0.4)"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate version format
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in semver format (e.g., 0.0.4)"
+            exit 1
+          fi
+
+      - name: Check release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_TAG="gsp-v${VERSION}"
+
+          # Check if release exists on GitHub
+          if ! gh release view "${RELEASE_TAG}" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "Error: Release ${RELEASE_TAG} does not exist"
+            echo "Available releases:"
+            gh release list --repo "${{ github.repository }}" --limit 10
+            exit 1
+          fi
+
+          echo "Found release: ${RELEASE_TAG}"
+
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_TAG="gsp-v${VERSION}"
+          ASSET_NAME="gsp-v${VERSION}.zip"
+
+          echo "Downloading ${ASSET_NAME} from release ${RELEASE_TAG}..."
+          gh release download "${RELEASE_TAG}" \
+            --repo "${{ github.repository }}" \
+            --pattern "${ASSET_NAME}"
+
+          if [ ! -f "${ASSET_NAME}" ]; then
+            echo "Error: Failed to download ${ASSET_NAME}"
+            exit 1
+          fi
+
+          echo "Downloaded: ${ASSET_NAME}"
+          ls -la "${ASSET_NAME}"
+
+      - name: Get access token
+        id: auth
+        env:
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          # Exchange refresh token for access token using Google OAuth2 API
+          RESPONSE=$(curl -s -X POST "https://oauth2.googleapis.com/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "client_id=${CHROME_CLIENT_ID}" \
+            -d "client_secret=${CHROME_CLIENT_SECRET}" \
+            -d "refresh_token=${CHROME_REFRESH_TOKEN}" \
+            -d "grant_type=refresh_token")
+
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Error: Failed to obtain access token"
+            # Only show error details, not the full response which may contain tokens
+            echo "$RESPONSE" | jq -r '.error_description // .error // "Unknown error"'
+            exit 1
+          fi
+
+          # Mask the token so it won't appear in logs
+          echo "::add-mask::${ACCESS_TOKEN}"
+
+          echo "Successfully obtained access token"
+          echo "access_token=${ACCESS_TOKEN}" >> $GITHUB_OUTPUT
+
+      - name: Upload to Chrome Web Store
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          ASSET_NAME="gsp-v${VERSION}.zip"
+
+          echo "Uploading ${ASSET_NAME} to Chrome Web Store..."
+
+          # Upload using Chrome Web Store API
+          # Note: Do not add -v flag as it would print the Authorization header
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "x-goog-api-version: 2" \
+            -X PUT \
+            -T "${ASSET_NAME}" \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${CHROME_EXTENSION_ID}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: ${HTTP_CODE}"
+          echo "Response: ${BODY}"
+
+          # Check for success (2xx status codes)
+          if [[ ! "$HTTP_CODE" =~ ^2 ]]; then
+            echo "Error: Upload failed with status ${HTTP_CODE}"
+            exit 1
+          fi
+
+          # Check upload state
+          UPLOAD_STATE=$(echo "$BODY" | jq -r '.uploadState')
+          if [ "$UPLOAD_STATE" = "FAILURE" ]; then
+            echo "Error: Upload failed"
+            echo "$BODY" | jq '.itemError'
+            exit 1
+          fi
+
+          echo "Upload successful! State: ${UPLOAD_STATE}"
+
+      - name: Publish extension
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+        run: |
+          echo "Publishing extension to Chrome Web Store..."
+
+          # Publish using Chrome Web Store API
+          # Note: Do not add -v flag as it would print the Authorization header
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "x-goog-api-version: 2" \
+            -H "Content-Length: 0" \
+            -X POST \
+            "https://www.googleapis.com/chromewebstore/v1.1/items/${CHROME_EXTENSION_ID}/publish")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: ${HTTP_CODE}"
+          echo "Response: ${BODY}"
+
+          # Check for success
+          if [[ ! "$HTTP_CODE" =~ ^2 ]]; then
+            echo "Error: Publish failed with status ${HTTP_CODE}"
+            exit 1
+          fi
+
+          # Check publish status
+          STATUS=$(echo "$BODY" | jq -r '.status[0]')
+          echo "Publish status: ${STATUS}"
+
+          if [ "$STATUS" = "OK" ] || [ "$STATUS" = "PENDING_REVIEW" ]; then
+            echo "Extension published successfully!"
+          else
+            echo "Warning: Unexpected status - ${STATUS}"
+            echo "$BODY" | jq '.'
+          fi
+
+      - name: Summary
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          echo "## Chrome Web Store Publish Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`${VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The extension has been uploaded and published to the Chrome Web Store." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** If the extension requires review, it may take some time before it becomes available." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Monitor status at: https://chrome.google.com/webstore/devconsole" >> $GITHUB_STEP_SUMMARY
