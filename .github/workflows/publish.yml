@@ -1,0 +1,80 @@
+name: Publish to Chrome Web Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version to publish (e.g., 0.0.4)"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate version format
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in semver format (e.g., 0.0.4)"
+            exit 1
+          fi
+
+      - name: Check release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_TAG="gsp-v${VERSION}"
+
+          # Check if release exists on GitHub
+          if ! gh release view "${RELEASE_TAG}" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "Error: Release ${RELEASE_TAG} does not exist"
+            echo "Available releases:"
+            gh release list --repo "${{ github.repository }}" --limit 10
+            exit 1
+          fi
+
+          echo "Found release: ${RELEASE_TAG}"
+
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_TAG="gsp-v${VERSION}"
+          ASSET_NAME="gsp-v${VERSION}.zip"
+
+          echo "Downloading ${ASSET_NAME} from release ${RELEASE_TAG}..."
+          gh release download "${RELEASE_TAG}" \
+            --repo "${{ github.repository }}" \
+            --pattern "${ASSET_NAME}"
+
+          if [ ! -f "${ASSET_NAME}" ]; then
+            echo "Error: Failed to download ${ASSET_NAME}"
+            exit 1
+          fi
+
+          echo "Downloaded: ${ASSET_NAME}"
+          ls -la "${ASSET_NAME}"
+
+      - name: Upload to Chrome Web Store
+        uses: nickytonline/chrome-extension-upload-action@v3.2.1
+        with:
+          file-path: gsp-v${{ github.event.inputs.version }}.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      - name: Summary
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          echo "## 🚀 Chrome Web Store Publish Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`${VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The extension has been uploaded to the Chrome Web Store." >> $GITHUB_STEP_SUMMARY
+          echo "Review and publish at: https://chrome.google.com/webstore/devconsole" >> $GITHUB_STEP_SUMMARY
