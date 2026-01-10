@@ -79,9 +79,13 @@ jobs:
 
           if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
             echo "Error: Failed to obtain access token"
-            echo "Response: $RESPONSE"
+            # Only show error details, not the full response which may contain tokens
+            echo "$RESPONSE" | jq -r '.error_description // .error // "Unknown error"'
             exit 1
           fi
+
+          # Mask the token so it won't appear in logs
+          echo "::add-mask::${ACCESS_TOKEN}"
 
           echo "Successfully obtained access token"
           echo "access_token=${ACCESS_TOKEN}" >> $GITHUB_OUTPUT
