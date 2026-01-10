@@ -290,7 +290,7 @@ Configure these secrets in repository settings (**Settings** → **Secrets and v
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a project (or select existing)
 3. Enable the **Chrome Web Store API**
-4. Create OAuth 2.0 credentials (Desktop app type)
+4. Create OAuth 2.0 credentials (Web application type) with redirect URI `https://developers.google.com/oauthplayground`
 5. Use the [OAuth Playground](https://developers.google.com/oauthplayground/) to obtain a refresh token with scope `https://www.googleapis.com/auth/chromewebstore`
 
 For detailed instructions, see the [Chrome Web Store API documentation](https://developer.chrome.com/docs/webstore/using-api).
