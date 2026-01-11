@@ -21,6 +21,9 @@ import {
   refreshSelectionStyles,
   moveSelectionGrid,
   applyPickerStyles,
+  updateFocusForQuery,
+  switchPopoverFocus,
+  areBothPopoversVisible,
 } from "./picker/index.ts"
 
 // Import commands to register them
@@ -121,6 +124,9 @@ async function handleCommandInput(
   showPicker(field)
   positionPickerAtCaret(field)
 
+  // Update focus priority based on the query (context-aware)
+  updateFocusForQuery(cmdName || query || "")
+
   // Check if setup is needed
   const pre = await cmd.preflight()
   if (pre?.showSetup && pre.renderSetup) {
@@ -215,6 +221,23 @@ function onFieldKeyDown(ev: KeyboardEvent, field: HTMLTextAreaElement): void {
     ev.stopPropagation()
     ev.stopImmediatePropagation()
     hidePicker()
+    return
+  }
+
+  // Handle Tab key to switch focus between popovers
+  if (ev.key === "Tab") {
+    if (areBothPopoversVisible()) {
+      ev.preventDefault()
+      ev.stopPropagation()
+      ev.stopImmediatePropagation()
+      switchPopoverFocus()
+      return
+    }
+    // If only our popover is visible, let Tab work normally
+  }
+
+  // Skip handling other keys if GitHub's popover has focus
+  if (areBothPopoversVisible() && state.focusedPopover === "github") {
     return
   }
 

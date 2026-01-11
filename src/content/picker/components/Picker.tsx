@@ -12,6 +12,8 @@ import { SettingsPanel } from "./SettingsPanel.tsx"
 import { applyPickerStyles } from "../styles.ts"
 import type { PickerItem } from "../../types.ts"
 import type { Position } from "../types.ts"
+import type { PopoverFocus } from "../github-commands.ts"
+import { getOtherPopoverName } from "../github-commands.ts"
 
 export type PickerView =
   | { type: "loading" }
@@ -38,6 +40,8 @@ export type PickerProps = {
   onThemeChange: () => void
   onSetupComplete: () => void
   position: Position
+  focusedPopover: PopoverFocus
+  githubPopoverVisible: boolean
 }
 
 export function Picker({
@@ -57,6 +61,8 @@ export function Picker({
   onThemeChange,
   onSetupComplete,
   position,
+  focusedPopover,
+  githubPopoverVisible,
 }: PickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const setupBodyRef = React.useRef<HTMLDivElement>(null)
@@ -94,6 +100,13 @@ export function Picker({
   }, [visible])
 
   if (!visible) return null
+
+  // Determine if we should show the focus hint
+  const showFocusHint = githubPopoverVisible && view.type !== "settings"
+  const otherPopoverName = getOtherPopoverName(focusedPopover)
+
+  // Determine opacity based on focus state
+  const isUnfocused = githubPopoverVisible && focusedPopover !== "slashPalette"
 
   const renderBody = () => {
     switch (view.type) {
@@ -158,6 +171,8 @@ export function Picker({
         position: "fixed",
         left: `${position.left}px`,
         top: `${position.top}px`,
+        opacity: isUnfocused ? 0.5 : 1,
+        transition: "opacity 0.15s ease",
       }}
     >
       <PickerHeader
@@ -167,6 +182,40 @@ export function Picker({
         onCloseClick={onCloseClick}
       />
       {renderBody()}
+      {showFocusHint && (
+        <div
+          style={{
+            padding: "6px 12px",
+            fontSize: "11px",
+            color: isDark ? "#8b949e" : "#57606a",
+            backgroundColor: isDark ? "rgba(33, 38, 45, 0.8)" : "rgba(246, 248, 250, 0.8)",
+            borderTop: `1px solid ${isDark ? "#30363d" : "#d0d7de"}`,
+            textAlign: "center",
+            borderBottomLeftRadius: "6px",
+            borderBottomRightRadius: "6px",
+          }}
+        >
+          <kbd
+            style={{
+              display: "inline-block",
+              padding: "2px 5px",
+              fontSize: "10px",
+              fontFamily:
+                "ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace",
+              lineHeight: 1,
+              color: isDark ? "#c9d1d9" : "#24292f",
+              backgroundColor: isDark ? "#161b22" : "#f6f8fa",
+              border: `1px solid ${isDark ? "#30363d" : "#d0d7de"}`,
+              borderRadius: "3px",
+              boxShadow: isDark ? "inset 0 -1px 0 #21262d" : "inset 0 -1px 0 #d0d7de",
+              marginRight: "4px",
+            }}
+          >
+            Tab
+          </kbd>
+          <span>Switch to {otherPopoverName}</span>
+        </div>
+      )}
     </div>
   )
 }

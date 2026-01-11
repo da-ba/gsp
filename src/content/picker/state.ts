@@ -5,6 +5,7 @@
 import { replaceRange } from "../../utils/dom.ts"
 import { add } from "../../utils/math.ts"
 import type { PickerItem } from "../types.ts"
+import type { PopoverFocus } from "./github-commands.ts"
 
 export type PickerState = {
   pickerEl: HTMLElement | null
@@ -31,6 +32,10 @@ export type PickerState = {
   commandCache: Record<string, unknown>
   /** Whether the settings panel is currently shown */
   showingSettings: boolean
+  /** Which popover currently has logical focus (ours or GitHub's) */
+  focusedPopover: PopoverFocus
+  /** Whether GitHub's popover is currently visible */
+  githubPopoverVisible: boolean
 }
 
 export function createPickerState(): PickerState {
@@ -57,6 +62,8 @@ export function createPickerState(): PickerState {
     suggestDebounceId: null,
     commandCache: {},
     showingSettings: false,
+    focusedPopover: "slashPalette",
+    githubPopoverVisible: false,
   }
 }
 
@@ -95,6 +102,29 @@ export function resetCommandState(): void {
 export function resetPickerState(): void {
   resetCommandState()
   state.activeCommand = ""
+  state.focusedPopover = "slashPalette"
+  state.githubPopoverVisible = false
+}
+
+/**
+ * Toggle focus between our popover and GitHub's popover
+ */
+export function togglePopoverFocus(): void {
+  state.focusedPopover = state.focusedPopover === "slashPalette" ? "github" : "slashPalette"
+}
+
+/**
+ * Set which popover has focus
+ */
+export function setPopoverFocus(focus: PopoverFocus): void {
+  state.focusedPopover = focus
+}
+
+/**
+ * Set whether GitHub's popover is visible
+ */
+export function setGitHubPopoverVisible(visible: boolean): void {
+  state.githubPopoverVisible = visible
 }
 
 /**

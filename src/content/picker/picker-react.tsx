@@ -9,7 +9,9 @@ import { getCaretCoordinates } from "../../utils/dom.ts"
 import { isDarkMode } from "../../utils/theme.ts"
 import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
-import { state, resetPickerState } from "./state.ts"
+import { state, resetPickerState, setPopoverFocus } from "./state.ts"
+import { determinePopoverPriority } from "./github-commands.ts"
+import type { PopoverFocus } from "./github-commands.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
 
@@ -23,6 +25,8 @@ export type ReactPickerState = {
   subtitle: string
   view: PickerView
   position: Position
+  focusedPopover: PopoverFocus
+  githubPopoverVisible: boolean
 }
 
 const reactState: ReactPickerState = {
@@ -31,6 +35,8 @@ const reactState: ReactPickerState = {
   subtitle: "",
   view: { type: "loading" },
   position: { left: 0, top: 0 },
+  focusedPopover: "slashPalette",
+  githubPopoverVisible: false,
 }
 
 // Store the view before switching to settings so we can restore it
@@ -47,6 +53,9 @@ let currentOnSetupComplete: () => void = () => {}
  */
 function renderPicker(): void {
   if (!pickerRoot || !state.pickerEl) return
+
+  // Update GitHub popover dimming
+  updateGitHubPopoverDimming()
 
   pickerRoot.render(
     React.createElement(Picker, {
@@ -105,6 +114,8 @@ function renderPicker(): void {
       },
       onSetupComplete: currentOnSetupComplete,
       position: reactState.position,
+      focusedPopover: reactState.focusedPopover,
+      githubPopoverVisible: reactState.githubPopoverVisible,
     })
   )
 }
@@ -212,6 +223,42 @@ export function showPicker(field?: HTMLElement | null): void {
   renderPicker()
 }
 
+/**
+ * Update which popover has focus based on query (context-aware priority)
+ */
+export function updateFocusForQuery(query: string): void {
+  const priority = determinePopoverPriority(query)
+  reactState.focusedPopover = priority
+  state.focusedPopover = priority
+  setPopoverFocus(priority)
+  renderPicker()
+}
+
+/**
+ * Handle Tab key to switch popover focus.
+ * Returns true if the switch was handled (both popovers visible).
+ */
+export function switchPopoverFocus(): boolean {
+  if (!reactState.githubPopoverVisible || !reactState.visible) {
+    return false
+  }
+
+  const newFocus: PopoverFocus =
+    reactState.focusedPopover === "slashPalette" ? "github" : "slashPalette"
+  reactState.focusedPopover = newFocus
+  state.focusedPopover = newFocus
+  setPopoverFocus(newFocus)
+  renderPicker()
+  return true
+}
+
+/**
+ * Check if both popovers are currently visible
+ */
+export function areBothPopoversVisible(): boolean {
+  return reactState.visible && reactState.githubPopoverVisible
+}
+
 export function hidePicker(): void {
   if (!state.pickerEl) return
   reactState.visible = false
@@ -249,7 +296,7 @@ export function renderLoadingSkeleton(): void {
 /**
  * Get GitHub's native slash commands menu element if visible.
  */
-function getGitHubSlashMenuElement(): HTMLElement | null {
+export function getGitHubSlashMenuElement(): HTMLElement | null {
   const selectors = [
     "text-expander-menu[role='listbox']",
     ".suggester-container",
@@ -265,6 +312,60 @@ function getGitHubSlashMenuElement(): HTMLElement | null {
     }
   }
   return null
+}
+
+// Style element for GitHub popover dimming
+let githubDimStyleEl: HTMLStyleElement | null = null
+
+/**
+ * Update dimming styles on GitHub's popover based on focus state
+ */
+function updateGitHubPopoverDimming(): void {
+  const githubMenu = getGitHubSlashMenuElement()
+  const isGitHubVisible = githubMenu !== null
+
+  // Update visibility state
+  reactState.githubPopoverVisible = isGitHubVisible
+  state.githubPopoverVisible = isGitHubVisible
+
+  // Create style element if needed
+  if (!githubDimStyleEl) {
+    githubDimStyleEl = document.createElement("style")
+    githubDimStyleEl.id = "slashPaletteGitHubDimStyle"
+    document.head.appendChild(githubDimStyleEl)
+  }
+
+  if (!isGitHubVisible || !reactState.visible) {
+    // No GitHub popover or our picker not visible - remove dimming
+    githubDimStyleEl.textContent = ""
+    return
+  }
+
+  // Apply dimming based on which popover has focus
+  const githubSelectors = [
+    "text-expander-menu[role='listbox']",
+    ".suggester-container",
+    ".slash-command-suggester",
+    "[data-target='text-expander.menu']",
+  ].join(", ")
+
+  if (reactState.focusedPopover === "slashPalette") {
+    // We have focus - dim GitHub's popover
+    githubDimStyleEl.textContent = `
+      ${githubSelectors} {
+        opacity: 0.5 !important;
+        transition: opacity 0.15s ease !important;
+      }
+    `
+  } else {
+    // GitHub has focus - remove dimming from GitHub
+    githubDimStyleEl.textContent = `
+      ${githubSelectors} {
+        opacity: 1 !important;
+        transition: opacity 0.15s ease !important;
+      }
+    `
+  }
 }
 
 export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
