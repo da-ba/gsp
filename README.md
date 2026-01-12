@@ -257,6 +257,46 @@ Some features require a GitHub Personal Access Token (PAT):
 
 ---
 
+## Publishing to Chrome Web Store
+
+A GitHub Actions workflow is available for publishing releases to the Chrome Web Store using [Google's official Chrome Web Store API](https://developer.chrome.com/docs/webstore/api).
+
+### Usage
+
+1. Go to **Actions** → **Publish to Chrome Web Store**
+2. Click **Run workflow**
+3. Enter the version to publish (e.g., `0.0.4`)
+4. Click **Run workflow**
+
+The workflow:
+1. Downloads the release artifact from GitHub Releases
+2. Authenticates with Google OAuth2
+3. Uploads the extension using the official [Chrome Web Store API](https://developer.chrome.com/docs/webstore/api/reference/rest)
+4. Publishes the extension for review
+
+### Required Secrets
+
+Configure these secrets in repository settings (**Settings** → **Secrets and variables** → **Actions**):
+
+| Secret | Description |
+|--------|-------------|
+| `CHROME_EXTENSION_ID` | Extension ID from Chrome Web Store |
+| `CHROME_CLIENT_ID` | OAuth 2.0 client ID |
+| `CHROME_CLIENT_SECRET` | OAuth 2.0 client secret |
+| `CHROME_REFRESH_TOKEN` | OAuth 2.0 refresh token |
+
+### Obtaining Chrome Web Store API Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a project (or select existing)
+3. Enable the **Chrome Web Store API**
+4. Create OAuth 2.0 credentials (Web application type) with redirect URI `https://developers.google.com/oauthplayground`
+5. Use the [OAuth Playground](https://developers.google.com/oauthplayground/) to obtain a refresh token with scope `https://www.googleapis.com/auth/chromewebstore`
+
+For detailed instructions, see the [Chrome Web Store API documentation](https://developer.chrome.com/docs/webstore/using-api).
+
+---
+
 ## Privacy
 
 See [PRIVACY.md](PRIVACY.md) for the privacy policy.
