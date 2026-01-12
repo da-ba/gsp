@@ -220,6 +220,7 @@ export function isPickerVisible(): boolean {
 export function showPicker(field?: HTMLElement | null): void {
   ensurePicker(field)
   reactState.visible = true
+  startGitHubPopoverWatch()
   renderPicker()
 }
 
@@ -239,9 +240,17 @@ export function updateFocusForQuery(query: string): void {
  * Returns true if the switch was handled (both popovers visible).
  */
 export function switchPopoverFocus(): boolean {
-  if (!reactState.githubPopoverVisible || !reactState.visible) {
+  // Check DOM directly for GitHub popover - don't rely on cached state
+  const githubMenu = getGitHubSlashMenuElement()
+  const isGitHubVisible = githubMenu !== null
+
+  if (!isGitHubVisible || !reactState.visible) {
     return false
   }
+
+  // Update state
+  reactState.githubPopoverVisible = isGitHubVisible
+  state.githubPopoverVisible = isGitHubVisible
 
   const newFocus: PopoverFocus =
     reactState.focusedPopover === "slashPalette" ? "github" : "slashPalette"
@@ -256,12 +265,16 @@ export function switchPopoverFocus(): boolean {
  * Check if both popovers are currently visible
  */
 export function areBothPopoversVisible(): boolean {
-  return reactState.visible && reactState.githubPopoverVisible
+  // Check DOM directly for GitHub popover
+  const githubMenu = getGitHubSlashMenuElement()
+  return reactState.visible && githubMenu !== null
 }
 
 export function hidePicker(): void {
   if (!state.pickerEl) return
+  stopGitHubPopoverWatch()
   reactState.visible = false
+  reactState.githubPopoverVisible = false
   reactState.view = { type: "loading" }
   viewBeforeSettings = null
   renderPicker()
@@ -557,3 +570,66 @@ export function showSettings(): void {
 
 // Re-export applyPickerStyles for use in content/index.ts
 export { applyPickerStyles }
+
+// MutationObserver to watch for GitHub's popover
+let githubPopoverObserver: MutationObserver | null = null
+let githubPopoverCheckInterval: ReturnType<typeof setInterval> | null = null
+
+/**
+ * Start watching for GitHub's popover appearing/disappearing
+ */
+function startGitHubPopoverWatch(): void {
+  // Clear any existing watchers
+  stopGitHubPopoverWatch()
+
+  // Use a short interval to check for GitHub's popover
+  // This is more reliable than MutationObserver for dynamic content
+  githubPopoverCheckInterval = setInterval(() => {
+    if (!reactState.visible) return
+
+    const githubMenu = getGitHubSlashMenuElement()
+    const isGitHubVisible = githubMenu !== null
+
+    // Only re-render if visibility changed
+    if (isGitHubVisible !== reactState.githubPopoverVisible) {
+      reactState.githubPopoverVisible = isGitHubVisible
+      state.githubPopoverVisible = isGitHubVisible
+      renderPicker()
+    }
+  }, 100)
+
+  // Also use MutationObserver for faster detection
+  githubPopoverObserver = new MutationObserver(() => {
+    if (!reactState.visible) return
+
+    const githubMenu = getGitHubSlashMenuElement()
+    const isGitHubVisible = githubMenu !== null
+
+    if (isGitHubVisible !== reactState.githubPopoverVisible) {
+      reactState.githubPopoverVisible = isGitHubVisible
+      state.githubPopoverVisible = isGitHubVisible
+      renderPicker()
+    }
+  })
+
+  githubPopoverObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["style", "class", "hidden"],
+  })
+}
+
+/**
+ * Stop watching for GitHub's popover
+ */
+function stopGitHubPopoverWatch(): void {
+  if (githubPopoverCheckInterval) {
+    clearInterval(githubPopoverCheckInterval)
+    githubPopoverCheckInterval = null
+  }
+  if (githubPopoverObserver) {
+    githubPopoverObserver.disconnect()
+    githubPopoverObserver = null
+  }
+}
