@@ -40,8 +40,8 @@ export function getCursorInfo(textarea: HTMLTextAreaElement): CursorInfo {
 
 /**
  * Parse slash command from line text.
- * The slash can be at the beginning of the line or preceded by a space (mid-sentence).
- * Returns the command, query, and the offset within the line where the slash was found.
+ * The double slash can be at the beginning of the line or preceded by a space (mid-sentence).
+ * Returns the command, query, and the offset within the line where the double slash was found.
  */
 export function parseSlashCommand(
   line: string
@@ -49,28 +49,36 @@ export function parseSlashCommand(
   const text = line || ""
   if (!text) return null
 
-  // Find the last occurrence of a slash that is either at position 0 or preceded by a space
+  // Find the last occurrence of "//" that is either at position 0 or preceded by a space
   let slashIdx = -1
-  for (let i = text.length - 1; i >= 0; i--) {
-    if (text[i] === "/" && (i === 0 || text[i - 1] === " ")) {
-      // Validate that the character after the slash (if any) is a letter, whitespace, or end of string
-      // This prevents matching HTML like " />" as slash commands
+  for (let i = text.length - 1; i >= 1; i--) {
+    if (text[i] === "/" && text[i - 1] === "/" && (i === 1 || text[i - 2] === " ")) {
+      // Validate that the character after the double slash (if any) is a letter, whitespace, or end of string
+      // This prevents matching patterns like "//>" as slash commands
       const nextChar = text[i + 1]
       if (nextChar === undefined || /[a-zA-Z\s]/.test(nextChar)) {
-        slashIdx = i
+        slashIdx = i - 1 // Point to the first slash
         break
       }
     }
   }
 
+  // Also check if line starts with "//"
+  if (slashIdx === -1 && text.startsWith("//")) {
+    const nextChar = text[2]
+    if (nextChar === undefined || /[a-zA-Z\s]/.test(nextChar)) {
+      slashIdx = 0
+    }
+  }
+
   if (slashIdx === -1) return null
 
-  // Extract the text from the slash to the end of the line (cursor position)
+  // Extract the text from the double slash to the end of the line (cursor position)
   const slashText = text.slice(slashIdx)
-  const rest = slashText.slice(1) // Remove the leading "/"
+  const rest = slashText.slice(2) // Remove the leading "//"
   const parts = rest.split(/\s+/).filter(Boolean)
 
-  // If just "/" with nothing after, return empty cmd to trigger command list
+  // If just "//" with nothing after, return empty cmd to trigger command list
   if (!parts.length) return { cmd: "", query: "", slashOffset: slashIdx }
 
   const cmd = String(parts[0] || "").toLowerCase()
