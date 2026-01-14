@@ -56,7 +56,10 @@ export function parseSlashCommand(
   let prefixIdx = -1
   for (let i = text.length - 1; i >= prefixLen - 1; i--) {
     const potentialPrefix = text.slice(i - prefixLen + 1, i + 1)
-    if (potentialPrefix === COMMAND_PREFIX && (i === prefixLen - 1 || text[i - prefixLen] === " ")) {
+    if (
+      potentialPrefix === COMMAND_PREFIX &&
+      (i === prefixLen - 1 || text[i - prefixLen] === " ")
+    ) {
       // Validate that the character after the prefix (if any) is a letter, whitespace, or end of string
       // This prevents matching patterns like "//>" as slash commands
       const nextChar = text[i + 1]
