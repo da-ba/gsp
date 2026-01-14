@@ -1,12 +1,12 @@
-# /mermaid Command
+# //mermaid Command
 
 Insert Mermaid diagram templates into GitHub markdown. GitHub natively renders Mermaid diagrams in markdown code blocks.
 
 ## Usage
 
 1. In any GitHub comment/review textarea, type:
-   - `/mermaid` to see all diagram templates
-   - `/mermaid flow` to filter to flowchart templates
+   - `//mermaid` to see all diagram templates
+   - `//mermaid flow` to filter to flowchart templates
 2. Navigate results:
    - Arrow keys to move selection
    - `Enter` or `Tab` to insert
@@ -36,10 +36,10 @@ Insert Mermaid diagram templates into GitHub markdown. GitHub natively renders M
 
 | Input | Description |
 |-------|-------------|
-| `/mermaid` | Show all diagram templates |
-| `/mermaid flow` | Filter to flowchart templates |
-| `/mermaid sequence` | Filter to sequence diagrams |
-| `/mermaid class` | Filter to class diagrams |
+| `//mermaid` | Show all diagram templates |
+| `//mermaid flow` | Filter to flowchart templates |
+| `//mermaid sequence` | Filter to sequence diagrams |
+| `//mermaid class` | Filter to class diagrams |
 
 ## What gets inserted
 

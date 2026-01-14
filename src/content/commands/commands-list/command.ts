@@ -3,12 +3,13 @@
  *
  * Provides an overview of all registered commands and lets the user
  * pick one to insert at the current cursor position.
- * Triggered by typing just "/" in a markdown textarea.
+ * Triggered by typing just the command prefix (default: "//") in a markdown textarea.
  */
 
 import type { PickerItem } from "../../types.ts"
 import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
 import { renderList, setSlashQueryInField } from "../../picker/index.ts"
+import { COMMAND_PREFIX } from "../../../utils/command-prefix.ts"
 
 type CommandMeta = {
   icon: string
@@ -55,7 +56,7 @@ function makeCommandItem(name: string): PickerItem {
   return {
     id: name,
     previewUrl: "",
-    title: "/" + name,
+    title: COMMAND_PREFIX + name,
     subtitle: meta.description,
     icon: meta.icon,
     data: name,
@@ -107,7 +108,7 @@ const commandsCommand: CommandSpec = {
   },
 }
 
-// Register the command with empty string (triggered by just "/")
+// Register the command with empty string (triggered by just the prefix)
 registerCommand("", commandsCommand)
 
 export { commandsCommand }

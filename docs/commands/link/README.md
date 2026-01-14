@@ -1,14 +1,14 @@
-# /link Command
+# //link Command
 
 Insert markdown links with auto-generated titles.
 
 ## Usage
 
 ```
-/link                           – Opens the link picker with empty state
-/link example.com               – Prefills with URL, auto-generates title from domain
-/link example.com "My Title"    – Prefills URL and custom title
-/link https://example.com/path  – Works with full URLs
+//link                           – Opens the link picker with empty state
+//link example.com               – Prefills with URL, auto-generates title from domain
+//link example.com "My Title"    – Prefills URL and custom title
+//link https://example.com/path  – Works with full URLs
 ```
 
 ## Features
@@ -22,21 +22,21 @@ Insert markdown links with auto-generated titles.
 
 | Input | Output |
 |-------|--------|
-| `/link google.com` | `[google.com](https://google.com)` |
-| `/link github.com/repo "GitHub Repo"` | `[GitHub Repo](https://github.com/repo)` |
-| `/link https://docs.example.com` | `[docs.example.com](https://docs.example.com)` |
-| `/link www.example.com` | `[example.com](https://www.example.com)` |
+| `//link google.com` | `[google.com](https://google.com)` |
+| `//link github.com/repo "GitHub Repo"` | `[GitHub Repo](https://github.com/repo)` |
+| `//link https://docs.example.com` | `[docs.example.com](https://docs.example.com)` |
+| `//link www.example.com` | `[example.com](https://www.example.com)` |
 
 ## How it works
 
-1. Type `/link` followed by a URL
+1. Type `//link` followed by a URL
 2. The picker shows a preview of the markdown link
 3. Press Enter to insert the link at the cursor position
 4. Optionally add a custom title in quotes after the URL
 
 ---
 
-# /link ci Subcommand
+# //link ci Subcommand
 
 Link to CI jobs and artifacts from the current repository.
 
@@ -47,10 +47,10 @@ This subcommand requires a GitHub Personal Access Token. See [GitHub API Options
 ## Usage
 
 ```
-/link ci                        – Shows recent CI jobs and artifacts
-/link ci <query>                – Fuzzy search for matching jobs/artifacts
-/link ci e2e                    – Links to jobs containing "e2e"
-/link ci report                 – Links to artifacts containing "report"
+//link ci                        – Shows recent CI jobs and artifacts
+//link ci <query>                – Fuzzy search for matching jobs/artifacts
+//link ci e2e                    – Links to jobs containing "e2e"
+//link ci report                 – Links to artifacts containing "report"
 ```
 
 ## Features
@@ -64,13 +64,13 @@ This subcommand requires a GitHub Personal Access Token. See [GitHub API Options
 
 | Input | Output |
 |-------|--------|
-| `/link ci` | Shows all recent CI jobs and artifacts |
-| `/link ci build` | Links to jobs/artifacts containing "build" |
-| `/link ci test-report` | Links to artifacts containing "test-report" |
+| `//link ci` | Shows all recent CI jobs and artifacts |
+| `//link ci build` | Links to jobs/artifacts containing "build" |
+| `//link ci test-report` | Links to artifacts containing "test-report" |
 
 ## Token Setup
 
-1. Type `/link ci` - if no token is configured, you'll see a setup tile
+1. Type `//link ci` - if no token is configured, you'll see a setup tile
 2. Click the setup tile to open settings
 3. Paste your GitHub Personal Access Token
 4. Click Save
@@ -87,7 +87,7 @@ The command inserts standard Markdown link syntax:
 ## Privacy
 
 - The GitHub token is stored locally via `chrome.storage.local`
-- When you use `/link ci`, your token is used to fetch workflow data from GitHub's API
+- When you use `//link ci`, your token is used to fetch workflow data from GitHub's API
 - Only data from the current repository is fetched
 
 ## Developer notes

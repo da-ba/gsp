@@ -1,11 +1,11 @@
-# /giphy
+# //giphy
 
 Search and insert GIFs into GitHub markdown textareas.
 
 ## Usage
 
 1. In any GitHub comment/review textarea, type:
-   - `/giphy cats`
+   - `//giphy cats`
 2. Navigate results:
    - Arrow keys to move selection
    - `Enter` or `Tab` to insert
@@ -17,7 +17,7 @@ Giphy requires an API key.
 
 ### Option 1: In picker
 
-1. Type `/giphy`
+1. Type `//giphy`
 2. Paste your key
 3. Click **Test**
 4. Click **Save**
@@ -38,7 +38,7 @@ The command inserts standard Markdown image syntax:
 ## Privacy
 
 - The API key is stored locally via `chrome.storage.local`.
-- When you use `/giphy`, your query (and the key) are sent directly to Giphy’s API.
+- When you use `//giphy`, your query (and the key) are sent directly to Giphy's API.
 
 ## Developer notes
 

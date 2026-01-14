@@ -1,11 +1,11 @@
-# /
+# //
 
 Show an overview of all registered slash commands and insert one into the current textarea.
 
 ## Usage
 
-- Type `/` to see all commands.
-- Type `/ <filter>` to filter commands by name.
+- Type `//` to see all commands.
+- Type `// <filter>` to filter commands by name.
 
 Navigation
 
@@ -17,11 +17,11 @@ Navigation
 
 Selecting a command replaces the current line up to the cursor with:
 
-- `/<command> `
+- `//<command> `
 
-If you used a filter term (e.g. `/ cats`) it will be forwarded:
+If you used a filter term (e.g. `// cats`) it will be forwarded:
 
-- Selecting `/giphy` results in `/giphy cats`
+- Selecting `//giphy` results in `//giphy cats`
 
 ## Developer notes
 

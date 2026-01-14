@@ -115,7 +115,7 @@ test.describe("Slash Commands", () => {
     await page.addScriptTag({ content: contentScript });
   }
 
-  test("/ command shows picker", async () => {
+  test("// command shows picker", async () => {
     // Use chromium.launch() instead of launchBrowserWithExtension() because
     // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
@@ -140,8 +140,8 @@ test.describe("Slash Commands", () => {
     // Click on the textarea to focus it
     await textarea.click();
 
-    // Type / command
-    await textarea.fill("/");
+    // Type // command
+    await textarea.fill("//");
 
     // Wait for the picker to appear
     await page.waitForTimeout(500);
@@ -157,7 +157,7 @@ test.describe("Slash Commands", () => {
     await context.close();
   });
 
-  test("/giphy command shows picker with GIFs or setup", async () => {
+  test("//giphy command shows picker with GIFs or setup", async () => {
     // Use chromium.launch() instead of launchBrowserWithExtension() because
     // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
@@ -182,8 +182,8 @@ test.describe("Slash Commands", () => {
     // Click on the textarea to focus it
     await textarea.click();
 
-    // Type /giphy command
-    await textarea.fill("/giphy");
+    // Type //giphy command
+    await textarea.fill("//giphy");
 
     // Wait for the picker to appear
     await page.waitForTimeout(1000);
@@ -205,7 +205,7 @@ test.describe("Slash Commands", () => {
     await context.close();
   });
 
-  test("/giphy command with search term shows results", async () => {
+  test("//giphy command with search term shows results", async () => {
     // Use chromium.launch() instead of launchBrowserWithExtension() because
     // we inject the content script manually - the extension only matches github.com
     const context = await chromium.launch({ headless: false });
@@ -230,8 +230,8 @@ test.describe("Slash Commands", () => {
     // Click on the textarea to focus it
     await textarea.click();
 
-    // Type /giphy with a search term
-    await textarea.fill("/giphy cats");
+    // Type //giphy with a search term
+    await textarea.fill("//giphy cats");
 
     // Wait for the picker to appear and load results
     await page.waitForTimeout(1500);
@@ -269,8 +269,8 @@ test.describe("Slash Commands", () => {
     const textarea = page.locator("#test-textarea");
     await textarea.click();
 
-    // Type / command to open picker
-    await textarea.fill("/");
+    // Type // command to open picker
+    await textarea.fill("//");
     await page.waitForTimeout(500);
 
     // Verify picker is open
@@ -864,11 +864,11 @@ test.describe("Font Command Styles", () => {
     return { page, textarea };
   }
 
-  test("/font command shows picker", async () => {
+  test("//font command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/font");
+    await textarea.fill("//font");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -881,11 +881,11 @@ test.describe("Font Command Styles", () => {
     await browser.close();
   });
 
-  test("/font command shows style options", async () => {
+  test("//font command shows style options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/font");
+    await textarea.fill("//font");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -904,7 +904,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font bold to filter and select bold style
-    await textarea.fill("/font bold");
+    await textarea.fill("//font bold");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -926,7 +926,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font italic to filter and select italic style
-    await textarea.fill("/font italic");
+    await textarea.fill("//font italic");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -947,7 +947,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font strike to filter and select strikethrough style
-    await textarea.fill("/font strike");
+    await textarea.fill("//font strike");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -968,7 +968,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font code to filter and select code style
-    await textarea.fill("/font code");
+    await textarea.fill("//font code");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -989,7 +989,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font red to filter and select red color
-    await textarea.fill("/font red");
+    await textarea.fill("//font red");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1010,7 +1010,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font blue to filter and select blue color
-    await textarea.fill("/font blue");
+    await textarea.fill("//font blue");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1031,7 +1031,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font large to filter and select large size
-    await textarea.fill("/font large");
+    await textarea.fill("//font large");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1052,7 +1052,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font huge to filter and select huge size
-    await textarea.fill("/font huge");
+    await textarea.fill("//font huge");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1073,7 +1073,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font tiny to filter and select tiny size
-    await textarea.fill("/font tiny");
+    await textarea.fill("//font tiny");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1094,7 +1094,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /font quote to filter and select quote style
-    await textarea.fill("/font quote");
+    await textarea.fill("//font quote");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1110,12 +1110,12 @@ test.describe("Font Command Styles", () => {
     await browser.close();
   });
 
-  test("/font command filtering works", async () => {
+  test("//font command filtering works", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "color" to filter color options
-    await textarea.fill("/font color");
+    await textarea.fill("//font color");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1135,7 +1135,7 @@ test.describe("Font Command Styles", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type just /font to show all styles, then filter to bold
-    await textarea.fill("/font");
+    await textarea.fill("//font");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1203,11 +1203,11 @@ test.describe("Emoji Command", () => {
     return { page, textarea };
   }
 
-  test("/emoji command shows picker", async () => {
+  test("//emoji command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/emoji");
+    await textarea.fill("//emoji");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1220,11 +1220,11 @@ test.describe("Emoji Command", () => {
     await browser.close();
   });
 
-  test("/emoji command shows emoji options", async () => {
+  test("//emoji command shows emoji options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/emoji");
+    await textarea.fill("//emoji");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1238,12 +1238,12 @@ test.describe("Emoji Command", () => {
     await browser.close();
   });
 
-  test("/emoji search filters emojis by name", async () => {
+  test("//emoji search filters emojis by name", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "thumbs" to find thumbs up/down emojis
-    await textarea.fill("/emoji thumbs");
+    await textarea.fill("//emoji thumbs");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1259,12 +1259,12 @@ test.describe("Emoji Command", () => {
     await browser.close();
   });
 
-  test("/emoji search filters by keyword", async () => {
+  test("//emoji search filters by keyword", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "love" keyword
-    await textarea.fill("/emoji love");
+    await textarea.fill("//emoji love");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1278,12 +1278,12 @@ test.describe("Emoji Command", () => {
     await browser.close();
   });
 
-  test("/emoji search filters by category", async () => {
+  test("//emoji search filters by category", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "food" category
-    await textarea.fill("/emoji food");
+    await textarea.fill("//emoji food");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1302,7 +1302,7 @@ test.describe("Emoji Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "thumbs up" to get a specific emoji
-    await textarea.fill("/emoji thumbs up");
+    await textarea.fill("//emoji thumbs up");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1324,7 +1324,7 @@ test.describe("Emoji Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "grinning" to get the grinning face emoji
-    await textarea.fill("/emoji grinning");
+    await textarea.fill("//emoji grinning");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1346,7 +1346,7 @@ test.describe("Emoji Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "red heart"
-    await textarea.fill("/emoji red heart");
+    await textarea.fill("//emoji red heart");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1368,7 +1368,7 @@ test.describe("Emoji Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "flame" which specifically matches the fire emoji
-    await textarea.fill("/emoji flame");
+    await textarea.fill("//emoji flame");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1392,7 +1392,7 @@ test.describe("Emoji Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/emoji thumbs");
+    await textarea.fill("//emoji thumbs");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1412,7 +1412,7 @@ test.describe("Emoji Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/emoji");
+    await textarea.fill("//emoji");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1432,7 +1432,7 @@ test.describe("Emoji Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/emoji");
+    await textarea.fill("//emoji");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1460,7 +1460,7 @@ test.describe("Emoji Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
-    await textarea.fill("/emoji xyznonexistent123");
+    await textarea.fill("//emoji xyznonexistent123");
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1524,11 +1524,11 @@ test.describe("Mermaid Command", () => {
     return { page, textarea };
   }
 
-  test("/mermaid command shows picker", async () => {
+  test("//mermaid command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mermaid");
+    await textarea.fill("//mermaid");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1541,11 +1541,11 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
-  test("/mermaid command shows diagram template options", async () => {
+  test("//mermaid command shows diagram template options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mermaid");
+    await textarea.fill("//mermaid");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1559,12 +1559,12 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
-  test("/mermaid search filters by flowchart", async () => {
+  test("//mermaid search filters by flowchart", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "flowchart" to filter flowchart diagrams
-    await textarea.fill("/mermaid flowchart");
+    await textarea.fill("//mermaid flowchart");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1580,12 +1580,12 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
-  test("/mermaid search filters by sequence", async () => {
+  test("//mermaid search filters by sequence", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "sequence" to filter sequence diagrams
-    await textarea.fill("/mermaid sequence");
+    await textarea.fill("//mermaid sequence");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1601,12 +1601,12 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
-  test("/mermaid search filters by class diagram", async () => {
+  test("//mermaid search filters by class diagram", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "class" to filter class diagrams
-    await textarea.fill("/mermaid class");
+    await textarea.fill("//mermaid class");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1622,12 +1622,12 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
-  test("/mermaid search filters by state diagram", async () => {
+  test("//mermaid search filters by state diagram", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "state" to filter state diagrams
-    await textarea.fill("/mermaid state");
+    await textarea.fill("//mermaid state");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1643,12 +1643,12 @@ test.describe("Mermaid Command", () => {
     await browser.close();
   });
 
-  test("/mermaid search filters by pie chart", async () => {
+  test("//mermaid search filters by pie chart", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "pie" to find pie chart
-    await textarea.fill("/mermaid pie");
+    await textarea.fill("//mermaid pie");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1667,7 +1667,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid flowchart to filter and select flowchart
-    await textarea.fill("/mermaid flowchart-basic");
+    await textarea.fill("//mermaid flowchart-basic");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1691,7 +1691,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid sequence-basic to filter
-    await textarea.fill("/mermaid sequence-basic");
+    await textarea.fill("//mermaid sequence-basic");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1715,7 +1715,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid pie to filter
-    await textarea.fill("/mermaid pie");
+    await textarea.fill("//mermaid pie");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1739,7 +1739,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid gantt to filter
-    await textarea.fill("/mermaid gantt");
+    await textarea.fill("//mermaid gantt");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1763,7 +1763,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid er to filter
-    await textarea.fill("/mermaid er-diagram");
+    await textarea.fill("//mermaid er-diagram");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1787,7 +1787,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /mermaid git to filter
-    await textarea.fill("/mermaid git-graph");
+    await textarea.fill("//mermaid git-graph");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1810,7 +1810,7 @@ test.describe("Mermaid Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mermaid flowchart");
+    await textarea.fill("//mermaid flowchart");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1830,7 +1830,7 @@ test.describe("Mermaid Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mermaid");
+    await textarea.fill("//mermaid");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1850,7 +1850,7 @@ test.describe("Mermaid Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mermaid");
+    await textarea.fill("//mermaid");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1878,7 +1878,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
-    await textarea.fill("/mermaid xyznonexistent123");
+    await textarea.fill("//mermaid xyznonexistent123");
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1896,7 +1896,7 @@ test.describe("Mermaid Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Select the class-basic diagram
-    await textarea.fill("/mermaid class-basic");
+    await textarea.fill("//mermaid class-basic");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1966,11 +1966,11 @@ test.describe("Now Command - Date/Time Formatting", () => {
     return { page, textarea };
   }
 
-  test("/now command shows picker", async () => {
+  test("//now command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now");
+    await textarea.fill("//now");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -1983,11 +1983,11 @@ test.describe("Now Command - Date/Time Formatting", () => {
     await browser.close();
   });
 
-  test("/now command shows date format options", async () => {
+  test("//now command shows date format options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now");
+    await textarea.fill("//now");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2001,11 +2001,11 @@ test.describe("Now Command - Date/Time Formatting", () => {
     await browser.close();
   });
 
-  test("/now iso filter shows ISO formats", async () => {
+  test("//now iso filter shows ISO formats", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now iso");
+    await textarea.fill("//now iso");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2021,11 +2021,11 @@ test.describe("Now Command - Date/Time Formatting", () => {
     await browser.close();
   });
 
-  test("/now local filter shows local formats", async () => {
+  test("//now local filter shows local formats", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now local");
+    await textarea.fill("//now local");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2039,11 +2039,11 @@ test.describe("Now Command - Date/Time Formatting", () => {
     await browser.close();
   });
 
-  test("/now utc filter shows UTC formats", async () => {
+  test("//now utc filter shows UTC formats", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now utc");
+    await textarea.fill("//now utc");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2062,7 +2062,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter to ISO format
-    await textarea.fill("/now iso");
+    await textarea.fill("//now iso");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2085,7 +2085,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter to ISO date format
-    await textarea.fill("/now iso-date");
+    await textarea.fill("//now iso-date");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2107,7 +2107,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter to Unix format
-    await textarea.fill("/now unix");
+    await textarea.fill("//now unix");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2129,7 +2129,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter to relative format
-    await textarea.fill("/now relative");
+    await textarea.fill("//now relative");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2150,7 +2150,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now iso");
+    await textarea.fill("//now iso");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2170,7 +2170,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now");
+    await textarea.fill("//now");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2190,7 +2190,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/now");
+    await textarea.fill("//now");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2218,7 +2218,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
-    await textarea.fill("/now xyznonexistent123");
+    await textarea.fill("//now xyznonexistent123");
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2236,7 +2236,7 @@ test.describe("Now Command - Date/Time Formatting", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter to local format and select the first one (Local DateTime)
-    await textarea.fill("/now local");
+    await textarea.fill("//now local");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2306,11 +2306,11 @@ test.describe("Kbd Command", () => {
     return { page, textarea };
   }
 
-  test("/kbd command shows picker", async () => {
+  test("//kbd command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/kbd");
+    await textarea.fill("//kbd");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2323,11 +2323,11 @@ test.describe("Kbd Command", () => {
     await browser.close();
   });
 
-  test("/kbd command shows shortcut options", async () => {
+  test("//kbd command shows shortcut options", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/kbd");
+    await textarea.fill("//kbd");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2346,7 +2346,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /kbd copy to filter and select copy shortcut
-    await textarea.fill("/kbd copy");
+    await textarea.fill("//kbd copy");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2368,7 +2368,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /kbd paste to filter and select paste shortcut
-    await textarea.fill("/kbd paste");
+    await textarea.fill("//kbd paste");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2389,7 +2389,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type /kbd undo to filter and select undo shortcut
-    await textarea.fill("/kbd undo");
+    await textarea.fill("//kbd undo");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2410,7 +2410,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type a custom shortcut with +
-    await textarea.fill("/kbd ctrl+shift+t");
+    await textarea.fill("//kbd ctrl+shift+t");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2432,7 +2432,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type a custom shortcut with spaces around +
-    await textarea.fill("/kbd ctrl + p");
+    await textarea.fill("//kbd ctrl + p");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2453,7 +2453,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type a Mac-style shortcut
-    await textarea.fill("/kbd cmd+opt+arrowLeft");
+    await textarea.fill("//kbd cmd+opt+arrowLeft");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2473,7 +2473,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type a Windows-style shortcut
-    await textarea.fill("/kbd Win+shift+s");
+    await textarea.fill("//kbd Win+shift+s");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2488,12 +2488,12 @@ test.describe("Kbd Command", () => {
     await browser.close();
   });
 
-  test("/kbd filtering by category works", async () => {
+  test("//kbd filtering by category works", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "editing" category
-    await textarea.fill("/kbd editing");
+    await textarea.fill("//kbd editing");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2508,12 +2508,12 @@ test.describe("Kbd Command", () => {
     await browser.close();
   });
 
-  test("/kbd filtering by label works", async () => {
+  test("//kbd filtering by label works", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for "save" label
-    await textarea.fill("/kbd save");
+    await textarea.fill("//kbd save");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2532,7 +2532,7 @@ test.describe("Kbd Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/kbd copy");
+    await textarea.fill("//kbd copy");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2552,7 +2552,7 @@ test.describe("Kbd Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/kbd");
+    await textarea.fill("//kbd");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2572,7 +2572,7 @@ test.describe("Kbd Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/kbd");
+    await textarea.fill("//kbd");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2600,7 +2600,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
-    await textarea.fill("/kbd xyznonexistent123");
+    await textarea.fill("//kbd xyznonexistent123");
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2618,7 +2618,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter for refresh shortcut
-    await textarea.fill("/kbd refresh");
+    await textarea.fill("//kbd refresh");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2638,7 +2638,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Filter for desktop shortcut (Win+D)
-    await textarea.fill("/kbd desktop");
+    await textarea.fill("//kbd desktop");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2658,7 +2658,7 @@ test.describe("Kbd Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type a shortcut with alternative keys notation
-    await textarea.fill("/kbd fn+1/2/3");
+    await textarea.fill("//kbd fn+1/2/3");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2723,11 +2723,11 @@ test.describe("Link Command", () => {
     return { page, textarea };
   }
 
-  test("/link command shows picker", async () => {
+  test("//link command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link");
+    await textarea.fill("//link");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2740,11 +2740,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link command shows empty state when no URL provided", async () => {
+  test("//link command shows empty state when no URL provided", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link");
+    await textarea.fill("//link");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2758,11 +2758,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with URL shows link preview", async () => {
+  test("//link with URL shows link preview", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link example.com");
+    await textarea.fill("//link example.com");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2775,11 +2775,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with URL inserts markdown link on Enter", async () => {
+  test("//link with URL inserts markdown link on Enter", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link example.com");
+    await textarea.fill("//link example.com");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2796,11 +2796,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with URL and custom title inserts correct markdown", async () => {
+  test("//link with URL and custom title inserts correct markdown", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill('/link example.com "My Example"');
+    await textarea.fill('//link example.com "My Example"');
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2817,11 +2817,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with full URL preserves protocol", async () => {
+  test("//link with full URL preserves protocol", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link https://docs.github.com/path");
+    await textarea.fill("//link https://docs.github.com/path");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2838,11 +2838,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with www URL strips www from title", async () => {
+  test("//link with www URL strips www from title", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link www.example.com");
+    await textarea.fill("//link www.example.com");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2859,11 +2859,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with single-quoted title works", async () => {
+  test("//link with single-quoted title works", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link example.com 'Single Quoted'");
+    await textarea.fill("//link example.com 'Single Quoted'");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2884,7 +2884,7 @@ test.describe("Link Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link example.com");
+    await textarea.fill("//link example.com");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2904,7 +2904,7 @@ test.describe("Link Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link");
+    await textarea.fill("//link");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2920,12 +2920,12 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link with invalid URL shows empty state", async () => {
+  test("//link with invalid URL shows empty state", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type something that doesn't look like a URL
-    await textarea.fill("/link not a url");
+    await textarea.fill("//link not a url");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2938,11 +2938,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link ci command shows picker", async () => {
+  test("//link ci command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link ci");
+    await textarea.fill("//link ci");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2960,7 +2960,7 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link ci without token shows setup tile", async () => {
+  test("//link ci without token shows setup tile", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -2969,7 +2969,7 @@ test.describe("Link Command", () => {
       localStorage.removeItem("githubApiToken");
     });
 
-    await textarea.fill("/link ci");
+    await textarea.fill("//link ci");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2987,11 +2987,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link ci with search term shows picker", async () => {
+  test("//link ci with search term shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link ci build");
+    await textarea.fill("//link ci build");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3004,11 +3004,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link ci picker closes on Escape key", async () => {
+  test("//link ci picker closes on Escape key", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link ci");
+    await textarea.fill("//link ci");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3024,11 +3024,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link ci shows tile with image", async () => {
+  test("//link ci shows tile with image", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/link ci");
+    await textarea.fill("//link ci");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3042,7 +3042,7 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("/link ci clicking setup tile opens settings panel", async () => {
+  test("//link ci clicking setup tile opens settings panel", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -3051,7 +3051,7 @@ test.describe("Link Command", () => {
       localStorage.removeItem("githubApiToken");
     });
 
-    await textarea.fill("/link ci");
+    await textarea.fill("//link ci");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3130,11 +3130,11 @@ test.describe("Mention Command", () => {
     return { page, textarea };
   }
 
-  test("/mention command shows picker", async () => {
+  test("//mention command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3147,11 +3147,11 @@ test.describe("Mention Command", () => {
     await browser.close();
   });
 
-  test("/mention command shows user tiles", async () => {
+  test("//mention command shows user tiles", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3166,12 +3166,12 @@ test.describe("Mention Command", () => {
     await browser.close();
   });
 
-  test("/mention search filters users", async () => {
+  test("//mention search filters users", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for a specific username pattern
-    await textarea.fill("/mention test");
+    await textarea.fill("//mention test");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3203,7 +3203,7 @@ test.describe("Mention Command", () => {
     await page.waitForTimeout(500);
     await textarea.click();
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3245,7 +3245,7 @@ test.describe("Mention Command", () => {
     await page.waitForTimeout(500);
     await textarea.click();
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3276,7 +3276,7 @@ test.describe("Mention Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3307,7 +3307,7 @@ test.describe("Mention Command", () => {
     await page.waitForTimeout(500);
     await textarea.click();
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3343,7 +3343,7 @@ test.describe("Mention Command", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Search for something that won't match
-    await textarea.fill("/mention xyznonexistent123");
+    await textarea.fill("//mention xyznonexistent123");
     await page.waitForTimeout(800);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3360,7 +3360,7 @@ test.describe("Mention Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("/mention");
+    await textarea.fill("//mention");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3427,12 +3427,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     return { page, textarea };
   }
 
-  test("mid-sentence /font command shows picker", async () => {
+  test("mid-sentence //font command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command
-    await textarea.fill("Hello /font");
+    await textarea.fill("Hello //font");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3445,12 +3445,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /font selection replaces only the command", async () => {
+  test("mid-sentence //font selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Hello /font bold");
+    await textarea.fill("Hello //font bold");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3467,12 +3467,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /emoji command shows picker", async () => {
+  test("mid-sentence //emoji command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command
-    await textarea.fill("Check this /emoji");
+    await textarea.fill("Check this //emoji");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3485,12 +3485,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /emoji selection replaces only the command", async () => {
+  test("mid-sentence //emoji selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Check this /emoji thumbs up");
+    await textarea.fill("Check this //emoji thumbs up");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3507,12 +3507,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /now command shows picker", async () => {
+  test("mid-sentence //now command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command
-    await textarea.fill("Today is /now");
+    await textarea.fill("Today is //now");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3525,12 +3525,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /now selection replaces only the command", async () => {
+  test("mid-sentence //now selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Today is /now iso-date");
+    await textarea.fill("Today is //now iso-date");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3547,12 +3547,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /kbd command shows picker", async () => {
+  test("mid-sentence //kbd command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command
-    await textarea.fill("Press /kbd");
+    await textarea.fill("Press //kbd");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3565,12 +3565,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /kbd selection replaces only the command", async () => {
+  test("mid-sentence //kbd selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Press /kbd copy");
+    await textarea.fill("Press //kbd copy");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3607,7 +3607,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type a URL followed by a command (the command should trigger the picker)
-    await textarea.fill("See https://example.com /emoji");
+    await textarea.fill("See https://example.com //emoji");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3620,7 +3620,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("Hello /font");
+    await textarea.fill("Hello //font");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3640,7 +3640,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("Text /font");
+    await textarea.fill("Text //font");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");

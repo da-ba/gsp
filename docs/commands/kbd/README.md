@@ -1,13 +1,13 @@
-# /kbd Command
+# //kbd Command
 
 Format keyboard shortcuts with `<kbd>` tags for GitHub markdown.
 
 ## Usage
 
 1. In any GitHub comment/review textarea, type:
-   - `/kbd` to see common shortcuts
-   - `/kbd copy` to filter shortcuts
-   - `/kbd ctrl+p` to create a custom shortcut
+   - `//kbd` to see common shortcuts
+   - `//kbd copy` to filter shortcuts
+   - `//kbd ctrl+p` to create a custom shortcut
 2. Navigate results:
    - Arrow keys to move selection
    - `Enter` or `Tab` to insert
@@ -66,10 +66,10 @@ The command accepts multiple input formats:
 
 | Input | Description |
 |-------|-------------|
-| `/kbd` | Show common shortcuts |
-| `/kbd copy` | Filter to copy shortcut |
-| `/kbd ctrl+alt+del` | Create custom shortcut |
-| `/kbd cmd+shift+s` | Mac-style shortcut |
+| `//kbd` | Show common shortcuts |
+| `//kbd copy` | Filter to copy shortcut |
+| `//kbd ctrl+alt+del` | Create custom shortcut |
+| `//kbd cmd+shift+s` | Mac-style shortcut |
 
 ## What gets inserted
 

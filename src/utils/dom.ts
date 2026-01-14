@@ -3,6 +3,7 @@
  */
 
 import { add, sub } from "./math.ts"
+import { COMMAND_PREFIX, COMMAND_PREFIX_LENGTH } from "./command-prefix.ts"
 
 export type CursorInfo = {
   value: string
@@ -40,8 +41,8 @@ export function getCursorInfo(textarea: HTMLTextAreaElement): CursorInfo {
 
 /**
  * Parse slash command from line text.
- * The slash can be at the beginning of the line or preceded by a space (mid-sentence).
- * Returns the command, query, and the offset within the line where the slash was found.
+ * The command prefix (default: "//") can be at the beginning of the line or preceded by a space.
+ * Returns the command, query, and the offset within the line where the prefix was found.
  */
 export function parseSlashCommand(
   line: string
@@ -49,33 +50,47 @@ export function parseSlashCommand(
   const text = line || ""
   if (!text) return null
 
-  // Find the last occurrence of a slash that is either at position 0 or preceded by a space
-  let slashIdx = -1
-  for (let i = text.length - 1; i >= 0; i--) {
-    if (text[i] === "/" && (i === 0 || text[i - 1] === " ")) {
-      // Validate that the character after the slash (if any) is a letter, whitespace, or end of string
-      // This prevents matching HTML like " />" as slash commands
+  const prefixLen = COMMAND_PREFIX_LENGTH
+
+  // Find the last occurrence of the prefix that is either at position 0 or preceded by a space
+  let prefixIdx = -1
+  for (let i = text.length - 1; i >= prefixLen - 1; i--) {
+    const potentialPrefix = text.slice(i - prefixLen + 1, i + 1)
+    if (
+      potentialPrefix === COMMAND_PREFIX &&
+      (i === prefixLen - 1 || text[i - prefixLen] === " ")
+    ) {
+      // Validate that the character after the prefix (if any) is a letter, whitespace, or end of string
+      // This prevents matching patterns like "//>" as slash commands
       const nextChar = text[i + 1]
       if (nextChar === undefined || /[a-zA-Z\s]/.test(nextChar)) {
-        slashIdx = i
+        prefixIdx = i - prefixLen + 1 // Point to the start of the prefix
         break
       }
     }
   }
 
-  if (slashIdx === -1) return null
+  // Also check if line starts with the prefix
+  if (prefixIdx === -1 && text.startsWith(COMMAND_PREFIX)) {
+    const nextChar = text[prefixLen]
+    if (nextChar === undefined || /[a-zA-Z\s]/.test(nextChar)) {
+      prefixIdx = 0
+    }
+  }
 
-  // Extract the text from the slash to the end of the line (cursor position)
-  const slashText = text.slice(slashIdx)
-  const rest = slashText.slice(1) // Remove the leading "/"
+  if (prefixIdx === -1) return null
+
+  // Extract the text from the prefix to the end of the line (cursor position)
+  const prefixText = text.slice(prefixIdx)
+  const rest = prefixText.slice(prefixLen) // Remove the leading prefix
   const parts = rest.split(/\s+/).filter(Boolean)
 
-  // If just "/" with nothing after, return empty cmd to trigger command list
-  if (!parts.length) return { cmd: "", query: "", slashOffset: slashIdx }
+  // If just the prefix with nothing after, return empty cmd to trigger command list
+  if (!parts.length) return { cmd: "", query: "", slashOffset: prefixIdx }
 
   const cmd = String(parts[0] || "").toLowerCase()
   const q = parts.slice(1).join(" ").trim()
-  return { cmd, query: q, slashOffset: slashIdx }
+  return { cmd, query: q, slashOffset: prefixIdx }
 }
 
 /**

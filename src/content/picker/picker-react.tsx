@@ -12,6 +12,7 @@ import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
+import { COMMAND_PREFIX } from "../../utils/command-prefix.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -246,27 +247,6 @@ export function renderLoadingSkeleton(): void {
   renderPicker()
 }
 
-/**
- * Get GitHub's native slash commands menu element if visible.
- */
-function getGitHubSlashMenuElement(): HTMLElement | null {
-  const selectors = [
-    "text-expander-menu[role='listbox']",
-    ".suggester-container",
-    ".slash-command-suggester",
-    "markdown-toolbar + [role='listbox']",
-    "[data-target='text-expander.menu']",
-  ]
-
-  for (const selector of selectors) {
-    const el = document.querySelector(selector) as HTMLElement | null
-    if (el && el.offsetParent !== null) {
-      return el
-    }
-  }
-  return null
-}
-
 export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
   ensurePicker(field)
   const rect = field.getBoundingClientRect()
@@ -278,30 +258,9 @@ export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
   const pickerHeight = 320
   const gap = 8
 
-  let left: number
-  let top: number
-
-  // Check if GitHub's native slash commands menu is visible
-  const githubMenu = getGitHubSlashMenuElement()
-  if (githubMenu) {
-    // Position our picker next to GitHub's menu
-    const githubRect = githubMenu.getBoundingClientRect()
-
-    // Try to position to the right of GitHub's menu
-    left = add(githubRect.right, gap)
-
-    // If it doesn't fit on the right, position to the left
-    if (add(left, pickerWidth) > sub(vw, 10)) {
-      left = sub(githubRect.left, add(pickerWidth, gap))
-    }
-
-    // Align top with GitHub's menu
-    top = githubRect.top
-  } else {
-    // Default: position at caret
-    left = add(rect.left, caret.left)
-    top = add(rect.top, add(caret.top, add(caret.height, gap)))
-  }
+  // Default: position at caret
+  let left = add(rect.left, caret.left)
+  let top = add(rect.top, add(caret.top, add(caret.height, gap)))
 
   // Ensure picker stays within viewport bounds
   const maxLeft = sub(sub(vw, pickerWidth), 10)
@@ -311,12 +270,8 @@ export function positionPickerAtCaret(field: HTMLTextAreaElement): void {
 
   const maxTop = sub(sub(vh, pickerHeight), 10)
   if (top > maxTop) {
-    // If GitHub menu exists, try to keep alignment; otherwise flip above caret
-    if (githubMenu) {
-      top = maxTop
-    } else {
-      top = sub(add(rect.top, caret.top), add(pickerHeight, gap))
-    }
+    // Flip above caret
+    top = sub(add(rect.top, caret.top), add(pickerHeight, gap))
   }
   const minTop = 10
   if (top < minTop) top = minTop
@@ -409,7 +364,7 @@ export function setSlashQueryInField(cmd: string, term: string): void {
   const pos = field.selectionStart || 0
   const lineStart = state.activeLineStart
 
-  const replacement = "/" + safeCmd + (safeTerm ? " " + safeTerm : "")
+  const replacement = COMMAND_PREFIX + safeCmd + (safeTerm ? " " + safeTerm : "")
   const newValue = value.slice(0, lineStart) + replacement + value.slice(pos)
 
   field.value = newValue

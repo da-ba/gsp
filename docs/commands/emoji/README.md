@@ -1,12 +1,12 @@
-# /emoji Command
+# //emoji Command
 
 Search and insert emojis into GitHub markdown textareas with an emoji picker.
 
 ## Usage
 
 1. In any GitHub comment/review textarea, type:
-   - `/emoji` to see popular and recently used emojis
-   - `/emoji smile` to search for emojis matching "smile"
+   - `//emoji` to see popular and recently used emojis
+   - `//emoji smile` to search for emojis matching "smile"
 2. Navigate results:
    - Arrow keys to move selection
    - `Enter` or `Tab` to insert
@@ -22,10 +22,10 @@ Search and insert emojis into GitHub markdown textareas with an emoji picker.
 
 | Input | Description |
 |-------|-------------|
-| `/emoji` | Show popular and recent emojis |
-| `/emoji heart` | Search for heart-related emojis |
-| `/emoji cat` | Search for cat emojis |
-| `/emoji nature` | Show emojis in the nature category |
+| `//emoji` | Show popular and recent emojis |
+| `//emoji heart` | Search for heart-related emojis |
+| `//emoji cat` | Search for cat emojis |
+| `//emoji nature` | Show emojis in the nature category |
 
 ## What gets inserted
 
