@@ -2,7 +2,7 @@
 
 ## Project Context
 
-GitHub Slash Palette is a Chrome extension that enhances GitHub's markdown textareas with slash command functionality. Users can type commands like `/giphy`, `/emoji`, `/font`, `/kbd`, `/link`, `/mention`, `/mermaid`, and `/now` to quickly insert content. Typing just `/` shows a list of all available commands.
+GitHub Slash Palette is a Chrome extension that enhances GitHub's markdown textareas with slash command functionality. Users can type commands like `//giphy`, `//emoji`, `//font`, `//kbd`, `//link`, `//mention`, `//mermaid`, and `//now` to quickly insert content. Typing just `//` shows a list of all available commands. The double slash (`//`) prefix is used to avoid conflicts with GitHub's native `/` commands.
 
 ## Tech Stack & Tools
 
@@ -279,11 +279,11 @@ describe("myFunction", () => {
 **Test pattern:**
 ```typescript
 test.describe("MyCommand Command", () => {
-  test("/mycommand shows picker", async ({ page }) => {
+  test("//mycommand shows picker", async ({ page }) => {
     // Test picker visibility
   })
 
-  test("/mycommand filtering works", async ({ page }) => {
+  test("//mycommand filtering works", async ({ page }) => {
     // Test search functionality
   })
 

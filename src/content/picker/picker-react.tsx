@@ -12,6 +12,7 @@ import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
 import { applyPickerStyles } from "./styles.ts"
 import { Picker, type PickerView } from "./components/Picker.tsx"
+import { COMMAND_PREFIX } from "../../utils/command-prefix.ts"
 
 // React root for the picker
 let pickerRoot: Root | null = null
@@ -363,7 +364,7 @@ export function setSlashQueryInField(cmd: string, term: string): void {
   const pos = field.selectionStart || 0
   const lineStart = state.activeLineStart
 
-  const replacement = "//" + safeCmd + (safeTerm ? " " + safeTerm : "")
+  const replacement = COMMAND_PREFIX + safeCmd + (safeTerm ? " " + safeTerm : "")
   const newValue = value.slice(0, lineStart) + replacement + value.slice(pos)
 
   field.value = newValue

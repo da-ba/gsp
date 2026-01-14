@@ -1,10 +1,10 @@
-# /mention Command
+# //mention Command
 
-The `/mention` command provides context-aware mention autocomplete for GitHub issues and pull requests.
+The `//mention` command provides context-aware mention autocomplete for GitHub issues and pull requests.
 
 ## Usage
 
-1. In any GitHub markdown field (issue, PR comment, etc.), type `/mention`
+1. In any GitHub markdown field (issue, PR comment, etc.), type `//mention`
 2. The picker will show participants from the current page:
    - **Author** - The creator of the issue/PR
    - **Reviewers** - Assigned reviewers on PRs
@@ -24,9 +24,9 @@ The `/mention` command provides context-aware mention autocomplete for GitHub is
 
 ## Examples
 
-- `/mention` - Show all participants and recent mentions
-- `/mention john` - Filter to users containing "john"
-- `/mention team` - Show team mentions
+- `//mention` - Show all participants and recent mentions
+- `//mention john` - Filter to users containing "john"
+- `//mention team` - Show team mentions
 
 ## Participant Types
 

@@ -1,12 +1,12 @@
-# /now Command
+# //now Command
 
 Insert formatted date and timestamps into GitHub markdown fields.
 
 ## Usage
 
 1. In any GitHub comment/review textarea, type:
-   - `/now` to see all date formats
-   - `/now iso` to filter to ISO formats
+   - `//now` to see all date formats
+   - `//now iso` to filter to ISO formats
 2. Navigate results:
    - Arrow keys to move selection
    - `Enter` or `Tab` to insert
@@ -44,11 +44,11 @@ Insert formatted date and timestamps into GitHub markdown fields.
 
 | Input | Description |
 |-------|-------------|
-| `/now` | Show all date formats |
-| `/now iso` | Filter to ISO formats |
-| `/now local` | Filter to local formats |
-| `/now utc` | Filter to UTC formats |
-| `/now unix` | Filter to Unix timestamp |
+| `//now` | Show all date formats |
+| `//now iso` | Filter to ISO formats |
+| `//now local` | Filter to local formats |
+| `//now utc` | Filter to UTC formats |
+| `//now unix` | Filter to Unix timestamp |
 
 ## What gets inserted
 

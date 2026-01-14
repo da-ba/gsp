@@ -3,6 +3,7 @@
  */
 
 import { isGitHubMarkdownField, getCursorInfo, parseSlashCommand } from "../utils/dom.ts"
+import { COMMAND_PREFIX } from "../utils/command-prefix.ts"
 import { onThemeChange, setThemeOverride } from "../utils/theme.ts"
 import { getThemePreference } from "../utils/storage.ts"
 import { add, neg } from "../utils/math.ts"
@@ -116,7 +117,7 @@ async function handleCommandInput(
   }
 
   state.activeCommand = cmdName
-  setHeader("Slash Palette", "//" + cmdName + (query ? " " + query : ""))
+  setHeader("Slash Palette", COMMAND_PREFIX + cmdName + (query ? " " + query : ""))
 
   showPicker(field)
   positionPickerAtCaret(field)

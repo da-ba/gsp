@@ -1,13 +1,13 @@
-# /font Command
+# //font Command
 
 Apply font styling (sizes, colors, styles) to text using HTML and markdown formatting that works in GitHub markdown.
 
 ## Usage
 
 1. In any GitHub comment/review textarea, type:
-   - `/font` to see all available font styles
-   - `/font bold` to filter to bold style
-   - `/font your text` to apply style to "your text"
+   - `//font` to see all available font styles
+   - `//font bold` to filter to bold style
+   - `//font your text` to apply style to "your text"
 2. Navigate results:
    - Arrow keys to move selection
    - `Enter` or `Tab` to insert
@@ -50,16 +50,16 @@ Apply font styling (sizes, colors, styles) to text using HTML and markdown forma
 
 | Input | Description |
 |-------|-------------|
-| `/font` | Show all font styles |
-| `/font bold` | Filter to bold style |
-| `/font red` | Filter to red color |
-| `/font large` | Filter to large size |
+| `//font` | Show all font styles |
+| `//font bold` | Filter to bold style |
+| `//font red` | Filter to red color |
+| `//font large` | Filter to large size |
 
 ## What gets inserted
 
-Text after `/font` is used as the content. If no text is provided, "text" is used as a placeholder.
+Text after `//font` is used as the content. If no text is provided, "text" is used as a placeholder.
 
-For example, `/font Hello World` with Bold selected inserts:
+For example, `//font Hello World` with Bold selected inserts:
 - `**Hello World**`
 
 ## Notes
