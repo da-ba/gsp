@@ -12,6 +12,7 @@ import { state } from "../../picker/state.ts"
 import type { PickerItem } from "../../types.ts"
 import { createCategoryTile } from "../../../utils/tile-builder.ts"
 import { filterAndSort } from "../../../utils/filter-sort.ts"
+import { COMMAND_PREFIX } from "../../../utils/command-prefix.ts"
 
 /** Font option types */
 type FontCategory = "size" | "color" | "style"
@@ -207,7 +208,9 @@ function extractUserText(): string {
   }
 
   const currentLine = value.slice(lineStart, pos)
-  const cmdMatch = currentLine.match(/^\/font\s*(.*)/i)
+  // Create regex pattern using command prefix (escaping special characters)
+  const escapedPrefix = COMMAND_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const cmdMatch = currentLine.match(new RegExp(`^${escapedPrefix}font\\s*(.*)`, "i"))
   return cmdMatch?.[1]?.trim() || "text"
 }
 

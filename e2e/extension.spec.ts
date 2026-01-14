@@ -2800,7 +2800,7 @@ test.describe("Link Command", () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill('/link example.com "My Example"');
+    await textarea.fill('//link example.com "My Example"');
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3427,7 +3427,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     return { page, textarea };
   }
 
-  test("mid-sentence /font command shows picker", async () => {
+  test("mid-sentence //font command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -3445,12 +3445,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /font selection replaces only the command", async () => {
+  test("mid-sentence //font selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Hello /font bold");
+    await textarea.fill("Hello //font bold");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3467,7 +3467,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /emoji command shows picker", async () => {
+  test("mid-sentence //emoji command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -3485,12 +3485,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /emoji selection replaces only the command", async () => {
+  test("mid-sentence //emoji selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Check this /emoji thumbs up");
+    await textarea.fill("Check this //emoji thumbs up");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3507,7 +3507,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /now command shows picker", async () => {
+  test("mid-sentence //now command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -3525,12 +3525,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /now selection replaces only the command", async () => {
+  test("mid-sentence //now selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Today is /now iso-date");
+    await textarea.fill("Today is //now iso-date");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3547,7 +3547,7 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /kbd command shows picker", async () => {
+  test("mid-sentence //kbd command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -3565,12 +3565,12 @@ test.describe("Mid-Sentence Slash Commands", () => {
     await browser.close();
   });
 
-  test("mid-sentence /kbd selection replaces only the command", async () => {
+  test("mid-sentence //kbd selection replaces only the command", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
     // Type text followed by a slash command with query
-    await textarea.fill("Press /kbd copy");
+    await textarea.fill("Press //kbd copy");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
