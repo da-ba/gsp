@@ -20,12 +20,51 @@ export type StyleConfig = {
   dark: boolean
 }
 
+const STYLE_TOKENS = {
+  dark: {
+    pickerText: "#e6edf3",
+    pickerBorder: "#3d444d",
+    pickerBackground: "#161b22",
+    pickerShadow: "0 8px 24px rgba(1,4,9,0.75)",
+    cardBackground: "rgba(33,38,45,0.6)",
+    cardBorder: "#3d444d",
+    badgeText: "#8d96a0",
+    buttonBackground: "#21262d",
+    inputBackground: "#0d1117",
+    skeletonBackground: "rgba(110,118,129,0.1)",
+    skeletonBorder: "#3d444d",
+    gridSelectedBorder: "#58a6ff",
+    gridSelectedShadow: "0 4px 12px rgba(0,0,0,0.4)",
+  },
+  light: {
+    pickerText: "#1f2328",
+    pickerBorder: "#d0d7de",
+    pickerBackground: "#ffffff",
+    pickerShadow: "0 8px 24px rgba(140,149,159,0.2)",
+    cardBackground: "rgba(246,248,250,0.8)",
+    cardBorder: "rgba(31,35,40,0.15)",
+    badgeText: "#656d76",
+    buttonBackground: "#f6f8fa",
+    inputBackground: "#ffffff",
+    skeletonBackground: "rgba(31,35,40,0.04)",
+    skeletonBorder: "rgba(31,35,40,0.08)",
+    gridSelectedBorder: "#0969da",
+    gridSelectedShadow: "0 4px 12px rgba(0,0,0,0.15)",
+  },
+} as const
+
+type StyleTokens = typeof STYLE_TOKENS.dark
+
 function getConfig(): StyleConfig {
   return { dark: isDarkMode() }
 }
 
+function getTokens(): StyleTokens {
+  return getConfig().dark ? STYLE_TOKENS.dark : STYLE_TOKENS.light
+}
+
 export function applyPickerStyles(el: HTMLElement): void {
-  const { dark } = getConfig()
+  const tokens = getTokens()
 
   // Use fixed positioning so the picker is stable across scroll containers
   // (GitHub popovers/dialogs) and doesn't depend on page scroll offsets.
@@ -38,93 +77,80 @@ export function applyPickerStyles(el: HTMLElement): void {
   el.style.fontSize = "14px"
   el.style.fontFamily = fontSystemUi() + ", " + fontSansSerif()
   el.style.backdropFilter = "none"
-
   // GitHub-style colors matching their native slash commands popover
-  if (dark) {
-    el.style.color = "#e6edf3"
-    el.style.border = "1px solid #3d444d"
-    el.style.backgroundColor = "#161b22"
-    el.style.backgroundImage = "none"
-    el.style.boxShadow = "0 8px 24px rgba(1,4,9,0.75)"
-  } else {
-    el.style.color = "#1f2328"
-    el.style.border = "1px solid #d0d7de"
-    el.style.backgroundColor = "#ffffff"
-    el.style.backgroundImage = "none"
-    el.style.boxShadow = "0 8px 24px rgba(140,149,159,0.2)"
-  }
+  el.style.color = tokens.pickerText
+  el.style.border = `1px solid ${tokens.pickerBorder}`
+  el.style.backgroundColor = tokens.pickerBackground
+  el.style.backgroundImage = "none"
+  el.style.boxShadow = tokens.pickerShadow
 }
 
 export function getCardStyles(): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig()
+  const tokens = getTokens()
   return {
     padding: "12px",
     borderRadius: "6px",
-    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
-    backgroundColor: dark ? "rgba(33,38,45,0.6)" : "rgba(246,248,250,0.8)",
+    border: `1px solid ${tokens.cardBorder}`,
+    backgroundColor: tokens.cardBackground,
   }
 }
 
 export function getBadgeStyles(): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig()
+  const tokens = getTokens()
   return {
     fontSize: "12px",
     fontWeight: "500",
     borderRadius: "6px",
     padding: "4px 8px",
-    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
-    backgroundColor: dark ? "rgba(33,38,45,0.6)" : "rgba(246,248,250,0.8)",
-    color: dark ? "#8d96a0" : "#656d76",
+    border: `1px solid ${tokens.cardBorder}`,
+    backgroundColor: tokens.cardBackground,
+    color: tokens.badgeText,
   }
 }
 
 export function getButtonStyles(): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig()
+  const tokens = getTokens()
   return {
     padding: "8px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
-    backgroundColor: dark ? "#21262d" : "#f6f8fa",
-    color: dark ? "#e6edf3" : "#1f2328",
+    border: `1px solid ${tokens.cardBorder}`,
+    backgroundColor: tokens.buttonBackground,
+    color: tokens.pickerText,
   }
 }
 
 export function getInputStyles(): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig()
+  const tokens = getTokens()
   return {
     width: "100%",
     boxSizing: "border-box",
     padding: "8px 12px",
     borderRadius: "6px",
-    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.15)",
-    backgroundColor: dark ? "#0d1117" : "#ffffff",
-    color: dark ? "#e6edf3" : "#1f2328",
+    border: `1px solid ${tokens.cardBorder}`,
+    backgroundColor: tokens.inputBackground,
+    color: tokens.pickerText,
   }
 }
 
 export function getSkeletonStyles(): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig()
+  const tokens = getTokens()
   return {
     width: "100%",
     height: "88px",
     borderRadius: "6px",
-    backgroundColor: dark ? "rgba(110,118,129,0.1)" : "rgba(31,35,40,0.04)",
-    border: dark ? "1px solid #3d444d" : "1px solid rgba(31,35,40,0.08)",
+    backgroundColor: tokens.skeletonBackground,
+    border: `1px solid ${tokens.skeletonBorder}`,
   }
 }
 
 export function getGridItemSelectedStyles(selected: boolean): Partial<CSSStyleDeclaration> {
-  const { dark } = getConfig()
+  const tokens = getTokens()
   return {
     outline: "0",
     transform: selected ? "scale(1.02)" : "scale(1)",
-    boxShadow: selected
-      ? dark
-        ? "0 4px 12px rgba(0,0,0,0.4)"
-        : "0 4px 12px rgba(0,0,0,0.15)"
-      : "none",
-    border: selected ? (dark ? "2px solid #58a6ff" : "2px solid #0969da") : "1px solid transparent",
+    boxShadow: selected ? tokens.gridSelectedShadow : "none",
+    border: selected ? `2px solid ${tokens.gridSelectedBorder}` : "1px solid transparent",
   }
 }
 
