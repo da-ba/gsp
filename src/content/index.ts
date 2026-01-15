@@ -308,8 +308,9 @@ function attachToField(field: HTMLTextAreaElement): void {
     if (ev.key === "Escape") return
     if (ev.key === "Enter" || ev.key === "Tab") return
 
-    // For arrow keys when picker is visible, re-evaluate the command position
-    // This ensures state.activeLineStart is updated when cursor moves
+    // For arrow keys when picker is visible: skip re-evaluation if items exist
+    // (keydown already handled navigation and prevented cursor movement).
+    // Only re-evaluate if no items exist, since cursor may have moved.
     if (
       ev.key === "ArrowUp" ||
       ev.key === "ArrowDown" ||
@@ -317,6 +318,8 @@ function attachToField(field: HTMLTextAreaElement): void {
       ev.key === "ArrowRight"
     ) {
       if (isPickerVisible()) {
+        // If there are items, keydown already handled navigation - skip
+        if (state.currentItems.length > 0) return
         handleFieldInput(field)
       }
       return
