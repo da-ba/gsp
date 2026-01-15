@@ -109,36 +109,40 @@ export function getCaretCoordinates(textarea: HTMLTextAreaElement, pos: number):
   const div = document.createElement("div")
   div.style.position = "absolute"
   div.style.visibility = "hidden"
-  div.style.whiteSpace = cs.whiteSpace
-  div.style.wordWrap = cs.wordWrap
-  div.style.overflowWrap = cs.overflowWrap
-  div.style.wordBreak = cs.wordBreak
+  const copiedProperties: (keyof CSSStyleDeclaration)[] = [
+    "whiteSpace",
+    "wordWrap",
+    "overflowWrap",
+    "wordBreak",
+    "fontFamily",
+    "fontSize",
+    "fontWeight",
+    "fontStyle",
+    "letterSpacing",
+    "textTransform",
+    "textAlign",
+    "lineHeight",
+    "paddingTop",
+    "paddingRight",
+    "paddingBottom",
+    "paddingLeft",
+    "borderTopWidth",
+    "borderRightWidth",
+    "borderBottomWidth",
+    "borderLeftWidth",
+    "borderTopStyle",
+    "borderRightStyle",
+    "borderBottomStyle",
+    "borderLeftStyle",
+    "boxSizing",
+  ]
+  for (const property of copiedProperties) {
+    const value = cs[property]
+    if (typeof value === "string") {
+      div.style[property] = value
+    }
+  }
   div.style.overflow = "auto"
-
-  div.style.fontFamily = cs.fontFamily
-  div.style.fontSize = cs.fontSize
-  div.style.fontWeight = cs.fontWeight
-  div.style.fontStyle = cs.fontStyle
-  div.style.letterSpacing = cs.letterSpacing
-  div.style.textTransform = cs.textTransform
-  div.style.textAlign = cs.textAlign
-  div.style.lineHeight = cs.lineHeight
-
-  div.style.paddingTop = cs.paddingTop
-  div.style.paddingRight = cs.paddingRight
-  div.style.paddingBottom = cs.paddingBottom
-  div.style.paddingLeft = cs.paddingLeft
-
-  div.style.borderTopWidth = cs.borderTopWidth
-  div.style.borderRightWidth = cs.borderRightWidth
-  div.style.borderBottomWidth = cs.borderBottomWidth
-  div.style.borderLeftWidth = cs.borderLeftWidth
-  div.style.borderTopStyle = cs.borderTopStyle
-  div.style.borderRightStyle = cs.borderRightStyle
-  div.style.borderBottomStyle = cs.borderBottomStyle
-  div.style.borderLeftStyle = cs.borderLeftStyle
-
-  div.style.boxSizing = cs.boxSizing
   div.style.width = String(textarea.clientWidth) + "px"
   div.style.height = String(textarea.clientHeight) + "px"
 
