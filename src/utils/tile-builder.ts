@@ -76,6 +76,43 @@ const SIZE_PRESETS: Record<
 const FONT_SYSTEM = "system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
 const FONT_MONO = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
 
+type StaticTileConfig = {
+  id: string
+  width: number
+  height: number
+  rx: number
+  innerRx: number
+  gradientStart: string
+  gradientEnd: string
+  innerRect: {
+    x: number
+    y: number
+    width: number
+    height: number
+    fill: string
+    fillOpacity: number
+    stroke: string
+    strokeOpacity: number
+    strokeDasharray?: string
+  }
+}
+
+function buildStaticTileSvg(config: StaticTileConfig, content: string): string {
+  const { innerRect } = config
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${config.width}" height="${config.height}" viewBox="0 0 ${config.width} ${config.height}">
+  <defs>
+    <linearGradient id="bg-${config.id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${config.gradientStart}" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="${config.gradientEnd}" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="${config.width}" height="${config.height}" rx="${config.rx}" fill="url(#bg-${config.id})"/>
+  <rect x="${innerRect.x}" y="${innerRect.y}" width="${innerRect.width}" height="${innerRect.height}" rx="${config.innerRx}" fill="${innerRect.fill}" fill-opacity="${innerRect.fillOpacity}" stroke="${innerRect.stroke}" stroke-opacity="${innerRect.strokeOpacity}"${innerRect.strokeDasharray ? ` stroke-dasharray="${innerRect.strokeDasharray}"` : ""}/>
+  ${content}
+</svg>`
+}
+
 /**
  * Build an SVG tile with the standard picker style.
  *
@@ -251,19 +288,30 @@ export function createSmallTile(opts: {
  * Create an empty/placeholder tile with dashed border.
  */
 export function createEmptyTile(opts: { id: string; message: string; icon?: string }): string {
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-${opts.id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f8fafc" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="#f1f5f9" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-${opts.id})"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06" stroke-dasharray="4 2"/>
-  ${opts.icon || ""}
-  <text x="120" y="92" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="#64748b">${escapeForSvg(opts.message)}</text>
-</svg>`
+  const svg = buildStaticTileSvg(
+    {
+      id: opts.id,
+      width: 240,
+      height: 120,
+      rx: 12,
+      innerRx: 10,
+      gradientStart: "#f8fafc",
+      gradientEnd: "#f1f5f9",
+      innerRect: {
+        x: 4,
+        y: 4,
+        width: 232,
+        height: 112,
+        fill: "#ffffff",
+        fillOpacity: 0.55,
+        stroke: "#0f172a",
+        strokeOpacity: 0.06,
+        strokeDasharray: "4 2",
+      },
+    },
+    `${opts.icon || ""}
+  <text x="120" y="92" text-anchor="middle" font-family="${FONT_SYSTEM}" font-size="11" fill="#64748b">${escapeForSvg(opts.message)}</text>`
+  )
   return svgToDataUrl(svg)
 }
 
@@ -426,20 +474,30 @@ export function createStatusTile(opts: {
   <line x1="123" y1="53" x2="130" y2="60" stroke="${c.icon}" stroke-width="2" stroke-linecap="round"/>`,
   }
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
-  <defs>
-    <linearGradient id="bg-${opts.id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${c.bg}" stop-opacity="0.96"/>
-      <stop offset="1" stop-color="${c.bg}" stop-opacity="0.96"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="240" height="120" rx="12" fill="url(#bg-${opts.id})"/>
-  <rect x="4" y="4" width="232" height="112" rx="10" fill="#ffffff" fill-opacity="0.55" stroke="#0f172a" stroke-opacity="0.06"/>
-  ${icons[opts.type]}
-  <text x="120" y="${opts.submessage ? "80" : "85"}" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="11" fill="${c.text}">${escapeForSvg(opts.message)}</text>
-  ${opts.submessage ? `<text x="120" y="96" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="10" fill="${c.text}" fill-opacity="0.7">${escapeForSvg(opts.submessage)}</text>` : ""}
-</svg>`
+  const svg = buildStaticTileSvg(
+    {
+      id: opts.id,
+      width: 240,
+      height: 120,
+      rx: 12,
+      innerRx: 10,
+      gradientStart: c.bg,
+      gradientEnd: c.bg,
+      innerRect: {
+        x: 4,
+        y: 4,
+        width: 232,
+        height: 112,
+        fill: "#ffffff",
+        fillOpacity: 0.55,
+        stroke: "#0f172a",
+        strokeOpacity: 0.06,
+      },
+    },
+    `${icons[opts.type]}
+  <text x="120" y="${opts.submessage ? "80" : "85"}" text-anchor="middle" font-family="${FONT_SYSTEM}" font-size="11" fill="${c.text}">${escapeForSvg(opts.message)}</text>
+  ${opts.submessage ? `<text x="120" y="96" text-anchor="middle" font-family="${FONT_SYSTEM}" font-size="10" fill="${c.text}" fill-opacity="0.7">${escapeForSvg(opts.submessage)}</text>` : ""}`
+  )
 
   return svgToDataUrl(svg)
 }
