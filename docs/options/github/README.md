@@ -4,13 +4,14 @@ Shared GitHub API token configuration for commands that require GitHub API acces
 
 ## Features that require a token
 
-- [`//link ci`](../../commands/link/README.md) – Link to CI jobs and artifacts
+- [`//link artifact`](../../commands/link/README.md) – Link to CI artifacts
+- [`//link job`](../../commands/link/README.md) – Link to CI jobs
 
 ## Token Setup
 
 ### Option 1: In picker settings
 
-1. Type `//link ci` or click the settings gear icon in any picker
+1. Type `//link artifact` or click the settings gear icon in any picker
 2. Find the **GitHub Token** section
 3. Paste your Personal Access Token
 4. Click **Save**

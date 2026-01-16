@@ -251,7 +251,7 @@ bun run test:e2e     # E2E tests
 
 - **Chrome Extension Context**: Code runs as a content script with access to Chrome APIs
 - **GitHub DOM**: The extension injects into GitHub's markdown textareas
-- **API Keys**: Some commands (e.g., `/giphy`, `/link ci`) require API keys stored via `chrome.storage.local`
+- **API Keys**: Some commands (e.g., `/giphy`, `/link artifact`) require API keys stored via `chrome.storage.local`
 - **Privacy**: No data is sent to external servers except necessary API calls (Giphy, GitHub)
 - **Theme Support**: Picker styling aligns with GitHub's native UI and supports light/dark themes
 

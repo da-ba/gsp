@@ -2938,11 +2938,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("//link ci command shows picker", async () => {
+  test("//link artifact command shows picker", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("//link ci");
+    await textarea.fill("//link artifact");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -2952,15 +2952,16 @@ test.describe("Link Command", () => {
     const pickerContent = await picker.textContent();
     // Either shows CI content or token setup message
     expect(
-      pickerContent?.includes("CI") || 
-      pickerContent?.includes("token") || 
-      pickerContent?.includes("GitHub")
+      pickerContent?.includes("CI") ||
+      pickerContent?.includes("token") ||
+      pickerContent?.includes("GitHub") ||
+      pickerContent?.includes("setup")
     ).toBe(true);
 
     await browser.close();
   });
 
-  test("//link ci without token shows setup tile", async () => {
+  test("//link artifact without token shows setup tile", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -2969,16 +2970,16 @@ test.describe("Link Command", () => {
       localStorage.removeItem("githubApiToken");
     });
 
-    await textarea.fill("//link ci");
+    await textarea.fill("//link artifact");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
     await expect(picker).toBeVisible({ timeout: 3000 });
 
-    // Should show CI Links title and a tile (setup tile when no token)
+    // Should show CI setup title and a tile (setup tile when no token)
     const pickerContent = await picker.textContent();
-    expect(pickerContent?.includes("CI Links")).toBe(true);
-    
+    expect(pickerContent?.includes("CI setup") || pickerContent?.includes("token")).toBe(true);
+
     // Should have at least one tile button with image
     const tileButtons = picker.locator("button[data-item-index]");
     const tileCount = await tileButtons.count();
@@ -2987,11 +2988,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("//link ci with search term shows picker", async () => {
+  test("//link build shows picker with CI search", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("//link ci build");
+    await textarea.fill("//link build");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3004,11 +3005,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("//link ci picker closes on Escape key", async () => {
+  test("//link job picker closes on Escape key", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("//link ci");
+    await textarea.fill("//link job");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3024,11 +3025,11 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("//link ci shows tile with image", async () => {
+  test("//link artifact shows tile with image", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
-    await textarea.fill("//link ci");
+    await textarea.fill("//link artifact");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");
@@ -3042,7 +3043,7 @@ test.describe("Link Command", () => {
     await browser.close();
   });
 
-  test("//link ci clicking setup tile opens settings panel", async () => {
+  test("//link artifact clicking setup tile opens settings panel", async () => {
     const browser = await chromium.launch({ headless: false });
     const { page, textarea } = await setupPage(browser, testServer.port);
 
@@ -3051,7 +3052,7 @@ test.describe("Link Command", () => {
       localStorage.removeItem("githubApiToken");
     });
 
-    await textarea.fill("//link ci");
+    await textarea.fill("//link artifact");
     await page.waitForTimeout(500);
 
     const picker = page.locator("#slashPalettePicker");

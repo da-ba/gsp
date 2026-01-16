@@ -1,6 +1,6 @@
 # //link Command
 
-Insert markdown links with auto-generated titles.
+Insert markdown links with auto-generated titles and link to CI resources.
 
 ## Usage
 
@@ -8,7 +8,9 @@ Insert markdown links with auto-generated titles.
 //link                           – Opens the link picker with empty state
 //link example.com               – Prefills with URL, auto-generates title from domain
 //link example.com "My Title"    – Prefills URL and custom title
-//link https://example.com/path  – Works with full URLs
+//link artifact                  – Shows CI artifacts (requires GitHub token)
+//link job                       – Shows CI jobs (requires GitHub token)
+//link build                     – Searches CI resources for "build"
 ```
 
 ## Features
@@ -17,8 +19,9 @@ Insert markdown links with auto-generated titles.
 - **Custom titles**: Add a title in quotes after the URL to override the auto-generated title
 - **Protocol handling**: URLs without a protocol get `https://` added automatically
 - **Preview**: See a preview of the link before inserting
+- **CI integration**: Link to CI jobs and artifacts using keywords
 
-## Examples
+## URL Link Examples
 
 | Input | Output |
 |-------|--------|
@@ -36,22 +39,46 @@ Insert markdown links with auto-generated titles.
 
 ---
 
-# //link ci Subcommand
+# CI Resources (Jobs & Artifacts)
 
-Link to CI jobs and artifacts from the current repository.
+Link to CI jobs and artifacts from the current repository using CI keywords.
 
 ## Requirements
 
-This subcommand requires a GitHub Personal Access Token. See [GitHub API Options](../../options/github/README.md) for setup instructions.
+CI features require a GitHub Personal Access Token. See [GitHub API Options](../../options/github/README.md) for setup instructions.
 
-## Usage
+## CI Keywords
 
-```
-//link ci                        – Shows recent CI jobs and artifacts
-//link ci <query>                – Fuzzy search for matching jobs/artifacts
-//link ci e2e                    – Links to jobs containing "e2e"
-//link ci report                 – Links to artifacts containing "report"
-```
+The following keywords trigger CI resource search:
+
+| Keyword | Description |
+|---------|-------------|
+| `artifact` / `artifacts` | Search for build artifacts |
+| `job` / `jobs` | Search for workflow jobs |
+| `workflow` / `workflows` | Search for workflows |
+| `run` / `runs` | Search for workflow runs |
+| `build` | Search CI resources containing "build" |
+| `test` | Search CI resources containing "test" |
+| `deploy` | Search CI resources containing "deploy" |
+| `action` / `actions` | Search for actions |
+
+## CI Examples
+
+| Input | Result |
+|-------|--------|
+| `//link artifact` | Shows all recent artifacts |
+| `//link job` | Shows all recent jobs |
+| `//link build` | Searches CI resources for "build" |
+| `//link test` | Searches CI resources for "test" |
+| `//link deploy` | Searches CI resources for "deploy" |
+
+## Combined URL + CI
+
+When your query contains both a URL and CI keywords, the link preview appears first, followed by CI results:
+
+| Input | Result |
+|-------|--------|
+| `//link cdn.example.com/artifact` | 1. Link preview, 2. CI artifacts |
 
 ## Features
 
@@ -60,17 +87,9 @@ This subcommand requires a GitHub Personal Access Token. See [GitHub API Options
 - **Fuzzy matching**: Search by partial name across job and artifact names
 - **Quick setup**: Click the "GitHub token required" tile to open settings
 
-## Examples
-
-| Input | Output |
-|-------|--------|
-| `//link ci` | Shows all recent CI jobs and artifacts |
-| `//link ci build` | Links to jobs/artifacts containing "build" |
-| `//link ci test-report` | Links to artifacts containing "test-report" |
-
 ## Token Setup
 
-1. Type `//link ci` - if no token is configured, you'll see a setup tile
+1. Type `//link artifact` - if no token is configured, you'll see a setup tile
 2. Click the setup tile to open settings
 3. Paste your GitHub Personal Access Token
 4. Click Save
@@ -87,7 +106,7 @@ The command inserts standard Markdown link syntax:
 ## Privacy
 
 - The GitHub token is stored locally via `chrome.storage.local`
-- When you use `//link ci`, your token is used to fetch workflow data from GitHub's API
+- When you use CI keywords, your token is used to fetch workflow data from GitHub's API
 - Only data from the current repository is fetched
 
 ## Developer notes

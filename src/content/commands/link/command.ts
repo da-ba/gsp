@@ -1,14 +1,18 @@
 /**
  * /link slash command implementation
  *
- * Provides a popover to quickly insert markdown links with auto-generated titles.
+ * Provides a unified popover for inserting markdown links and linking to CI resources.
  *
  * Usage:
  * - /link                    - Opens empty link input form
- * - /link google.com         - Prefills URL, auto-generates title
+ * - /link google.com         - Prefills URL, auto-generates title (shown first)
  * - /link google.com "Title" - Prefills URL and title
- * - /link ci                  - Shows recent CI jobs and artifacts
- * - /link ci <query>          - Searches CI jobs/artifacts matching query
+ * - /link artifact           - Shows CI artifacts (requires GitHub token)
+ * - /link job                - Shows CI jobs (requires GitHub token)
+ * - /link build              - Searches CI resources for "build"
+ *
+ * When a URL is entered alongside CI keywords, the link preview appears first,
+ * followed by matching CI resources.
  */
 
 import { escapeForSvg } from "../../../utils/svg.ts"
@@ -41,7 +45,24 @@ const DISPLAY_LIMITS = {
 
 /** Help message for /link command */
 const LINK_HELP_MESSAGE =
-  'Type a URL like: /link example.com or /link example.com "My Title", or use /link ci to search CI jobs'
+  'Type a URL like: /link example.com or /link example.com "My Title", or use /link artifact to search CI'
+
+/** CI-related keywords that trigger CI resource search */
+const CI_KEYWORDS = [
+  "artifact",
+  "artifacts",
+  "job",
+  "jobs",
+  "workflow",
+  "workflows",
+  "run",
+  "runs",
+  "build",
+  "test",
+  "deploy",
+  "action",
+  "actions",
+] as const
 
 /** Create a tile for a link preview */
 function makeLinkTile(parsed: LinkParseResult): PickerItem {
@@ -220,20 +241,21 @@ function makeCINoResultsTile(): PickerItem {
   }
 }
 
-/** Check if query is a CI query */
-function isCIQuery(query: string): boolean {
-  const trimmed = query.trim().toLowerCase()
-  return trimmed === "ci" || trimmed.startsWith("ci ")
+/**
+ * Check if query contains CI-related keywords that should trigger CI search.
+ * Returns true if any word in the query matches a CI keyword.
+ */
+function containsCIKeyword(query: string): boolean {
+  const words = query.toLowerCase().split(/\s+/)
+  return words.some((word) => CI_KEYWORDS.includes(word as (typeof CI_KEYWORDS)[number]))
 }
 
-/** Extract search term from CI query */
+/**
+ * Extract the search term from a query for CI search.
+ * Returns the full query to search against CI resources.
+ */
 function extractCISearchTerm(query: string): string {
-  const trimmed = query.trim()
-  if (trimmed.toLowerCase() === "ci") {
-    return ""
-  }
-  // Remove "ci " prefix
-  return trimmed.slice(3).trim()
+  return query.trim()
 }
 
 /** Type definitions for picker item data */
@@ -269,7 +291,7 @@ function isLinkItemData(data: ItemData): data is LinkItemData {
  */
 function renderGitHubTokenForm(container: HTMLElement): void {
   renderTokenForm(container, {
-    label: "GitHub Token (for /link ci)",
+    label: "GitHub Token (for /link artifact, job, etc.)",
     description:
       'Create a <a href="https://github.com/settings/tokens/new?description=GitHub%20Slash%20Palette&scopes=public_repo" target="_blank" style="color:inherit;text-decoration:underline;">Personal Access Token</a> with <code style="font-size:11px;">public_repo</code> or <code style="font-size:11px;">repo</code> scope.',
     placeholder: "Paste GitHub token…",
@@ -292,70 +314,73 @@ const linkCommand: CommandSpec = {
     // Show empty state with hint
     return {
       items: [makeEmptyLinkTile()],
-      suggestTitle: "Enter a URL or try /link ci",
+      suggestTitle: "Enter a URL or try /link artifact",
     }
   },
 
   getResults: async (query: string) => {
-    // Check if this is a CI query
-    if (isCIQuery(query)) {
-      const token = await getGitHubToken()
-      if (!token) {
-        return {
-          items: [makeCISetupTile()],
-          suggestTitle: "CI Links",
-        }
-      }
+    const items: PickerItem[] = []
+    let suggestTitle = "Link"
 
-      const context = getRepoContext()
-      if (!context) {
-        return {
-          items: [makeCIErrorTile("Not on a GitHub repository page")],
-          suggestTitle: "CI Links",
-        }
-      }
-
-      const searchTerm = extractCISearchTerm(query)
-      const result = await searchCIResources(token, context.owner, context.repo, searchTerm)
-
-      if (result.error) {
-        return {
-          items: [makeCIErrorTile(result.error)],
-          suggestTitle: "CI Links",
-        }
-      }
-
-      const suggestions = result.data || []
-      if (suggestions.length === 0) {
-        return {
-          items: [makeCINoResultsTile()],
-          suggestTitle: searchTerm ? `No CI matches for "${searchTerm}"` : "No recent CI runs",
-        }
-      }
-
-      const items = suggestions.map(makeCITile)
-      return {
-        items,
-        suggestTitle: searchTerm ? `CI matches for "${searchTerm}"` : "Recent CI jobs & artifacts",
-      }
-    }
-
-    // Regular URL link handling
+    // 1. Check if query is a valid URL - always show link preview first
     const parsed = parseLinkQuery(query)
+    const hasValidUrl = parsed.isValid
 
-    if (parsed.isValid) {
-      // Show link preview tile
-      return {
-        items: [makeLinkTile(parsed)],
-        suggestTitle: "Link preview",
+    if (hasValidUrl) {
+      items.push(makeLinkTile(parsed))
+      suggestTitle = "Link preview"
+    }
+
+    // 2. Check if query contains CI keywords - show CI results
+    const shouldSearchCI = containsCIKeyword(query)
+
+    if (shouldSearchCI) {
+      const token = await getGitHubToken()
+
+      if (!token) {
+        // Show setup tile when CI keywords detected but no token
+        items.push(makeCISetupTile())
+        suggestTitle = hasValidUrl ? "Link & CI setup" : "CI setup required"
+      } else {
+        const context = getRepoContext()
+
+        if (!context) {
+          items.push(makeCIErrorTile("Not on a GitHub repository page"))
+          suggestTitle = hasValidUrl ? "Link preview" : "CI Links"
+        } else {
+          const searchTerm = extractCISearchTerm(query)
+          const result = await searchCIResources(token, context.owner, context.repo, searchTerm)
+
+          if (result.error) {
+            items.push(makeCIErrorTile(result.error))
+          } else {
+            const suggestions = result.data || []
+            if (suggestions.length === 0) {
+              items.push(makeCINoResultsTile())
+            } else {
+              items.push(...suggestions.map(makeCITile))
+            }
+          }
+
+          // Update title based on results
+          if (hasValidUrl) {
+            suggestTitle = "Link & CI results"
+          } else {
+            suggestTitle = searchTerm ? `CI matches for "${searchTerm}"` : "CI jobs & artifacts"
+          }
+        }
       }
     }
 
-    // Not a valid URL yet
-    return {
-      items: [makeEmptyLinkTile()],
-      suggestTitle: "Enter a valid URL",
+    // 3. If we have no items at all, show the empty state
+    if (items.length === 0) {
+      return {
+        items: [makeEmptyLinkTile()],
+        suggestTitle: "Enter a valid URL",
+      }
     }
+
+    return { items, suggestTitle }
   },
 
   renderItems: (items: PickerItem[], suggestTitle: string) => {

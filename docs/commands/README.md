@@ -10,7 +10,8 @@ This folder contains end-user and developer documentation for each registered sl
 - [//font](font/README.md) – apply font styling (sizes, colors, styles) to text
 - [//kbd](kbd/README.md) – format keyboard shortcuts with `<kbd>` tags
 - [//link](link/README.md) – insert markdown links with auto-generated titles
-  - `//link ci` – link to CI jobs and artifacts (requires [GitHub token](../options/github/README.md))
+  - `//link artifact` – link to CI artifacts (requires [GitHub token](../options/github/README.md))
+  - `//link job` – link to CI jobs (requires [GitHub token](../options/github/README.md))
 - [//mention](mention/README.md) – context-aware mention autocomplete for participants
 - [//mermaid](mermaid/README.md) – insert Mermaid diagram templates
 - [//now](now/README.md) – insert formatted date and timestamps
@@ -19,4 +20,4 @@ This folder contains end-user and developer documentation for each registered sl
 
 Some commands require API keys or tokens:
 
-- [GitHub API Options](../options/github/README.md) – Personal Access Token for `//link ci` and other GitHub API features
+- [GitHub API Options](../options/github/README.md) – Personal Access Token for `//link artifact`, `//link job`, and other GitHub API features

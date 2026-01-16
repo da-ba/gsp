@@ -12,12 +12,12 @@ GitHub Slash Palette is a Chrome extension that adds slash commands to GitHub ma
 ### 1. Search Queries
 
 - **`/giphy`**: Your search text is sent to the Giphy API to fetch GIF results.
-- **`/link ci`**: Your GitHub token is used to fetch CI job and artifact data from the GitHub API for the current repository only.
+- **`/link artifact`**, **`/link job`**: Your GitHub token is used to fetch CI job and artifact data from the GitHub API for the current repository only.
 
 ### 2. API Keys and Tokens
 
 - **Giphy API Key**: If you enter a Giphy API key, it is stored locally in your browser so the extension can call the Giphy API on your behalf.
-- **GitHub Personal Access Token**: If you enter a GitHub token for `/link ci`, it is stored locally in your browser to authenticate with the GitHub API.
+- **GitHub Personal Access Token**: If you enter a GitHub token for `/link artifact` or `/link job`, it is stored locally in your browser to authenticate with the GitHub API.
 
 ### 3. Local Preferences
 
@@ -39,7 +39,7 @@ When you use `/giphy`, your search query (and your API key) is sent to Giphy to 
 
 ### GitHub
 
-When you use `/link ci`, your token is sent to GitHub's API (`api.github.com`) to fetch CI job and artifact data for the current repository.
+When you use `/link artifact` or `/link job`, your token is sent to GitHub's API (`api.github.com`) to fetch CI job and artifact data for the current repository.
 
 No other third-party services are contacted by the extension.
 
@@ -62,7 +62,7 @@ The extension does not use analytics, tracking pixels, advertising identifiers, 
 
 - **storage**: Used to save local settings, including API keys, tokens, and recently used items.
 - **Host permission `https://api.giphy.com`**: Used for `/giphy` search requests and GIF previews.
-- **Host permission `https://api.github.com`**: Used for `/link ci` to fetch CI job and artifact data.
+- **Host permission `https://api.github.com`**: Used for `/link artifact` and `/link job` to fetch CI job and artifact data.
 
 ## Contact
 
