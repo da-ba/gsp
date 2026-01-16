@@ -180,8 +180,8 @@ describe("link command", () => {
       expect(linkCommand.noResultsMessage).toContain("/link")
     })
 
-    it("should mention ci option in no results message", () => {
-      expect(linkCommand.noResultsMessage).toContain("ci")
+    it("should mention artifact option in no results message", () => {
+      expect(linkCommand.noResultsMessage).toContain("artifact")
     })
   })
 })

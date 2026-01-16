@@ -23,7 +23,8 @@ Try the extension without installing it. All deployments (main + PR previews): *
 - `//font` to style text with sizes, colors, and formatting
 - `//kbd` to format keyboard shortcuts
 - `//link` to insert markdown links with auto-generated titles
-- `//link ci` to link to CI jobs and artifacts (requires GitHub token)
+- `//link artifact` to link to CI artifacts (requires GitHub token)
+- `//link job` to link to CI jobs (requires GitHub token)
 - `//mention` for context-aware participant mentions
 - `//mermaid` to insert diagram templates
 - `//now` to insert formatted timestamps
@@ -207,10 +208,11 @@ registerCommand("mycommand", myCommand)
 
 Some features require a GitHub Personal Access Token (PAT):
 
-- `//link ci` - Link to CI jobs and artifacts
+- `//link artifact` - Link to CI artifacts
+- `//link job` - Link to CI jobs
 
 ### Option 1: In picker settings
-1. Type `//link ci` or click the settings gear
+1. Type `//link artifact` or click the settings gear
 2. Find **GitHub Token** section
 3. Paste your token and click **Save**
 
