@@ -109,7 +109,7 @@ export function getCaretCoordinates(textarea: HTMLTextAreaElement, pos: number):
   const div = document.createElement("div")
   div.style.position = "absolute"
   div.style.visibility = "hidden"
-  const copiedProperties: (keyof CSSStyleDeclaration)[] = [
+  const copiedProperties = [
     "whiteSpace",
     "wordWrap",
     "overflowWrap",
@@ -135,7 +135,7 @@ export function getCaretCoordinates(textarea: HTMLTextAreaElement, pos: number):
     "borderBottomStyle",
     "borderLeftStyle",
     "boxSizing",
-  ]
+  ] as const
   for (const property of copiedProperties) {
     const value = cs[property]
     if (typeof value === "string") {
