@@ -130,7 +130,10 @@ export function GitHubOptionsSection() {
             A GitHub Personal Access Token enables advanced features:
             <ul className="feature-list">
               <li>
-                <code>/link ci</code> - Link to CI jobs and artifacts
+                <code>/link artifact</code> - Link to CI artifacts
+              </li>
+              <li>
+                <code>/link job</code> - Link to CI jobs
               </li>
             </ul>
             Create a{" "}
