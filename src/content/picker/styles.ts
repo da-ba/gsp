@@ -53,7 +53,7 @@ const STYLE_TOKENS = {
   },
 } as const
 
-type StyleTokens = typeof STYLE_TOKENS.dark
+type StyleTokens = (typeof STYLE_TOKENS)[keyof typeof STYLE_TOKENS]
 
 function getConfig(): StyleConfig {
   return { dark: isDarkMode() }
