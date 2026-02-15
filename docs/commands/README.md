@@ -20,3 +20,10 @@ This folder contains end-user and developer documentation for each registered sl
 Some commands require API keys or tokens:
 
 - [GitHub API Options](../options/github/README.md) – Personal Access Token for `//link ci` and other GitHub API features
+
+## Developer notes
+
+When adding a new slash command:
+
+- Register it via `registerCommand(name, spec, metadata)` and provide `icon` + `description` metadata so it appears automatically in the `//` command list.
+- Keep command-specific data loading in small helpers (e.g. cache loaders) to minimize boilerplate in `command.ts`.

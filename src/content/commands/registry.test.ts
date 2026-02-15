@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { registerCommand, getCommand, listCommands } from "./registry.ts"
+import { registerCommand, getCommand, getCommandMetadata, listCommands } from "./registry.ts"
 import type { CommandSpec } from "./registry.ts"
 
 describe("command registry", () => {
@@ -21,6 +21,18 @@ describe("command registry", () => {
       registerCommand("test", mockCommand)
       const cmd = getCommand("test")
       expect(cmd).toBe(mockCommand)
+    })
+
+    it("registers command metadata", () => {
+      registerCommand("test-meta", mockCommand, {
+        icon: "🧪",
+        description: "test metadata",
+      })
+
+      expect(getCommandMetadata("test-meta")).toEqual({
+        icon: "🧪",
+        description: "test metadata",
+      })
     })
   })
 

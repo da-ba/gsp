@@ -7,8 +7,9 @@
 
 import { escapeForSvg } from "../../../utils/svg.ts"
 import { registerCommand, type CommandSpec } from "../registry.ts"
+import { getOrLoadCommandCache, runNonBlocking } from "../command-helpers.ts"
 import { createGridHandlers } from "../grid-handlers.ts"
-import { getCommandCache, setCommandCache, insertTextAtCursor } from "../../picker/index.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import {
   getAllParticipants,
@@ -108,28 +109,17 @@ function insertMention(username: string): void {
   if (!insertTextAtCursor(`@${username} `)) return
 
   // Add to recently used (fire-and-forget, errors are non-critical)
-  addRecentMention(username).catch(() => {
-    // Silently ignore storage errors - not critical for UX
-  })
+  runNonBlocking(addRecentMention(username))
 }
 
 const mentionCommand: CommandSpec = {
   preflight: async () => ({ showSetup: false }),
 
   getEmptyState: async () => {
-    // Get participants from page
-    let participants = getCommandCache<MentionItem[]>(CACHE_PARTICIPANTS)
-    if (!participants) {
-      participants = getAllParticipants()
-      setCommandCache(CACHE_PARTICIPANTS, participants)
-    }
-
-    // Load recently mentioned users if not cached
-    let recentMentions = getCommandCache<string[]>(CACHE_RECENT_MENTIONS)
-    if (!recentMentions) {
-      recentMentions = await getRecentMentions()
-      setCommandCache(CACHE_RECENT_MENTIONS, recentMentions)
-    }
+    const participants = await getOrLoadCommandCache(CACHE_PARTICIPANTS, async () =>
+      getAllParticipants()
+    )
+    const recentMentions = await getOrLoadCommandCache(CACHE_RECENT_MENTIONS, getRecentMentions)
 
     // Add recent mentions that are not already in participants
     const existingUsernames = new Set(participants.map((p) => p.username.toLowerCase()))
@@ -152,19 +142,10 @@ const mentionCommand: CommandSpec = {
   },
 
   getResults: async (query: string) => {
-    // Get cached participants
-    let participants = getCommandCache<MentionItem[]>(CACHE_PARTICIPANTS)
-    if (!participants) {
-      participants = getAllParticipants()
-      setCommandCache(CACHE_PARTICIPANTS, participants)
-    }
-
-    // Get recent mentions for search
-    let recentMentions = getCommandCache<string[]>(CACHE_RECENT_MENTIONS)
-    if (!recentMentions) {
-      recentMentions = await getRecentMentions()
-      setCommandCache(CACHE_RECENT_MENTIONS, recentMentions)
-    }
+    const participants = await getOrLoadCommandCache(CACHE_PARTICIPANTS, async () =>
+      getAllParticipants()
+    )
+    const recentMentions = await getOrLoadCommandCache(CACHE_RECENT_MENTIONS, getRecentMentions)
 
     // Add recent mentions
     const existingUsernames = new Set(participants.map((p) => p.username.toLowerCase()))
@@ -191,6 +172,9 @@ const mentionCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("mention", mentionCommand)
+registerCommand("mention", mentionCommand, {
+  icon: "@",
+  description: "Mention a GitHub user",
+})
 
 export { mentionCommand, makeMentionTile }

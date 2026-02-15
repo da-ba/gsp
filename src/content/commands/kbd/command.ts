@@ -294,7 +294,10 @@ const kbdCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("kbd", kbdCommand)
+registerCommand("kbd", kbdCommand, {
+  icon: "⌨️",
+  description: "Insert keyboard shortcut notation",
+})
 
 export {
   kbdCommand,

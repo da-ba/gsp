@@ -247,6 +247,9 @@ const nowCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("now", nowCommand)
+registerCommand("now", nowCommand, {
+  icon: "🕐",
+  description: "Insert current date and time",
+})
 
 export { nowCommand, DATE_OPTIONS, makeDateTile, getRelativeTime }

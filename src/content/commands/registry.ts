@@ -31,6 +31,11 @@ export type SuggestionsResult = {
   items: string[]
 }
 
+export type CommandMetadata = {
+  icon: string
+  description: string
+}
+
 export type CommandSpec = {
   preflight: () => Promise<PreflightResult>
   getEmptyState: () => Promise<EmptyStateResult>
@@ -54,9 +59,13 @@ export type CommandSpec = {
 }
 
 const commandRegistry: Record<string, CommandSpec> = {}
+const commandMetadataRegistry: Partial<Record<string, CommandMetadata>> = {}
 
-export function registerCommand(name: string, spec: CommandSpec): void {
+export function registerCommand(name: string, spec: CommandSpec, metadata?: CommandMetadata): void {
   commandRegistry[name] = spec
+  if (metadata) {
+    commandMetadataRegistry[name] = metadata
+  }
 }
 
 export function getCommand(name: string): CommandSpec | null {
@@ -64,6 +73,11 @@ export function getCommand(name: string): CommandSpec | null {
   // Only reject null/undefined, accept empty string
   if (name === null || name === undefined) return null
   return commandRegistry[name] || null
+}
+
+export function getCommandMetadata(name: string): CommandMetadata | null {
+  if (name === null || name === undefined) return null
+  return commandMetadataRegistry[name] || null
 }
 
 export function listCommands(): string[] {

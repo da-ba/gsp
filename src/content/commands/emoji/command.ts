@@ -5,8 +5,9 @@
  */
 
 import { registerCommand, type CommandSpec } from "../registry.ts"
+import { getOrLoadCommandCache, runNonBlocking } from "../command-helpers.ts"
 import { createGridHandlers } from "../grid-handlers.ts"
-import { getCommandCache, setCommandCache, insertTextAtCursor } from "../../picker/index.ts"
+import { insertTextAtCursor } from "../../picker/index.ts"
 import type { PickerItem } from "../../types.ts"
 import { createSmallTile } from "../../../utils/tile-builder.ts"
 import {
@@ -56,9 +57,7 @@ function insertEmoji(emoji: string): void {
   if (!insertTextAtCursor(emoji + " ")) return
 
   // Add to recently used (fire-and-forget, errors are non-critical)
-  addRecentEmoji(emoji).catch(() => {
-    // Silently ignore storage errors - not critical for UX
-  })
+  runNonBlocking(addRecentEmoji(emoji))
 }
 
 const emojiCommand: CommandSpec = {
@@ -66,11 +65,7 @@ const emojiCommand: CommandSpec = {
 
   getEmptyState: async () => {
     // Load recently used emojis if not cached
-    let recentEmojis = getCommandCache<string[]>(CACHE_RECENT_EMOJIS)
-    if (!recentEmojis) {
-      recentEmojis = await getRecentEmojis()
-      setCommandCache(CACHE_RECENT_EMOJIS, recentEmojis)
-    }
+    const recentEmojis = await getOrLoadCommandCache(CACHE_RECENT_EMOJIS, getRecentEmojis)
 
     // If we have recent emojis, show them first
     if (recentEmojis.length > 0) {
@@ -116,6 +111,9 @@ const emojiCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("emoji", emojiCommand)
+registerCommand("emoji", emojiCommand, {
+  icon: "😀",
+  description: "Search and insert emoji",
+})
 
 export { emojiCommand, makeEmojiTile }

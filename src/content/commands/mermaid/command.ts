@@ -113,6 +113,9 @@ const mermaidCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("mermaid", mermaidCommand)
+registerCommand("mermaid", mermaidCommand, {
+  icon: "📊",
+  description: "Create diagrams and flowcharts",
+})
 
 export { mermaidCommand, makeDiagramTile, DIAGRAM_TEMPLATES }
