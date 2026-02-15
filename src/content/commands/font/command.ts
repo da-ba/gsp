@@ -254,6 +254,9 @@ const fontCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("font", fontCommand)
+registerCommand("font", fontCommand, {
+  icon: "𝔄",
+  description: "Transform text into fancy unicode fonts",
+})
 
 export { fontCommand, FONT_OPTIONS }

@@ -396,7 +396,10 @@ const linkCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("link", linkCommand)
+registerCommand("link", linkCommand, {
+  icon: "🔗",
+  description: "Insert formatted links",
+})
 
 export {
   linkCommand,

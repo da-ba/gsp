@@ -7,52 +7,23 @@
  */
 
 import type { PickerItem } from "../../types.ts"
-import { registerCommand, type CommandSpec, listCommands } from "../registry.ts"
+import {
+  registerCommand,
+  type CommandSpec,
+  listCommands,
+  getCommandMetadata,
+  type CommandMetadata,
+} from "../registry.ts"
 import { renderList, setSlashQueryInField } from "../../picker/index.ts"
 import { COMMAND_PREFIX } from "../../../utils/command-prefix.ts"
 
-type CommandMeta = {
-  icon: string
-  description: string
-}
-
-const commandMeta: Record<string, CommandMeta> = {
-  giphy: {
-    icon: "🎬",
-    description: "Search and insert animated GIFs",
-  },
-  emoji: {
-    icon: "😀",
-    description: "Search and insert emoji",
-  },
-  font: {
-    icon: "𝔄",
-    description: "Transform text into fancy unicode fonts",
-  },
-  mermaid: {
-    icon: "📊",
-    description: "Create diagrams and flowcharts",
-  },
-  mention: {
-    icon: "@",
-    description: "Mention a GitHub user",
-  },
-  now: {
-    icon: "🕐",
-    description: "Insert current date and time",
-  },
-  kbd: {
-    icon: "⌨️",
-    description: "Insert keyboard shortcut notation",
-  },
-  link: {
-    icon: "🔗",
-    description: "Insert formatted links",
-  },
+const FALLBACK_COMMAND_META: CommandMetadata = {
+  icon: "📝",
+  description: "Insert content",
 }
 
 function makeCommandItem(name: string): PickerItem {
-  const meta = commandMeta[name] || { icon: "📝", description: "Insert content" }
+  const meta = getCommandMetadata(name) || FALLBACK_COMMAND_META
   return {
     id: name,
     previewUrl: "",

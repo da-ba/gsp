@@ -210,6 +210,9 @@ const giphyCommand: CommandSpec = {
 }
 
 // Register the command
-registerCommand("giphy", giphyCommand)
+registerCommand("giphy", giphyCommand, {
+  icon: "🎬",
+  description: "Search and insert animated GIFs",
+})
 
 export { giphyCommand }
