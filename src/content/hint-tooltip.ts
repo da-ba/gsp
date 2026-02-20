@@ -37,7 +37,7 @@ function applyTooltipStyles(el: HTMLElement): void {
   el.style.padding = "6px 10px"
   el.style.borderRadius = "6px"
   el.style.fontSize = "12px"
-  el.style.fontFamily = fontSystemUi() + ", " + fontSansSerif()
+  el.style.fontFamily = `${fontSystemUi()}, ${fontSansSerif()}`
   el.style.pointerEvents = "auto"
   el.style.whiteSpace = "nowrap"
   el.style.display = "flex"
@@ -164,12 +164,12 @@ export function showHintTooltip(field: HTMLTextAreaElement): void {
       container.appendChild(tooltipEl)
     }
 
-    // Position after appending so we can measure
-    positionTooltip(tooltipEl, field)
-
-    // Fade in
+    // Position and fade in after layout so offsetHeight is accurate
     requestAnimationFrame(() => {
-      if (tooltipEl) tooltipEl.style.opacity = "1"
+      if (tooltipEl && activeField === field) {
+        positionTooltip(tooltipEl, field)
+        tooltipEl.style.opacity = "1"
+      }
     })
 
     // Auto-hide after delay
