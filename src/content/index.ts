@@ -23,6 +23,12 @@ import {
   moveSelectionGrid,
   applyPickerStyles,
 } from "./picker/index.ts"
+import {
+  loadDismissedState,
+  showHintTooltip,
+  hideHintTooltip,
+  refreshHintTooltipStyles,
+} from "./hint-tooltip.ts"
 
 // Import commands to register them
 import "./commands/giphy/index.ts"
@@ -119,6 +125,7 @@ async function handleCommandInput(
   state.activeCommand = cmdName
   setHeader("Slash Palette", COMMAND_PREFIX + cmdName + (query ? " " + query : ""))
 
+  hideHintTooltip()
   showPicker(field)
   positionPickerAtCaret(field)
 
@@ -303,6 +310,9 @@ function attachToField(field: HTMLTextAreaElement): void {
   ;(field as unknown as { __slashPaletteBound: boolean }).__slashPaletteBound = true
 
   field.addEventListener("input", () => handleFieldInput(field))
+  field.addEventListener("focus", () => {
+    if (!isPickerVisible()) showHintTooltip(field)
+  })
   field.addEventListener("keyup", (ev) => {
     // Skip action keys that are handled elsewhere
     if (ev.key === "Escape") return
@@ -340,6 +350,7 @@ function attachToField(field: HTMLTextAreaElement): void {
   field.addEventListener("keydown", (ev) => onFieldKeyDown(ev, field))
 
   field.addEventListener("blur", () => {
+    hideHintTooltip()
     setTimeout(() => {
       // Never hide while settings panel is open - user is interacting with controls
       if (state.showingSettings) return
@@ -432,14 +443,15 @@ function boot(): void {
 
   // Handle theme changes
   onThemeChange(() => {
+    refreshHintTooltipStyles()
     if (!isPickerVisible()) return
     if (state.pickerEl) applyPickerStyles(state.pickerEl)
     refreshSelectionStyles()
   })
 }
 
-// Load theme preference and start the extension
+// Load theme preference and dismissed state, then start the extension
 getThemePreference().then((pref) => {
   setThemeOverride(pref)
-  boot()
+  loadDismissedState().then(() => boot())
 })
