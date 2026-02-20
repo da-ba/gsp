@@ -38,12 +38,6 @@ See [docs/commands/README.md](docs/commands/README.md) for a full list and usage
 
 ---
 
-## Screenshots
-
-![Example](src/assets/example.png)
-
----
-
 ## Getting Started
 
 ### Prerequisites
