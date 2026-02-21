@@ -14,6 +14,16 @@ Try the extension without installing it. All deployments (main + PR previews): *
 
 ---
 
+## Screenshots
+
+<img src="src/assets/screenshot1.png" width="200" alt="Slash command palette listing available commands" />
+<img src="src/assets/screenshot2.png" width="200" alt="Giphy search results with GIF previews" />
+<img src="src/assets/screenshot3.png" width="200" alt="Mermaid diagram search results" />
+<img src="src/assets/screenshot4.png" width="200" alt="Emoji picker showing search results" />
+<img src="src/assets/screenshot5.png" width="200" alt="Giphy GIF insert settings" />
+
+---
+
 ## Features
 
 - Adds slash command palette to GitHub markdown textareas
