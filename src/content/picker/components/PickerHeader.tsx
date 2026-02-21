@@ -65,7 +65,7 @@ export function PickerHeader({
             fontWeight: 500,
           }}
         >
-          /
+          //
         </span>
         <span
           style={{
