@@ -286,6 +286,68 @@ test.describe("Slash Commands", () => {
 
     await context.close();
   });
+
+  test("hint tooltip appears on focus and hides on blur", async () => {
+    const context = await chromium.launch({ headless: false });
+    const page = await context.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await expect(textarea).toBeVisible();
+
+    // Focus the textarea - tooltip should appear
+    await textarea.click();
+    await page.waitForTimeout(200);
+
+    const tooltip = page.locator("#slashPaletteHint");
+    await expect(tooltip).toBeVisible({ timeout: 2000 });
+
+    // Tooltip should contain the "//" hint text
+    const tooltipText = await tooltip.textContent();
+    expect(tooltipText).toContain("//");
+
+    // Blur the textarea - tooltip should hide
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(200);
+    await expect(tooltip).not.toBeVisible();
+
+    await context.close();
+  });
+
+  test("hint tooltip hides when picker opens", async () => {
+    const context = await chromium.launch({ headless: false });
+    const page = await context.newPage();
+
+    await page.goto(`http://localhost:${testServer.port}/`);
+    await page.waitForLoadState("domcontentloaded");
+    await injectContentScript(page);
+    await page.waitForTimeout(500);
+
+    const textarea = page.locator("#test-textarea");
+    await textarea.click();
+    await page.waitForTimeout(200);
+
+    // Tooltip should be visible after focus
+    const tooltip = page.locator("#slashPaletteHint");
+    await expect(tooltip).toBeVisible({ timeout: 2000 });
+
+    // Type // to open picker
+    await textarea.fill("//");
+    await page.waitForTimeout(500);
+
+    // Picker should be visible
+    const picker = page.locator("#slashPalettePicker");
+    await expect(picker).toBeVisible({ timeout: 3000 });
+
+    // Tooltip should be hidden
+    await expect(tooltip).not.toBeVisible();
+
+    await context.close();
+  });
 });
 
 test.describe("Options Page - Giphy Image Settings", () => {
