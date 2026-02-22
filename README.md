@@ -37,6 +37,7 @@ Try the extension without installing it. All deployments (main + PR previews): *
 - `//mention` for context-aware participant mentions
 - `//mermaid` to insert diagram templates
 - `//now` to insert formatted timestamps
+- `//color` to pick and insert hex color codes
 - Uses `//` prefix to avoid conflicts with GitHub's native `/` commands
 - Easily extensible with new commands
 

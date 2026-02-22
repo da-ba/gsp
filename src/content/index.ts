@@ -38,6 +38,7 @@ import "./commands/emoji/index.ts"
 import "./commands/mermaid/index.ts"
 import "./commands/mention/index.ts"
 import "./commands/now/index.ts"
+import "./commands/color/index.ts"
 import "./commands/kbd/index.ts"
 import "./commands/link/index.ts"
 
