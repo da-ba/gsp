@@ -14,6 +14,7 @@ This folder contains end-user and developer documentation for each registered sl
 - [//mention](mention/README.md) – context-aware mention autocomplete for participants
 - [//mermaid](mermaid/README.md) – insert Mermaid diagram templates
 - [//now](now/README.md) – insert formatted date and timestamps
+- [//color](color/README.md) – open a color picker and insert hex color codes
 
 ## Options
 
