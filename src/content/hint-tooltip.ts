@@ -21,9 +21,7 @@ function applyTooltipStyles(el: HTMLElement): void {
   el.style.color = dark ? "#8d96a0" : "#656d76"
   el.style.border = `1px solid ${dark ? "#3d444d" : "#d0d7de"}`
   el.style.backgroundColor = dark ? "#161b22" : "#ffffff"
-  el.style.boxShadow = dark
-    ? "0 2px 8px rgba(1,4,9,0.4)"
-    : "0 2px 8px rgba(140,149,159,0.15)"
+  el.style.boxShadow = dark ? "0 2px 8px rgba(1,4,9,0.4)" : "0 2px 8px rgba(140,149,159,0.15)"
 }
 
 function ensureTooltip(): HTMLElement {
