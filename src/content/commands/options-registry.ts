@@ -2,19 +2,20 @@
  * Options section registry for command-specific settings UI
  */
 
-import type React from "react"
+/** A render function that builds settings UI into a container element */
+export type OptionsSectionRenderer = (container: HTMLElement) => void
 
-/** Registry of options section components */
+/** Registry of options section renderers */
 const optionsSectionRegistry: Array<{
   name: string
-  component: React.ComponentType
+  renderSection: OptionsSectionRenderer
 }> = []
 
 /**
- * Register an options section component for a command
+ * Register an options section renderer for a command
  */
-export function registerOptionsSection(name: string, component: React.ComponentType): void {
-  optionsSectionRegistry.push({ name, component })
+export function registerOptionsSection(name: string, renderSection: OptionsSectionRenderer): void {
+  optionsSectionRegistry.push({ name, renderSection })
 }
 
 /**
@@ -22,7 +23,7 @@ export function registerOptionsSection(name: string, component: React.ComponentT
  */
 export function getOptionsSections(): Array<{
   name: string
-  component: React.ComponentType
+  renderSection: OptionsSectionRenderer
 }> {
   return [...optionsSectionRegistry]
 }

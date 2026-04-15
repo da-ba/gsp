@@ -1,5 +1,4 @@
-export * from "./picker-react.tsx"
+export * from "./picker.ts"
 export * from "./state.ts"
 export * from "./styles.ts"
-export * from "./components/index.ts"
 export * from "./token-form.ts"
