@@ -1,10 +1,13 @@
 /**
- * Vanilla DOM Picker UI - replaces React-based picker
+ * Vanilla DOM Picker UI
+ *
+ * Uses CSS classes from picker-css.ts for styling.
+ * Theme switching is done by toggling the "sp-dark" class on the container.
  */
 
 import { add, sub, clamp } from "../../utils/math.ts"
 import { getCaretCoordinates } from "../../utils/dom.ts"
-import { isDarkMode, setThemeOverride } from "../../utils/theme.ts"
+import { isDarkMode, setThemeOverride, fontSystemUi, fontSansSerif } from "../../utils/theme.ts"
 import {
   getThemePreference,
   setThemePreference,
@@ -13,18 +16,11 @@ import {
 import type { PickerItem } from "../types.ts"
 import type { Position } from "./types.ts"
 import { state, resetPickerState } from "./state.ts"
-import {
-  applyPickerStyles,
-  getCardStyles,
-  getBadgeStyles,
-  getSkeletonStyles,
-  getGridItemSelectedStyles,
-  applyStyles,
-} from "./styles.ts"
 import { getOptionsSections } from "../commands/options-registry.ts"
 import { COMMAND_PREFIX } from "../../utils/command-prefix.ts"
+import { injectPickerCSS } from "./picker-css.ts"
 
-// --- SVG icons (inlined) ---
+// --- SVG icons ---
 
 const SETTINGS_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/></svg>`
 
@@ -63,143 +59,84 @@ let headerTitleEl: HTMLElement | null = null
 let headerSubEl: HTMLElement | null = null
 let bodyEl: HTMLElement | null = null
 
-// --- Theme helpers ---
+// --- Helpers ---
 
-function themeColor(dark: string, light: string): string {
-  return isDarkMode() ? dark : light
-}
-
-// --- DOM builders ---
-
-function el<K extends keyof HTMLElementTagNameMap>(
+function ce<K extends keyof HTMLElementTagNameMap>(
   tag: K,
-  styles?: Partial<CSSStyleDeclaration>,
+  className?: string,
   attrs?: Record<string, string>
 ): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag)
-  if (styles) applyStyles(e, styles)
+  if (className) e.className = className
   if (attrs) {
     for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v)
   }
   return e
 }
 
-function iconButton(
-  svgHtml: string,
-  titleAttr: string,
-  dataAttr: string,
-  onClick: () => void
-): HTMLButtonElement {
-  const btn = el(
-    "button",
-    {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "4px",
-      borderRadius: "4px",
-      opacity: "0.6",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: themeColor("#8d96a0", "#656d76"),
-    },
-    { type: "button", title: titleAttr, [dataAttr]: "true" }
-  )
-  btn.innerHTML = svgHtml
-  btn.addEventListener("mouseenter", () => {
-    btn.style.opacity = "1"
-  })
-  btn.addEventListener("mouseleave", () => {
-    btn.style.opacity = "0.6"
-  })
-  btn.addEventListener("click", (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    onClick()
-  })
-  return btn
+function updateThemeClass(): void {
+  if (!state.pickerEl) return
+  state.pickerEl.classList.toggle("sp-dark", isDarkMode())
 }
 
 // --- Build the picker DOM ---
 
 function buildPickerInner(): HTMLElement {
-  const dark = isDarkMode()
-  const container = el(
-    "div",
-    {
-      display: "flex",
-      flexDirection: "column",
-      height: "auto",
-      maxHeight: "320px",
-      width: "320px",
-      maxWidth: "320px",
-      boxSizing: "border-box",
-      position: "fixed",
-      left: `${position.left}px`,
-      top: `${position.top}px`,
-    },
-    { id: "slashPalettePicker" }
-  )
-
-  applyPickerStyles(container)
+  const container = ce("div", undefined, { id: "slashPalettePicker" })
+  container.style.left = `${position.left}px`
+  container.style.top = `${position.top}px`
+  container.style.fontFamily = fontSystemUi() + ", " + fontSansSerif()
 
   // --- Header ---
-  const header = el("div", {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "8px 12px",
-    borderBottom: dark ? "1px solid #3d444d" : "1px solid #d0d7de",
-  })
+  const header = ce("div", "sp-header")
 
-  const headerLeft = el("div", {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-  })
-  const prefix = el("span", {
-    color: themeColor("#8d96a0", "#656d76"),
-    fontSize: "16px",
-    fontWeight: "500",
-  })
+  const headerLeft = ce("div", "sp-header-left")
+  const prefix = ce("span", "sp-header-prefix")
   prefix.textContent = "//"
   headerLeft.appendChild(prefix)
 
-  headerTitleEl = el("span", {
-    fontWeight: "600",
-    fontSize: "14px",
-    color: themeColor("#e6edf3", "#1f2328"),
-  })
+  headerTitleEl = ce("span", "sp-header-title")
   headerTitleEl.textContent = title
   headerLeft.appendChild(headerTitleEl)
   header.appendChild(headerLeft)
 
-  const headerRight = el("div", {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  })
+  const headerRight = ce("div", "sp-header-right")
 
-  headerSubEl = el("span", {
-    fontSize: "12px",
-    color: themeColor("#8d96a0", "#656d76"),
-  })
+  headerSubEl = ce("span", "sp-header-subtitle")
   headerSubEl.textContent = subtitle
   headerRight.appendChild(headerSubEl)
 
-  headerRight.appendChild(
-    iconButton(SETTINGS_ICON_SVG, "Settings", "data-settings-btn", handleSettingsClick)
-  )
-  headerRight.appendChild(
-    iconButton(CLOSE_ICON_SVG, "Close", "data-settings-btn", handleCloseClick)
-  )
-  header.appendChild(headerRight)
+  const settingsBtn = ce("button", "sp-icon-btn", {
+    type: "button",
+    title: "Settings",
+    "data-settings-btn": "true",
+  })
+  settingsBtn.innerHTML = SETTINGS_ICON_SVG
+  settingsBtn.addEventListener("click", (ev) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+    handleSettingsClick()
+  })
+  headerRight.appendChild(settingsBtn)
 
+  const closeBtn = ce("button", "sp-icon-btn", {
+    type: "button",
+    title: "Close",
+    "data-settings-btn": "true",
+  })
+  closeBtn.innerHTML = CLOSE_ICON_SVG
+  closeBtn.addEventListener("click", (ev) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+    handleCloseClick()
+  })
+  headerRight.appendChild(closeBtn)
+
+  header.appendChild(headerRight)
   container.appendChild(header)
 
   // --- Body ---
-  bodyEl = el("div")
+  bodyEl = ce("div")
   container.appendChild(bodyEl)
 
   return container
@@ -242,47 +179,18 @@ function renderBodyContent(): void {
 }
 
 function buildLoadingSkeleton(): HTMLElement {
-  const skeletonStyles = getSkeletonStyles()
-  const wrapper = el("div", {
-    overflow: "auto",
-    padding: "8px",
-    flex: "1 1 auto",
-    minHeight: "0",
-  })
-  const grid = el("div", {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "8px",
-  })
-
+  const wrapper = ce("div", "sp-body-scroll")
+  const grid = ce("div", "sp-grid")
   for (let i = 0; i < 9; i++) {
-    const box = el("div")
-    applyStyles(box, skeletonStyles)
-    try {
-      box.animate([{ opacity: 0.55 }, { opacity: 0.9 }, { opacity: 0.55 }], {
-        duration: 900,
-        iterations: Infinity,
-      })
-    } catch {
-      // Animation not supported
-    }
-    grid.appendChild(box)
+    grid.appendChild(ce("div", "sp-skeleton"))
   }
   wrapper.appendChild(grid)
   return wrapper
 }
 
 function buildMessage(msg: string): HTMLElement {
-  const wrapper = el("div", {
-    overflow: "auto",
-    padding: "12px",
-    flex: "1 1 auto",
-    minHeight: "0",
-  })
-  const card = el("div", {
-    color: themeColor("#8d96a0", "#656d76"),
-  })
-  applyStyles(card, getCardStyles())
+  const wrapper = ce("div", "sp-body-pad")
+  const card = ce("div", "sp-card sp-message")
   card.textContent = msg
   wrapper.appendChild(card)
   return wrapper
@@ -293,36 +201,14 @@ function buildGridItem(
   index: number,
   imgUrlFn: (item: PickerItem) => string
 ): HTMLButtonElement {
-  const dark = isDarkMode()
   const selected = index === state.selectedIndex
-  const selectedStyles = getGridItemSelectedStyles(selected)
+  const btn = ce("button", "sp-grid-item", {
+    type: "button",
+    "data-item-index": String(index),
+    "aria-selected": String(selected),
+  })
 
-  const btn = el(
-    "button",
-    {
-      padding: "0",
-      margin: "0",
-      backgroundColor: "transparent",
-      cursor: "pointer",
-      borderRadius: "8px",
-      overflow: "hidden",
-      border: "1px solid transparent",
-      transition: "transform 80ms ease, box-shadow 80ms ease",
-      boxShadow: dark ? "0 4px 12px rgba(0,0,0,0.3)" : "0 4px 12px rgba(0,0,0,0.08)",
-    },
-    { type: "button", "data-item-index": String(index) }
-  )
-  applyStyles(btn, selectedStyles)
-
-  const img = el(
-    "img",
-    {
-      width: "100%",
-      height: "auto",
-      display: "block",
-    },
-    { src: imgUrlFn(item), alt: "item" }
-  )
+  const img = ce("img", undefined, { src: imgUrlFn(item), alt: "item" })
   btn.appendChild(img)
 
   btn.addEventListener("click", (ev) => {
@@ -343,44 +229,17 @@ function buildSuggestChips(
   chipTitle: string,
   onPick: (term: string) => void
 ): HTMLElement {
-  const badgeStyles = getBadgeStyles()
-  const wrapper = el("div", {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "6px",
-    marginBottom: "10px",
-  })
+  const wrapper = ce("div", "sp-chips")
 
   if (chipTitle) {
-    const titleEl = el("div", {
-      width: "100%",
-      fontSize: "12px",
-      marginBottom: "4px",
-      color: themeColor("#8d96a0", "#656d76"),
-    })
+    const titleEl = ce("div", "sp-section-title")
     titleEl.textContent = chipTitle
     wrapper.appendChild(titleEl)
   }
 
   items.slice(0, 8).forEach((term) => {
-    const chip = el(
-      "button",
-      {
-        cursor: "pointer",
-        padding: "6px 10px",
-        transform: "scale(1)",
-      },
-      { type: "button", "data-suggest-chip": "true" }
-    )
-    applyStyles(chip, badgeStyles)
+    const chip = ce("button", "sp-chip", { type: "button", "data-suggest-chip": "true" })
     chip.textContent = term
-
-    chip.addEventListener("mouseenter", () => {
-      chip.style.transform = "scale(1.03)"
-    })
-    chip.addEventListener("mouseleave", () => {
-      chip.style.transform = "scale(1)"
-    })
     chip.addEventListener("click", (ev) => {
       ev.preventDefault()
       ev.stopPropagation()
@@ -399,104 +258,46 @@ function buildGridView(
   suggestTitle: string,
   onSuggestPick: (term: string) => void
 ): HTMLElement {
-  const wrapper = el("div", {
-    overflow: "auto",
-    padding: "8px",
-    flex: "1 1 auto",
-    minHeight: "0",
-  })
+  const wrapper = ce("div", "sp-body-scroll")
 
   if (suggestItems.length > 0) {
     wrapper.appendChild(buildSuggestChips(suggestItems, suggestTitle, onSuggestPick))
   } else if (suggestTitle) {
-    const titleEl = el("div", {
-      width: "100%",
-      fontSize: "12px",
-      marginBottom: "4px",
-      color: themeColor("#8d96a0", "#656d76"),
-    })
+    const titleEl = ce("div", "sp-section-title")
     titleEl.textContent = suggestTitle
     wrapper.appendChild(titleEl)
   }
 
-  const grid = el("div", {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "8px",
-    maxHeight: "100%",
-    overflowY: "auto",
-  })
-
+  const grid = ce("div", "sp-grid")
   items.forEach((item, idx) => {
     grid.appendChild(buildGridItem(item, idx, imgUrlFn))
   })
-
   wrapper.appendChild(grid)
   return wrapper
 }
 
 function buildListItem(item: PickerItem, index: number): HTMLButtonElement {
   const selected = index === state.selectedIndex
-
-  const btn = el(
-    "button",
-    {
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      width: "100%",
-      padding: "10px 12px",
-      margin: "0",
-      backgroundColor: selected ? "#2f81f7" : "transparent",
-      cursor: "pointer",
-      borderRadius: "0",
-      overflow: "hidden",
-      border: "none",
-      transition: "background-color 80ms ease",
-      textAlign: "left",
-    },
-    { type: "button", "data-item-index": String(index) }
-  )
+  const btn = ce("button", "sp-list-item", {
+    type: "button",
+    "data-item-index": String(index),
+    "aria-selected": String(selected),
+  })
 
   if (item.icon) {
-    const iconSpan = el("span", {
-      fontSize: "16px",
-      width: "20px",
-      textAlign: "center",
-      flexShrink: "0",
-    })
+    const iconSpan = ce("span", "sp-list-item-icon")
     iconSpan.textContent = item.icon
     btn.appendChild(iconSpan)
   }
 
-  const textContainer = el("div", {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-    minWidth: "0",
-    flex: "1",
-  })
+  const textContainer = ce("div", "sp-list-item-text")
 
-  const titleSpan = el("span", {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: selected ? "#ffffff" : themeColor("#e6edf3", "#1f2328"),
-  })
+  const titleSpan = ce("span", "sp-list-item-title")
   titleSpan.textContent = item.title || item.id
   textContainer.appendChild(titleSpan)
 
   if (item.subtitle) {
-    const subSpan = el("span", {
-      fontSize: "14px",
-      color: selected ? "rgba(255,255,255,0.9)" : themeColor("#8d96a0", "#656d76"),
-      whiteSpace: "normal",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      display: "-webkit-box",
-      lineHeight: "1.4",
-    })
-    subSpan.style.setProperty("-webkit-line-clamp", "2")
-    subSpan.style.setProperty("-webkit-box-orient", "vertical")
+    const subSpan = ce("span", "sp-list-item-subtitle")
     subSpan.textContent = item.subtitle
     textContainer.appendChild(subSpan)
   }
@@ -517,76 +318,34 @@ function buildListItem(item: PickerItem, index: number): HTMLButtonElement {
 }
 
 function buildListView(items: PickerItem[], listTitle?: string): HTMLElement {
-  const wrapper = el("div", {
-    overflow: "auto",
-    padding: "0",
-    flex: "1 1 auto",
-    minHeight: "0",
-  })
+  const wrapper = ce("div", "sp-body-list")
 
   if (listTitle) {
-    const titleEl = el("div", {
-      width: "100%",
-      fontSize: "12px",
-      padding: "8px 12px 4px 12px",
-      color: themeColor("#8d96a0", "#656d76"),
-    })
+    const titleEl = ce("div", "sp-list-section-title")
     titleEl.textContent = listTitle
     wrapper.appendChild(titleEl)
   }
 
-  const list = el("div", {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0",
-  })
-
+  const list = ce("div", "sp-list")
   items.forEach((item, idx) => {
     list.appendChild(buildListItem(item, idx))
   })
-
   wrapper.appendChild(list)
   return wrapper
 }
 
 function buildSettingsPanel(): HTMLElement {
-  const cardStyles = getCardStyles()
-  const badgeStyles = getBadgeStyles()
-
-  const wrapper = el("div", {
-    overflow: "auto",
-    padding: "12px",
-    flex: "1 1 auto",
-    minHeight: "0",
-  })
+  const wrapper = ce("div", "sp-body-pad")
 
   // Back button
-  const backRow = el("div", { marginBottom: "10px" })
-  const backBtn = el(
-    "button",
-    {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "4px 8px",
-      borderRadius: "4px",
-      opacity: "0.75",
-      display: "flex",
-      alignItems: "center",
-      gap: "4px",
-      color: themeColor("#8d96a0", "#656d76"),
-      fontSize: "12px",
-      fontWeight: "500",
-    },
-    { type: "button", "data-settings-action": "true", title: "Back" }
-  )
+  const backRow = ce("div", undefined)
+  backRow.style.marginBottom = "10px"
+  const backBtn = ce("button", "sp-back-btn", {
+    type: "button",
+    "data-settings-action": "true",
+    title: "Back",
+  })
   backBtn.innerHTML = BACK_ICON_SVG + " Back"
-  backBtn.addEventListener("mouseenter", () => {
-    backBtn.style.opacity = "1"
-  })
-  backBtn.addEventListener("mouseleave", () => {
-    backBtn.style.opacity = "0.75"
-  })
   backBtn.addEventListener("click", (ev) => {
     ev.preventDefault()
     ev.stopPropagation()
@@ -596,57 +355,38 @@ function buildSettingsPanel(): HTMLElement {
   wrapper.appendChild(backRow)
 
   // Card
-  const card = el("div", {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-  })
-  applyStyles(card, cardStyles)
+  const card = ce("div", "sp-settings-card")
 
   // Theme section
-  const themeSection = el("div", {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  })
-  const themeLabel = el("div", {
-    fontWeight: "600",
-    fontSize: "13px",
-    color: themeColor("#e6edf3", "#1f2328"),
-  })
+  const themeSection = ce("div")
+  themeSection.style.display = "flex"
+  themeSection.style.flexDirection = "column"
+  themeSection.style.gap = "8px"
+
+  const themeLabel = ce("div", "sp-settings-label")
   themeLabel.textContent = "Theme"
   themeSection.appendChild(themeLabel)
 
-  const themeRow = el("div", { display: "flex", gap: "6px" })
+  const themeRow = ce("div", "sp-theme-row")
   const themes: { value: ThemePreference; label: string }[] = [
     { value: "system", label: "System" },
     { value: "light", label: "Light" },
     { value: "dark", label: "Dark" },
   ]
 
-  // Load and apply current theme preference
   getThemePreference().then((currentTheme) => {
     themes.forEach(({ value, label }) => {
-      const btn = el(
-        "button",
-        {
-          cursor: "pointer",
-          padding: "6px 12px",
-        },
-        { type: "button", "data-settings-action": "true" }
-      )
-      applyStyles(btn, badgeStyles)
+      const btn = ce("button", "sp-badge-btn", { type: "button", "data-settings-action": "true" })
+      btn.textContent = label
       if (value === currentTheme) {
         btn.style.opacity = "1"
         btn.style.fontWeight = "600"
       }
-      btn.textContent = label
       btn.addEventListener("click", async (ev) => {
         ev.preventDefault()
         ev.stopPropagation()
         await setThemePreference(value)
         setThemeOverride(value)
-        // Re-render the entire picker with new theme
         setTimeout(() => render(), 0)
       })
       themeRow.appendChild(btn)
@@ -659,7 +399,7 @@ function buildSettingsPanel(): HTMLElement {
   // Options sections from registry
   const sections = getOptionsSections()
   sections.forEach(({ renderSection }) => {
-    const sectionEl = el("div")
+    const sectionEl = ce("div")
     renderSection(sectionEl)
     card.appendChild(sectionEl)
   })
@@ -669,12 +409,7 @@ function buildSettingsPanel(): HTMLElement {
 }
 
 function buildSetupPanel(): HTMLElement {
-  const wrapper = el("div", {
-    overflow: "auto",
-    padding: "12px",
-    flex: "1 1 auto",
-    minHeight: "0",
-  })
+  const wrapper = ce("div", "sp-body-pad")
   if (currentSetupRenderFn) {
     currentSetupRenderFn(wrapper, currentOnSetupComplete)
   }
@@ -724,34 +459,13 @@ function handleSettingsBackClick(): void {
 function refreshSelection(): void {
   if (!bodyEl) return
 
-  if (viewType === "grid") {
-    const buttons = bodyEl.querySelectorAll("button[data-item-index]")
-    buttons.forEach((btnNode) => {
-      const btn = btnNode as HTMLButtonElement
-      const idx = parseInt(btn.getAttribute("data-item-index") || "0", 10)
-      const selected = idx === state.selectedIndex
-      const styles = getGridItemSelectedStyles(selected)
-      applyStyles(btn, styles)
-    })
-  } else if (viewType === "list") {
-    const buttons = bodyEl.querySelectorAll("button[data-item-index]")
-    buttons.forEach((btnNode) => {
-      const btn = btnNode as HTMLButtonElement
-      const idx = parseInt(btn.getAttribute("data-item-index") || "0", 10)
-      const selected = idx === state.selectedIndex
-      btn.style.backgroundColor = selected ? "#2f81f7" : "transparent"
-
-      // Update text colors
-      const titleSpan = btn.querySelector("div > span:first-child") as HTMLElement | null
-      const subSpan = btn.querySelector("div > span:nth-child(2)") as HTMLElement | null
-      if (titleSpan) {
-        titleSpan.style.color = selected ? "#ffffff" : themeColor("#e6edf3", "#1f2328")
-      }
-      if (subSpan) {
-        subSpan.style.color = selected ? "rgba(255,255,255,0.9)" : themeColor("#8d96a0", "#656d76")
-      }
-    })
-  }
+  const buttons = bodyEl.querySelectorAll("button[data-item-index]")
+  buttons.forEach((btnNode) => {
+    const btn = btnNode as HTMLButtonElement
+    const idx = parseInt(btn.getAttribute("data-item-index") || "0", 10)
+    const selected = idx === state.selectedIndex
+    btn.setAttribute("aria-selected", String(selected))
+  })
 }
 
 // --- Render / re-render ---
@@ -766,11 +480,12 @@ function render(): void {
     return
   }
 
-  // Rebuild the entire inner DOM for simplicity and theme consistency
+  // Rebuild the inner DOM for theme consistency
   if (pickerInner) {
     pickerInner.remove()
   }
 
+  updateThemeClass()
   pickerInner = buildPickerInner()
   state.pickerEl.appendChild(pickerInner)
   renderBodyContent()
@@ -789,7 +504,7 @@ function render(): void {
   }
 }
 
-// --- Public API (same interface as picker-react.tsx) ---
+// --- Public API ---
 
 function getPickerMountForField(field?: HTMLElement | null): HTMLElement {
   if (!field) return document.body
@@ -810,6 +525,7 @@ function getPickerMountForField(field?: HTMLElement | null): HTMLElement {
 }
 
 export function ensurePicker(field?: HTMLElement | null): HTMLElement {
+  injectPickerCSS()
   const mount = getPickerMountForField(field)
 
   if (state.pickerEl) {
@@ -969,11 +685,11 @@ export function scrollSelectedIntoView(): void {
 }
 
 export function renderSuggestChips(
-  items: string[],
-  chipTitle: string,
-  onPick: (term: string) => void
+  _items: string[],
+  _chipTitle: string,
+  _onPick: (term: string) => void
 ): void {
-  currentOnSuggestPick = onPick
+  // Suggest chips are rendered as part of the grid view
 }
 
 export function renderGrid(
@@ -994,8 +710,7 @@ export function renderGrid(
   currentSuggestItems = state.suggestItems
   currentSuggestTitle = suggestTitle
   currentOnSuggestPick = (term: string) => {
-    const field = state.activeField
-    if (field) {
+    if (state.activeField) {
       setSlashQueryInField(state.activeCommand, term)
     }
   }
@@ -1077,6 +792,3 @@ export function showSettings(): void {
   viewType = "settings"
   renderBodyContent()
 }
-
-// Re-export applyPickerStyles for use in content/index.ts
-export { applyPickerStyles }

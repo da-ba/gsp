@@ -66,6 +66,12 @@ function getTokens(): StyleTokens {
 export function applyPickerStyles(el: HTMLElement): void {
   const tokens = getTokens()
 
+  // Toggle theme class on the container for CSS custom properties
+  const container = el.closest("#slashPalettePickerContainer") ?? el.parentElement
+  if (container) {
+    container.classList.toggle("sp-dark", getConfig().dark)
+  }
+
   // Use fixed positioning so the picker is stable across scroll containers
   // (GitHub popovers/dialogs) and doesn't depend on page scroll offsets.
   el.style.position = "fixed"
