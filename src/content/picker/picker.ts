@@ -92,7 +92,7 @@ function buildPickerInner(): HTMLElement {
 
   const headerLeft = ce("div", "sp-header-left")
   const prefix = ce("span", "sp-header-prefix")
-  prefix.textContent = "//"
+  prefix.textContent = COMMAND_PREFIX
   headerLeft.appendChild(prefix)
 
   headerTitleEl = ce("span", "sp-header-title")
@@ -122,7 +122,7 @@ function buildPickerInner(): HTMLElement {
   const closeBtn = ce("button", "sp-icon-btn", {
     type: "button",
     title: "Close",
-    "data-settings-btn": "true",
+    "data-close-btn": "true",
   })
   closeBtn.innerHTML = CLOSE_ICON_SVG
   closeBtn.addEventListener("click", (ev) => {
@@ -387,6 +387,7 @@ function buildSettingsPanel(): HTMLElement {
         ev.stopPropagation()
         await setThemePreference(value)
         setThemeOverride(value)
+        // Defer re-render to allow theme override to take effect
         setTimeout(() => render(), 0)
       })
       themeRow.appendChild(btn)
@@ -552,6 +553,7 @@ export function ensurePicker(field?: HTMLElement | null): HTMLElement {
       (btn.hasAttribute("data-item-index") ||
         btn.hasAttribute("data-suggest-chip") ||
         btn.hasAttribute("data-settings-btn") ||
+        btn.hasAttribute("data-close-btn") ||
         btn.hasAttribute("data-settings-action"))
     )
   }

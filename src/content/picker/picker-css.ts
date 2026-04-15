@@ -25,6 +25,9 @@ const PICKER_CSS = `
   --sp-skeleton-border: rgba(31,35,40,0.08);
   --sp-selected-border: #0969da;
   --sp-selected-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  --sp-selected-bg: #2f81f7;
+  --sp-selected-text: #ffffff;
+  --sp-selected-text-muted: rgba(255,255,255,0.9);
   --sp-grid-item-shadow: 0 4px 12px rgba(0,0,0,0.08);
   --sp-header-border: 1px solid #d0d7de;
 }
@@ -45,6 +48,9 @@ const PICKER_CSS = `
   --sp-skeleton-border: #3d444d;
   --sp-selected-border: #58a6ff;
   --sp-selected-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  --sp-selected-bg: #2f81f7;
+  --sp-selected-text: #ffffff;
+  --sp-selected-text-muted: rgba(255,255,255,0.9);
   --sp-grid-item-shadow: 0 4px 12px rgba(0,0,0,0.3);
   --sp-header-border: 1px solid #3d444d;
 }
@@ -207,7 +213,7 @@ const PICKER_CSS = `
 }
 
 .sp-list-item[aria-selected="true"] {
-  background-color: #2f81f7;
+  background-color: var(--sp-selected-bg);
 }
 
 .sp-list-item-icon {
@@ -232,7 +238,7 @@ const PICKER_CSS = `
 }
 
 .sp-list-item[aria-selected="true"] .sp-list-item-title {
-  color: #ffffff;
+  color: var(--sp-selected-text);
 }
 
 .sp-list-item-subtitle {
@@ -248,7 +254,7 @@ const PICKER_CSS = `
 }
 
 .sp-list-item[aria-selected="true"] .sp-list-item-subtitle {
-  color: rgba(255,255,255,0.9);
+  color: var(--sp-selected-text-muted);
 }
 
 /* === Section title === */
